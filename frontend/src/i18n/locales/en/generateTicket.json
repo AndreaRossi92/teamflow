@@ -1,0 +1,12 @@
+{
+  "title": "Generate ticket from customer request",
+  "subtitle": "Paste a customer email or message and let AI generate a structured ticket.",
+  "label": "Customer request",
+  "placeholder": "Paste the customer email or message here...",
+  "generate": "Generate ticket",
+  "generating": "Generating...",
+  "result": "Generated ticket",
+  "estimatedDays_one": "{{count}} day",
+  "estimatedDays_other": "{{count}} days",
+  "estimatedEffort": "Estimated effort"
+}

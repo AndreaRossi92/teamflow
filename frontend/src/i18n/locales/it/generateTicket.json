@@ -1,0 +1,12 @@
+{
+  "title": "Genera ticket dalla richiesta del cliente",
+  "subtitle": "Incolla un'email o un messaggio del cliente e lascia che l'AI generi un ticket strutturato.",
+  "label": "Richiesta del cliente",
+  "placeholder": "Incolla qui l'email o il messaggio del cliente...",
+  "generate": "Genera ticket",
+  "generating": "Generazione in corso...",
+  "result": "Ticket generato",
+  "estimatedDays_one": "{{count}} giorno",
+  "estimatedDays_other": "{{count}} giorni",
+  "estimatedEffort": "Stima"
+}

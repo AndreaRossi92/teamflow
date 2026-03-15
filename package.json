@@ -1,0 +1,21 @@
+{
+  "name": "teamflow",
+  "packageManager": "yarn@4.12.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "yarn workspace frontend dev",
+    "dev:backend": "yarn workspace backend start:dev",
+    "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
+    "build:frontend": "yarn workspace frontend build",
+    "build:backend": "yarn workspace backend build",
+    "lint": "yarn workspaces foreach run lint",
+    "test": "yarn workspaces foreach run test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

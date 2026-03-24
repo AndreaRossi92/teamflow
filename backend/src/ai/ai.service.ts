@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai';
 import { buildTicketPrompt } from './ai.prompts';
 
 export interface GeneratedTicket {
@@ -13,7 +13,7 @@ export interface GeneratedTicket {
 
 @Injectable()
 export class AiService {
-  private model;
+  private model: GenerativeModel;
 
   constructor(private config: ConfigService) {
     const apiKey = this.config.get<string>('GEMINI_API_KEY');

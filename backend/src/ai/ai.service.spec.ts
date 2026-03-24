@@ -2,8 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { AiService, GeneratedTicket } from './ai.service';
 
-const mockGenerateContent = jest.fn();
-
+const mockGenerateContent = jest.fn() as jest.MockedFunction<
+  (prompt: string) => Promise<{ response: { text: () => string } }>
+>;
 jest.mock('@google/generative-ai', () => ({
   GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
     getGenerativeModel: jest.fn().mockReturnValue({
@@ -72,7 +73,7 @@ describe('AiService', () => {
 
     it('should include the customer request inside the prompt sent to Gemini', async () => {
       await service.generateTicket(CUSTOMER_REQUEST);
-      const prompt = mockGenerateContent.mock.calls[0][0] as string;
+      const prompt = mockGenerateContent.mock.calls[0][0];
       expect(prompt).toContain(CUSTOMER_REQUEST);
     });
 

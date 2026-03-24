@@ -12,8 +12,9 @@
     "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
     "build:frontend": "yarn workspace frontend build",
     "build:backend": "yarn workspace backend build",
-    "lint": "yarn workspaces foreach run lint",
-    "test": "yarn workspaces foreach run test"
+    "build": "concurrently \"yarn build:backend\" \"yarn build:frontend\"",
+    "lint": "yarn workspaces foreach --all run lint",
+    "test": "yarn workspaces foreach --all run test"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

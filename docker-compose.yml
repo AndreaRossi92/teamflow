@@ -36,6 +36,8 @@ services:
       - "5173:5173"
     volumes:
       - ./frontend/src:/app/frontend/src
+    environment:
+      - VITE_API_URL=http://backend:3000
     env_file:
       - ./frontend/.env
     depends_on:

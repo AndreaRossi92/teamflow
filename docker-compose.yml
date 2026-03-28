@@ -1,4 +1,18 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: teamflow
+      POSTGRES_PASSWORD: teamflow
+      POSTGRES_DB: teamflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U teamflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
@@ -8,12 +22,13 @@ services:
     volumes:
       - ./backend/src:/app/backend/src
     env_file:
-      - backend/.env
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
-    environment:
-      - VITE_API_URL=http://backend:3000
     build:
       context: .
       dockerfile: frontend/Dockerfile.dev
@@ -22,7 +37,10 @@ services:
     volumes:
       - ./frontend/src:/app/frontend/src
     env_file:
-      - frontend/.env
+      - ./frontend/.env
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  postgres_data:

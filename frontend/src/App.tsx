@@ -1,8 +1,8 @@
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import GenerateTicketPage from "./pages/GenerateTicketPage";
 import useAppTheme from "./theme";
 import "./i18n";
 import Header from "./components/Header";
+import AppRoutes from "./router/AppRoutes";
 
 export default function App() {
   const theme = useAppTheme();
@@ -11,7 +11,7 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Header />
-      <GenerateTicketPage />
+      <AppRoutes />
     </ThemeProvider>
   );
 }

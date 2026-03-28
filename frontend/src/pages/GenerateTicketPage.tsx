@@ -9,10 +9,11 @@ import {
   TextField,
   Typography,
   Alert,
+  Stack,
 } from "@mui/material";
 import { generateTicket } from "../api/ai";
 import TicketCard from "../components/TicketCard";
-import type { GeneratedTicket } from "../types/ticket";
+import type { GeneratedTicket } from "../types/generatedTicket";
 
 export default function GenerateTicketPage() {
   const { t: tCommon } = useTranslation("common");
@@ -30,6 +31,8 @@ export default function GenerateTicketPage() {
     setTicket(null);
     setCustomerRequest("");
   };
+
+  console.log("Hi");
 
   return (
     <Container maxWidth="md">
@@ -59,25 +62,30 @@ export default function GenerateTicketPage() {
           </Alert>
         )}
 
-        <Button
-          variant="contained"
-          size="large"
-          disabled={!customerRequest.trim() || genrateTicketMutation.isPending}
-          onClick={() => genrateTicketMutation.mutate()}
-          startIcon={
-            genrateTicketMutation.isPending ? (
-              <CircularProgress size={18} color="inherit" />
-            ) : null
-          }
-        >
-          {genrateTicketMutation.isPending ? t("generating") : t("generate")}
-        </Button>
-
-        {(ticket || genrateTicketMutation.isError) && (
-          <Button variant="outlined" size="large" onClick={handleReset}>
-            {tCommon("reset")}
+        <Stack direction="column" spacing={2} maxWidth="sm">
+          <Button
+            fullWidth
+            variant="contained"
+            size="large"
+            disabled={
+              !customerRequest.trim() || genrateTicketMutation.isPending
+            }
+            onClick={() => genrateTicketMutation.mutate()}
+            startIcon={
+              genrateTicketMutation.isPending ? (
+                <CircularProgress size={18} color="inherit" />
+              ) : null
+            }
+          >
+            {genrateTicketMutation.isPending ? t("generating") : t("generate")}
           </Button>
-        )}
+
+          {(ticket || genrateTicketMutation.isError) && (
+            <Button variant="outlined" size="large" onClick={handleReset}>
+              {tCommon("reset")}
+            </Button>
+          )}
+        </Stack>
 
         {ticket && (
           <Box sx={{ mt: 4 }}>

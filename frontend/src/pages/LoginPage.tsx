@@ -13,7 +13,7 @@ import {
   Paper,
 } from "@mui/material";
 import { login } from "../api/auth";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../providers/useAuth";
 
 export default function LoginPage() {
   const { t } = useTranslation("auth");

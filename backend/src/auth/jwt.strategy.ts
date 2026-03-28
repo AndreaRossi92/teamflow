@@ -11,17 +11,24 @@ export interface JwtPayload {
   role: Role;
 }
 
+export interface JwtUser {
+  id: string;
+  email: string;
+  role: Role;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(config: ConfigService) {
     super({
-      jwtFromRequest: (req: Request) => req.cookies?.access_token ?? null,
+      jwtFromRequest: (req: Request): string | null =>
+        (req.cookies as Record<string, string>)?.access_token ?? null,
       ignoreExpiration: false,
       secretOrKey: config.get<string>('JWT_SECRET', 'dev-secret'),
     });
   }
 
-  validate(payload: JwtPayload) {
+  validate(payload: JwtPayload): JwtUser {
     return {
       id: payload.sub,
       email: payload.email,

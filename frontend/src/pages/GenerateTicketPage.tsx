@@ -80,7 +80,7 @@ export default function GenerateTicketPage() {
             {genrateTicketMutation.isPending ? t("generating") : t("generate")}
           </Button>
 
-          {(ticket || genrateTicketMutation.isError || true) && (
+          {(ticket || genrateTicketMutation.isError) && (
             <Button variant="outlined" size="large" onClick={handleReset}>
               {tCommon("reset")}
             </Button>

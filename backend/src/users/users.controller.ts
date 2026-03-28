@@ -2,9 +2,9 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { Crud, CrudController } from '@dataui/crud';
 import { UsersService } from './users.service';
 import { Role, User } from './user.entity';
-import { Roles } from 'src/auth/decorators/auth.decorators';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/auth.decorators';
+import { JwtGuard } from '../auth/guards/jwt.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Crud({
   model: { type: User },

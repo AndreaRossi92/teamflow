@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './jwt.strategy';
-import { User } from 'src/users/user.entity';
+import { User } from '../users/user.entity';
 import { LoginDto } from './dto/login.dto';
 
 export interface LoginResponse {

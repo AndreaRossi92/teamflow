@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { Role, User } from 'src/users/user.entity';
+import { Role, User } from '../../users/user.entity';
 
 @Injectable()
 export class AdminUserSeeder {

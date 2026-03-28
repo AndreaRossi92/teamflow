@@ -7,7 +7,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import type { GeneratedTicket } from "../types/ticket";
+import type { GeneratedTicket } from "../types/generatedTicket";
 
 const priorityColor = {
   low: "success",

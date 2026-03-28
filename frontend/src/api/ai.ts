@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { GeneratedTicket } from "../types/ticket";
+import type { GeneratedTicket } from "../types/generatedTicket";
 
 export async function generateTicket(
   customerRequest: string,

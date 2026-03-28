@@ -6,6 +6,8 @@ import enCommon from "./locales/en/common.json";
 import enGenerateTicket from "./locales/en/generateTicket.json";
 import itCommon from "./locales/it/common.json";
 import itGenerateTicket from "./locales/it/generateTicket.json";
+import enAuth from "./locales/en/auth.json";
+import itAuth from "./locales/it/auth.json";
 
 i18n
   .use(LanguageDetector)
@@ -13,10 +15,12 @@ i18n
   .init({
     resources: {
       en: {
+        auth: enAuth,
         common: enCommon,
         generateTicket: enGenerateTicket,
       },
       it: {
+        auth: itAuth,
         common: itCommon,
         generateTicket: itGenerateTicket,
       },

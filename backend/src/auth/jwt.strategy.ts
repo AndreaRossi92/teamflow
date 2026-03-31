@@ -5,17 +5,17 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { Role } from '../users/user.entity';
 
-export interface JwtPayload {
+export type JwtPayload = {
   sub: string;
   email: string;
   role: Role;
-}
+};
 
-export interface JwtUser {
+export type JwtUser = {
   id: string;
   email: string;
   role: Role;
-}
+};
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {

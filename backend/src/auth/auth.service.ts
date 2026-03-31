@@ -6,10 +6,10 @@ import { JwtPayload } from './jwt.strategy';
 import { User } from '../users/user.entity';
 import { LoginDto } from './dto/login.dto';
 
-export interface LoginResponse {
+export type LoginResponse = {
   accessToken: string;
   user: Pick<User, 'id' | 'email' | 'role'>;
-}
+};
 
 @Injectable()
 export class AuthService {

@@ -15,11 +15,11 @@ const priorityColor = {
   high: "error",
 } as const;
 
-interface Props {
+type GeneratedTicketProps = {
   ticket: GeneratedTicket;
-}
+};
 
-export default function TicketCard({ ticket }: Props) {
+export default function TicketCard({ ticket }: GeneratedTicketProps) {
   const { t } = useTranslation("generateTicket");
 
   return (

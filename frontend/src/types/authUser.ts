@@ -1,5 +1,5 @@
-export interface AuthUser {
+export type AuthUser = {
   id: string;
   email: string;
   role: "admin" | "manager" | "employee";
-}
+};

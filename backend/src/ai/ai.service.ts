@@ -3,13 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai';
 import { buildTicketPrompt } from './ai.prompts';
 
-export interface GeneratedTicket {
+export type GeneratedTicket = {
   title: string;
   description: string;
   priority: 'low' | 'medium' | 'high';
   estimatedDays: number;
   tags: string[];
-}
+};
 
 @Injectable()
 export class AiService {

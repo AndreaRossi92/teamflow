@@ -8,5 +8,6 @@
   "result": "Generated ticket",
   "estimatedDays_one": "{{count}} day",
   "estimatedDays_other": "{{count}} days",
-  "estimatedEffort": "Estimated effort"
+  "estimatedEffort": "Estimated effort",
+  "demoMode": "Demo mode — running without backend. Ticket data is mocked, regardless of what is written in the input text."
 }

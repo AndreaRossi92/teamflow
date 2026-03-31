@@ -15,6 +15,8 @@ import { generateTicket } from "../api/ai";
 import TicketCard from "../components/TicketCard";
 import type { GeneratedTicket } from "../types/generatedTicket";
 
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
+
 export default function GenerateTicketPage() {
   const { t: tCommon } = useTranslation("common");
   const { t } = useTranslation("generateTicket");
@@ -32,8 +34,6 @@ export default function GenerateTicketPage() {
     setCustomerRequest("");
   };
 
-  console.log("Hi");
-
   return (
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
@@ -44,6 +44,12 @@ export default function GenerateTicketPage() {
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
           {t("subtitle")}
         </Typography>
+
+        {isDemoMode && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            {t("demoMode")}
+          </Alert>
+        )}
 
         <TextField
           fullWidth

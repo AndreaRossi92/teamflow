@@ -15,12 +15,14 @@ import {
 import { login } from "../api/auth";
 import { useAuth } from "../providers/useAuth";
 
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
+
 export default function LoginPage() {
   const { t } = useTranslation("auth");
   const { setUser } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(isDemoMode ? "admin@teamflow.com" : "");
+  const [password, setPassword] = useState(isDemoMode ? "admin123" : "");
 
   const mutation = useMutation({
     mutationFn: () => login(email, password),
@@ -38,9 +40,9 @@ export default function LoginPage() {
             {t("login.title")}
           </Typography>
 
-          {mutation.isError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {t("login.error")}
+          {isDemoMode && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {t("login.demoCredentials")}
             </Alert>
           )}
 
@@ -61,6 +63,12 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             sx={{ mb: 3 }}
           />
+
+          {mutation.isError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {t("login.error")}
+            </Alert>
+          )}
 
           <Button
             fullWidth

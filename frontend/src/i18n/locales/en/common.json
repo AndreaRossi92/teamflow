@@ -1,5 +1,7 @@
 {
   "error": "Something went wrong. Please try again.",
   "reset": "Reset",
-  "language": "Language"
+  "language": "Language",
+  "demoMode": "Demo mode — running without backend. Data is mocked.",
+  "demo": "Demo"
 }

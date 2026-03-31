@@ -8,5 +8,6 @@
   "result": "Ticket generato",
   "estimatedDays_one": "{{count}} giorno",
   "estimatedDays_other": "{{count}} giorni",
-  "estimatedEffort": "Stima"
+  "estimatedEffort": "Stima",
+  "demoMode": "Modalità demo — il backend non è attivo. I dati sono simulati, indipendetemente da cosa verrà scritto nell'input di testo"
 }

@@ -1,0 +1,4 @@
+{
+  "invalidEmail": "Invalid email",
+  "minLength": "Minimum {{count}} characters"
+}

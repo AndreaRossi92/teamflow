@@ -1,36 +1,53 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
   Box,
   Button,
-  CircularProgress,
   Container,
-  TextField,
   Typography,
   Alert,
   Paper,
 } from "@mui/material";
 import { login } from "../api/auth";
 import { useAuth } from "../providers/useAuth";
+import { FormProvider } from "react-hook-form";
+import {
+  LoginForm,
+  loginFormSchema,
+  type LoginFormValues,
+} from "../forms/LoginForm";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
+
+import useCustomForm from "../hooks/useCustomForm";
+import type { AuthUser } from "../types/authUser";
+import type { AxiosError } from "axios";
 
 export default function LoginPage() {
   const { t } = useTranslation("auth");
   const { setUser } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState(isDemoMode ? "admin@teamflow.com" : "");
-  const [password, setPassword] = useState(isDemoMode ? "admin123" : "");
 
-  const mutation = useMutation({
-    mutationFn: () => login(email, password),
+  const loginForm = useCustomForm<LoginFormValues>({
+    schema: loginFormSchema,
+    defaultValues: {
+      email: isDemoMode ? "admin@teamflow.com" : "",
+      password: isDemoMode ? "admin123" : "",
+    },
+  });
+
+  const loginMutation = useMutation<AuthUser, AxiosError, LoginFormValues>({
+    mutationFn: ({ email, password }) => login(email, password),
     onSuccess: (user) => {
       setUser(user);
       navigate("/", { replace: true });
     },
   });
+
+  const handleLogin = loginForm.handleSubmit((data) =>
+    loginMutation.mutate(data),
+  );
 
   return (
     <Container maxWidth="xs">
@@ -46,25 +63,15 @@ export default function LoginPage() {
             </Alert>
           )}
 
-          <TextField
-            fullWidth
-            label={t("login.email")}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            sx={{ mb: 2 }}
-          />
+          <FormProvider {...loginForm}>
+            <LoginForm
+              onEnter={() => {
+                if (loginForm.formState.isValid) handleLogin();
+              }}
+            />
+          </FormProvider>
 
-          <TextField
-            fullWidth
-            label={t("login.password")}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            sx={{ mb: 3 }}
-          />
-
-          {mutation.isError && (
+          {loginMutation.isError && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {t("login.error")}
             </Alert>
@@ -74,15 +81,12 @@ export default function LoginPage() {
             fullWidth
             variant="contained"
             size="large"
-            disabled={!email || !password || mutation.isPending}
-            onClick={() => mutation.mutate()}
-            startIcon={
-              mutation.isPending ? (
-                <CircularProgress size={18} color="inherit" />
-              ) : null
-            }
+            disabled={!loginForm.formState.isValid || loginMutation.isPending}
+            onClick={handleLogin}
+            loading={loginMutation.isPending}
+            sx={{ mt: 2 }}
           >
-            {mutation.isPending ? t("login.submitting") : t("login.submit")}
+            {t("login.submit")}
           </Button>
         </Paper>
       </Box>

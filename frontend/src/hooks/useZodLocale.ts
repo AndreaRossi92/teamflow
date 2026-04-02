@@ -9,11 +9,9 @@ export function useZodLocale() {
   useEffect(() => {
     z.config({
       customError(issue) {
-        console.log(issue);
         switch (issue.code) {
           case "invalid_format":
             if (issue.format === "email") {
-              console.log("Hello", t("invalidEmail"));
               return { message: t("invalidEmail") };
             }
             break;

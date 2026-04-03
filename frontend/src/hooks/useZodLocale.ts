@@ -19,7 +19,7 @@ export function useZodLocale() {
             if (issue.origin === "string") {
               return {
                 message: t("minLength", {
-                  minimum: issue.minimum,
+                  count: issue.minimum,
                 }),
               };
             }

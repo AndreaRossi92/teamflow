@@ -4,6 +4,7 @@ import { IconButton, InputAdornment } from "@mui/material";
 import { useState } from "react";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useTranslation } from "react-i18next";
 
 type ControlledPasswordFieldProps = {
   name: string;
@@ -13,7 +14,9 @@ export function ControlledPasswordField({
   name,
   ...textFieldProps
 }: ControlledPasswordFieldProps) {
+  const { t } = useTranslation("common");
   const [showPassword, setShowPassword] = useState(false);
+
   return (
     <ControlledTextField
       name={name}
@@ -24,12 +27,18 @@ export function ControlledPasswordField({
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
-                onClick={() => {
-                  setShowPassword(!showPassword);
-                }}
+                onClick={() => setShowPassword(!showPassword)}
                 edge="end"
+                tabIndex={-1}
+                aria-label={
+                  showPassword ? t("hidePassword") : t("showPassword")
+                }
               >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
+                {showPassword ? (
+                  <VisibilityOff aria-hidden="true" />
+                ) : (
+                  <Visibility aria-hidden="true" />
+                )}
               </IconButton>
             </InputAdornment>
           ),

@@ -12,17 +12,14 @@ import {
 import { login } from "../api/auth";
 import { useAuth } from "../providers/useAuth";
 import { FormProvider } from "react-hook-form";
-import {
-  LoginForm,
-  loginFormSchema,
-  type LoginFormValues,
-} from "../forms/LoginForm";
+import { LoginForm } from "../forms/LoginForm";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
 import useCustomForm from "../hooks/useCustomForm";
 import type { AuthUser } from "../types/authUser";
 import type { AxiosError } from "axios";
+import { loginFormSchema, type LoginFormValues } from "../types/loginForm";
 
 export default function LoginPage() {
   const { t } = useTranslation("auth");

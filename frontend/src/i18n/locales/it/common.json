@@ -3,5 +3,7 @@
   "reset": "Reset",
   "language": "Lingua",
   "demoMode": "Modalità demo — il backend non è attivo. I dati sono simulati.",
-  "demo": "Demo"
+  "demo": "Demo",
+  "hidePassword": "Nascondi password",
+  "showPassword": "Mostra password"
 }

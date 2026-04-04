@@ -4,7 +4,6 @@
   "label": "Customer request",
   "placeholder": "Paste the customer email or message here...",
   "generate": "Generate ticket",
-  "generating": "Generating...",
   "result": "Generated ticket",
   "estimatedDays_one": "{{count}} day",
   "estimatedDays_other": "{{count}} days",

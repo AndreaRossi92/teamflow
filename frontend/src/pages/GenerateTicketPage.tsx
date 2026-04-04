@@ -68,7 +68,7 @@ export default function GenerateTicketPage() {
           </Alert>
         )}
 
-        <Stack direction="column" spacing={2} maxWidth="sm">
+        <Stack direction="column" spacing={2} alignItems="center">
           <Button
             fullWidth
             variant="contained"
@@ -76,18 +76,26 @@ export default function GenerateTicketPage() {
             disabled={
               !customerRequest.trim() || genrateTicketMutation.isPending
             }
+            loading={genrateTicketMutation.isPending}
             onClick={() => genrateTicketMutation.mutate()}
             startIcon={
               genrateTicketMutation.isPending ? (
                 <CircularProgress size={18} color="inherit" />
               ) : null
             }
+            sx={{ maxWidth: "sm" }}
           >
-            {genrateTicketMutation.isPending ? t("generating") : t("generate")}
+            {t("generate")}
           </Button>
 
           {(ticket || genrateTicketMutation.isError) && (
-            <Button variant="outlined" size="large" onClick={handleReset}>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={handleReset}
+              fullWidth
+              sx={{ maxWidth: "sm" }}
+            >
               {tCommon("reset")}
             </Button>
           )}

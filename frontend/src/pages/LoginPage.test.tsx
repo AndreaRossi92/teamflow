@@ -14,6 +14,7 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoginPage from "./LoginPage";
+import { act } from "react";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async (importOriginal) => ({
@@ -96,20 +97,6 @@ describe("LoginPage", () => {
       await user.type(getPasswordInput(), "123");
 
       expect(getSubmitButton()).toBeDisabled();
-    });
-
-    it("debug — i campi ricevono il testo?", async () => {
-      renderLoginPage();
-      const user = userEvent.setup();
-
-      await user.type(getEmailInput(), "test@example.com");
-      console.log("valore email:", (getEmailInput() as HTMLInputElement).value);
-
-      await user.type(getPasswordInput(), "password123");
-      console.log(
-        "valore password:",
-        (getPasswordInput() as HTMLInputElement).value,
-      );
     });
 
     it("button enables with valid credentials", async () => {
@@ -255,13 +242,15 @@ describe("LoginPage", () => {
       vi.resetModules();
       const { default: LoginPage } = await import("../pages/LoginPage");
 
-      render(
-        <QueryClientProvider client={new QueryClient()}>
-          <MemoryRouter>
-            <LoginPage />
-          </MemoryRouter>
-        </QueryClientProvider>,
-      );
+      await act(async () => {
+        render(
+          <QueryClientProvider client={new QueryClient()}>
+            <MemoryRouter>
+              <LoginPage />
+            </MemoryRouter>
+          </QueryClientProvider>,
+        );
+      });
 
       expect(screen.getByText("login.demoCredentials")).toBeInTheDocument();
 

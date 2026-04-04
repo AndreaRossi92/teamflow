@@ -3,5 +3,7 @@
   "reset": "Reset",
   "language": "Language",
   "demoMode": "Demo mode — running without backend. Data is mocked.",
-  "demo": "Demo"
+  "demo": "Demo",
+  "hidePassword": "Hide password",
+  "showPassword": "Show password"
 }

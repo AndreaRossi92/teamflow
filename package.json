@@ -13,7 +13,11 @@
     "build:frontend": "yarn workspace frontend build",
     "build:backend": "yarn workspace backend build",
     "build": "concurrently \"yarn build:backend\" \"yarn build:frontend\"",
+    "lint:frontend": "yarn workspace frontend lint",
+    "lint:backend": "yarn workspace backend lint",
     "lint": "yarn workspaces foreach --all run lint",
+    "test:frontend": "yarn workspace frontend test",
+    "test:backend": "yarn workspace backend test",
     "test": "yarn workspaces foreach --all run test"
   },
   "devDependencies": {

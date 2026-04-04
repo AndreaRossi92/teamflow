@@ -21,5 +21,13 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    test: {
+      environment: "jsdom",
+      setupFiles: ["./vitest-setup.ts"],
+      globals: true,
+      env: {
+        VITE_DEMO_MODE: "false",
+      },
+    },
   };
 });

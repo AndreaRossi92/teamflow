@@ -8,6 +8,8 @@ import itCommon from "./locales/it/common.json";
 import itGenerateTicket from "./locales/it/generateTicket.json";
 import enAuth from "./locales/en/auth.json";
 import itAuth from "./locales/it/auth.json";
+import enErrors from "./locales/en/errors.json";
+import itErrors from "./locales/it/errors.json";
 
 i18n
   .use(LanguageDetector)
@@ -18,11 +20,13 @@ i18n
         auth: enAuth,
         common: enCommon,
         generateTicket: enGenerateTicket,
+        errors: enErrors,
       },
       it: {
         auth: itAuth,
         common: itCommon,
         generateTicket: itGenerateTicket,
+        errors: itErrors,
       },
     },
     fallbackLng: "en",

@@ -4,7 +4,6 @@
   "label": "Richiesta del cliente",
   "placeholder": "Incolla qui l'email o il messaggio del cliente...",
   "generate": "Genera ticket",
-  "generating": "Generazione in corso...",
   "result": "Ticket generato",
   "estimatedDays_one": "{{count}} giorno",
   "estimatedDays_other": "{{count}} giorni",

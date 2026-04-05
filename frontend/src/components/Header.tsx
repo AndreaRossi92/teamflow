@@ -14,8 +14,8 @@ import { useTranslation } from "react-i18next";
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
 const SUPPORTED_LANGUAGES = [
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "it", label: "Italiano", flag: "🇮🇹" },
+  { code: "en", label: "English", flagSrc: "https://flagcdn.com/gb.svg" },
+  { code: "it", label: "Italiano", flagSrc: "https://flagcdn.com/it.svg" },
 ] as const;
 
 type LanguageCode = (typeof SUPPORTED_LANGUAGES)[number]["code"];
@@ -54,16 +54,19 @@ export default function Header() {
           variant="outlined"
           renderValue={(code) => {
             const lang = SUPPORTED_LANGUAGES.find((l) => l.code === code);
-            return lang?.flag;
+            return lang ? <FlagImg src={lang.flagSrc} alt={lang.code} /> : null;
           }}
           sx={{
             "& fieldset": { top: 0 }, // Remove notch offset
             "& fieldset legend": { display: "none" }, // Remove legend
           }}
         >
-          {SUPPORTED_LANGUAGES.map(({ code, label, flag }) => (
+          {SUPPORTED_LANGUAGES.map(({ code, label, flagSrc }) => (
             <MenuItem key={code} value={code}>
-              {flag} {label}
+              <Stack direction="row" spacing={1} alignItems="center">
+                <FlagImg src={flagSrc} alt={code} />
+                <span>{label}</span>
+              </Stack>
             </MenuItem>
           ))}
         </Select>
@@ -71,3 +74,13 @@ export default function Header() {
     </AppBar>
   );
 }
+
+const FlagImg = ({ src, alt }: { src: string; alt: string }) => (
+  <img
+    src={src}
+    alt={alt}
+    width={20}
+    height={15}
+    style={{ borderRadius: 2, objectFit: "cover" }}
+  />
+);

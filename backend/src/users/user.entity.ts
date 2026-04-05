@@ -17,14 +17,14 @@ export enum Role {
 export class User {
   @ApiProperty({ example: 'uuid...' })
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @ApiProperty({ example: 'admin@teamflow.com' })
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
   @Column()
-  passwordHash: string;
+  passwordHash!: string;
 
   @ApiProperty({ enum: Role, example: Role.EMPLOYEE })
   @Column({
@@ -32,17 +32,17 @@ export class User {
     enum: Role,
     default: Role.EMPLOYEE,
   })
-  role: Role;
+  role!: Role;
 
   @ApiProperty({ example: true })
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @ApiProperty()
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

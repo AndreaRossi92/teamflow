@@ -26,6 +26,7 @@ async function bootstrap() {
     .setTitle('TeamFlow API')
     .setDescription('TeamFlow REST API documentation')
     .setVersion('1.0')
+    .addCookieAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

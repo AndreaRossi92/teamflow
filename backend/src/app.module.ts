@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { SeedModule } from './seed/seed.module';
+import { RefreshToken } from './auth/refresh-token.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { SeedModule } from './seed/seed.module';
         username: config.get<string>('DB_USERNAME', 'teamflow'),
         password: config.get<string>('DB_PASSWORD', 'teamflow'),
         database: config.get<string>('DB_NAME', 'teamflow'),
-        entities: [User],
+        entities: [User, RefreshToken],
         synchronize: true,
       }),
     }),

@@ -1,8 +1,22 @@
-import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import { AiService } from './ai.service';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/auth.decorators';
+import { JwtGuard } from '../auth/guards/jwt.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Role } from '../users/user.entity';
 
 @ApiTags('AI')
+@ApiCookieAuth()
+@UseGuards(JwtGuard, RolesGuard)
+@Roles(Role.ADMIN)
 @Controller('ai')
 export class AiController {
   constructor(private readonly aiService: AiService) {}

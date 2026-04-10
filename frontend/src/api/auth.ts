@@ -13,6 +13,15 @@ export async function login(
   return response.data.user;
 }
 
-// export async function logout(): Promise<void> {
-//   await axios.post("/api/auth/logout", {}, { withCredentials: true });
-// }
+export async function refreshToken(): Promise<AuthUser> {
+  const response = await axios.post<{ user: AuthUser }>(
+    "/api/auth/refresh",
+    {},
+    { withCredentials: true },
+  );
+  return response.data.user;
+}
+
+export async function logout(): Promise<void> {
+  await axios.post("/api/auth/logout", {}, { withCredentials: true });
+}

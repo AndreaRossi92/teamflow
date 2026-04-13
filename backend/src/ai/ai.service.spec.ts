@@ -23,7 +23,6 @@ const mockTicket: GeneratedTicket = {
   tags: ['export', 'pdf', 'reports'],
 };
 
-// Helper for building test modules
 async function buildModule(apiKey: string | undefined): Promise<TestingModule> {
   return Test.createTestingModule({
     providers: [
@@ -66,19 +65,21 @@ describe('AiService', () => {
 
   describe('generateTicket', () => {
     it('should return a parsed Ticket from a valid AI response', async () => {
-      const result: GeneratedTicket =
-        await service.generateTicket(CUSTOMER_REQUEST);
+      const result: GeneratedTicket = await service.generateTicket(
+        CUSTOMER_REQUEST,
+        'en',
+      );
       expect(result).toEqual(mockTicket);
     });
 
     it('should include the customer request inside the prompt sent to Gemini', async () => {
-      await service.generateTicket(CUSTOMER_REQUEST);
+      await service.generateTicket(CUSTOMER_REQUEST, 'en');
       const prompt = mockGenerateContent.mock.calls[0][0];
       expect(prompt).toContain(CUSTOMER_REQUEST);
     });
 
     it('should call generateContent exactly once per invocation', async () => {
-      await service.generateTicket(CUSTOMER_REQUEST);
+      await service.generateTicket(CUSTOMER_REQUEST, 'en');
       expect(mockGenerateContent).toHaveBeenCalledTimes(1);
     });
 
@@ -86,14 +87,16 @@ describe('AiService', () => {
       mockGenerateContent.mockResolvedValueOnce({
         response: { text: () => 'not valid json {{' },
       });
-      await expect(service.generateTicket(CUSTOMER_REQUEST)).rejects.toThrow();
+      await expect(
+        service.generateTicket(CUSTOMER_REQUEST, 'en'),
+      ).rejects.toThrow();
     });
 
     it('should propagate errors thrown by the Gemini SDK', async () => {
       mockGenerateContent.mockRejectedValueOnce(new Error('Network error'));
-      await expect(service.generateTicket(CUSTOMER_REQUEST)).rejects.toThrow(
-        'Network error',
-      );
+      await expect(
+        service.generateTicket(CUSTOMER_REQUEST, 'en'),
+      ).rejects.toThrow('Network error');
     });
   });
 });

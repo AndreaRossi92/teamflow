@@ -37,7 +37,7 @@ export default function LoginPage() {
     <Container maxWidth="xs">
       <Box sx={{ mt: 8 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h5" gutterBottom textAlign="center">
+          <Typography variant="h5" gutterBottom sx={{ textAlign: "center" }}>
             {t("login.title")}
           </Typography>
 

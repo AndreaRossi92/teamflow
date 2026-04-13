@@ -29,8 +29,11 @@ export class AiService {
     });
   }
 
-  async generateTicket(customerRequest: string): Promise<GeneratedTicket> {
-    const prompt = buildTicketPrompt(customerRequest);
+  async generateTicket(
+    customerRequest: string,
+    language: string,
+  ): Promise<GeneratedTicket> {
+    const prompt = buildTicketPrompt(customerRequest, language ?? 'en');
     const result = await this.model.generateContent(prompt);
     const text = result.response.text();
     return JSON.parse(text) as GeneratedTicket;

@@ -32,7 +32,9 @@ export class AiController {
       },
     },
   })
-  async generateTicket(@Body() body: { customerRequest: string }) {
-    return this.aiService.generateTicket(body.customerRequest);
+  async generateTicket(
+    @Body() body: { customerRequest: string; language: string },
+  ) {
+    return this.aiService.generateTicket(body.customerRequest, body.language);
   }
 }

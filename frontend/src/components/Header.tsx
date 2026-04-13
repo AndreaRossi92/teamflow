@@ -43,7 +43,7 @@ export default function Header() {
     <AppBar position="static" color="default" elevation={1}>
       <Toolbar sx={{ justifyContent: "space-between" }}>
         <Stack direction="row" spacing={1}>
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
             TeamFlow
           </Typography>
           {isDemoMode && (
@@ -71,7 +71,11 @@ export default function Header() {
           >
             {SUPPORTED_LANGUAGES.map(({ code, label, flagSrc }) => (
               <MenuItem key={code} value={code}>
-                <Stack direction="row" spacing={1} alignItems="center">
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ alignItems: "center" }}
+                >
                   <FlagImg src={flagSrc} alt={code} />
                   <span>{label}</span>
                 </Stack>

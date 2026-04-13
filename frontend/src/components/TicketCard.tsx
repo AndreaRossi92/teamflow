@@ -28,8 +28,10 @@ export default function TicketCard({ ticket }: GeneratedTicketProps) {
         <Stack spacing={2}>
           <Stack
             direction="row"
-            justifyContent="space-between"
-            alignItems="center"
+            sx={{
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
           >
             <Typography variant="h6">{ticket.title}</Typography>
             <Chip
@@ -54,7 +56,7 @@ export default function TicketCard({ ticket }: GeneratedTicketProps) {
             </strong>
           </Typography>
 
-          <Stack direction="row" spacing={1} flexWrap="wrap">
+          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
             {ticket.tags.map((tag) => (
               <Chip key={tag} label={tag} size="small" variant="outlined" />
             ))}

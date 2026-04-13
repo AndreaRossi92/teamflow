@@ -66,7 +66,7 @@ export default function GenerateTicketPage() {
           </Alert>
         )}
 
-        <Stack direction="column" spacing={2} alignItems="center">
+        <Stack direction="column" spacing={2} sx={{ alignItems: "center" }}>
           <Button
             fullWidth
             variant="contained"

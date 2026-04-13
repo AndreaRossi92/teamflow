@@ -1,5 +1,3 @@
-import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
   Box,
@@ -9,22 +7,17 @@ import {
   Alert,
   Paper,
 } from "@mui/material";
-import { login } from "../api/auth";
-import { useAuth } from "../providers/useAuth";
 import { FormProvider } from "react-hook-form";
 import { LoginForm } from "../forms/LoginForm";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
 import useCustomForm from "../hooks/useCustomForm";
-import type { AuthUser } from "../types/authUser";
-import type { AxiosError } from "axios";
 import { loginFormSchema, type LoginFormValues } from "../types/loginForm";
+import useLoginMutation from "../hooks/auth/useLoginMutation";
 
 export default function LoginPage() {
   const { t } = useTranslation("auth");
-  const { setUser } = useAuth();
-  const navigate = useNavigate();
 
   const loginForm = useCustomForm<LoginFormValues>({
     schema: loginFormSchema,
@@ -34,13 +27,7 @@ export default function LoginPage() {
     },
   });
 
-  const loginMutation = useMutation<AuthUser, AxiosError, LoginFormValues>({
-    mutationFn: ({ email, password }) => login(email, password),
-    onSuccess: (user) => {
-      setUser(user);
-      navigate("/", { replace: true });
-    },
-  });
+  const loginMutation = useLoginMutation();
 
   const handleLogin = loginForm.handleSubmit((data) =>
     loginMutation.mutate(data),

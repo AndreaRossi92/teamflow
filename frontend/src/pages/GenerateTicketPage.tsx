@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
   Box,
@@ -11,9 +10,9 @@ import {
   Alert,
   Stack,
 } from "@mui/material";
-import { generateTicket } from "../api/ai";
 import TicketCard from "../components/TicketCard";
 import type { GeneratedTicket } from "../types/generatedTicket";
+import useGenerateTicketMutation from "../hooks/ai/useGenerateTicketMutation";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -23,8 +22,7 @@ export default function GenerateTicketPage() {
   const [customerRequest, setCustomerRequest] = useState("");
   const [ticket, setTicket] = useState<GeneratedTicket | null>(null);
 
-  const genrateTicketMutation = useMutation({
-    mutationFn: () => generateTicket(customerRequest),
+  const genrateTicketMutation = useGenerateTicketMutation({
     onSuccess: (data) => setTicket(data),
   });
 
@@ -77,7 +75,7 @@ export default function GenerateTicketPage() {
               !customerRequest.trim() || genrateTicketMutation.isPending
             }
             loading={genrateTicketMutation.isPending}
-            onClick={() => genrateTicketMutation.mutate()}
+            onClick={() => genrateTicketMutation.mutate(customerRequest)}
             startIcon={
               genrateTicketMutation.isPending ? (
                 <CircularProgress size={18} color="inherit" />

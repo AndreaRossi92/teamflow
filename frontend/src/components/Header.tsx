@@ -8,8 +8,11 @@ import {
   Stack,
   Tooltip,
   Chip,
+  IconButton,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import LogoutIcon from "@mui/icons-material/Logout";
+import useLogoutMutation from "../hooks/auth/useLogoutMutation";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -27,6 +30,8 @@ function resolveLanguageCode(lng: string): LanguageCode {
 
 export default function Header() {
   const { i18n, t } = useTranslation("common");
+
+  const logoutMutation = useLogoutMutation();
 
   const currentLanguage = resolveLanguageCode(i18n.language);
 
@@ -47,29 +52,41 @@ export default function Header() {
             </Tooltip>
           )}
         </Stack>
-        <Select<LanguageCode>
-          value={currentLanguage}
-          onChange={handleLanguageChange}
-          size="small"
-          variant="outlined"
-          renderValue={(code) => {
-            const lang = SUPPORTED_LANGUAGES.find((l) => l.code === code);
-            return lang ? <FlagImg src={lang.flagSrc} alt={lang.code} /> : null;
-          }}
-          sx={{
-            "& fieldset": { top: 0 }, // Remove notch offset
-            "& fieldset legend": { display: "none" }, // Remove legend
-          }}
-        >
-          {SUPPORTED_LANGUAGES.map(({ code, label, flagSrc }) => (
-            <MenuItem key={code} value={code}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <FlagImg src={flagSrc} alt={code} />
-                <span>{label}</span>
-              </Stack>
-            </MenuItem>
-          ))}
-        </Select>
+        <Stack direction="row" spacing={1}>
+          <Select<LanguageCode>
+            value={currentLanguage}
+            onChange={handleLanguageChange}
+            size="small"
+            variant="outlined"
+            renderValue={(code) => {
+              const lang = SUPPORTED_LANGUAGES.find((l) => l.code === code);
+              return lang ? (
+                <FlagImg src={lang.flagSrc} alt={lang.code} />
+              ) : null;
+            }}
+            sx={{
+              "& fieldset": { top: 0 }, // Remove notch offset
+              "& fieldset legend": { display: "none" }, // Remove legend
+            }}
+          >
+            {SUPPORTED_LANGUAGES.map(({ code, label, flagSrc }) => (
+              <MenuItem key={code} value={code}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <FlagImg src={flagSrc} alt={code} />
+                  <span>{label}</span>
+                </Stack>
+              </MenuItem>
+            ))}
+          </Select>
+          <IconButton
+            title="Logout"
+            onClick={() => {
+              logoutMutation.mutate();
+            }}
+          >
+            <LogoutIcon />
+          </IconButton>
+        </Stack>
       </Toolbar>
     </AppBar>
   );

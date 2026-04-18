@@ -1,6 +1,8 @@
 services:
   db:
     image: postgres:16-alpine
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: teamflow
       POSTGRES_PASSWORD: teamflow
@@ -26,7 +28,7 @@ services:
       # Gemini AI - optional, only needed for AI features
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       # Database
-      DB_HOST: db
+      DB_HOST: ${DB_HOST:-db}
       DB_PORT: 5432
       DB_USERNAME: teamflow
       DB_PASSWORD: teamflow

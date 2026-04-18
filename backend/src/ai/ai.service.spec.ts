@@ -19,8 +19,6 @@ const mockTicket: GeneratedTicket = {
   title: 'Add PDF export button',
   description: 'Add a button to export the current report view as a PDF file.',
   priority: 'low',
-  estimatedDays: 3,
-  tags: ['export', 'pdf', 'reports'],
 };
 
 async function buildModule(apiKey: string | undefined): Promise<TestingModule> {

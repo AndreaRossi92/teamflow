@@ -15,8 +15,6 @@ Reply with a JSON object with this structure:
   "title": "short and clear title (max 60 characters)",
   "description": "detailed technical description of what needs to be implemented",
   "priority": "low" | "medium" | "high",
-  "estimatedDays": integer number of estimated days,
-  "tags": ["tag1", "tag2"]
 }
   
 Priority criteria:

@@ -1,6 +1,8 @@
 services:
   db:
     image: postgres:16-alpine
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: teamflow
       POSTGRES_PASSWORD: teamflow
@@ -21,8 +23,21 @@ services:
       - "3000:3000"
     volumes:
       - ./backend/src:/app/backend/src
-    env_file:
-      - ./backend/.env
+    environment:
+      NODE_ENV: development
+      # Gemini AI - optional, only needed for AI features
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # Database
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: 5432
+      DB_USERNAME: teamflow
+      DB_PASSWORD: teamflow
+      DB_NAME: teamflow
+      # Auth
+      JWT_SECRET: dev-secret
+      # Default admin credentials
+      ADMIN_EMAIL: admin@teamflow.com
+      ADMIN_PASSWORD: admin123
     depends_on:
       db:
         condition: service_healthy
@@ -37,9 +52,13 @@ services:
     volumes:
       - ./frontend/src:/app/frontend/src
     environment:
-      - VITE_API_URL=http://backend:3000
-    env_file:
-      - ./frontend/.env
+      NODE_ENV: development
+      # Can be set to "dark", "light" or left empty.
+      # If empty use the system theme
+      VITE_THEME: ${VITE_THEME:-}
+      VITE_API_URL: http://backend:3000
+      # Can be set to "true" to activate demo mode
+      VITE_DEMO_MODE: ${VITE_DEMO_MODE:-false}
     depends_on:
       - backend
     restart: unless-stopped

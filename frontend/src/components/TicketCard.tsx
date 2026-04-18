@@ -6,7 +6,6 @@ import {
   Stack,
   Divider,
 } from "@mui/material";
-import { useTranslation } from "react-i18next";
 import type { GeneratedTicket } from "../types/generatedTicket";
 
 const priorityColor = {
@@ -20,8 +19,6 @@ type GeneratedTicketProps = {
 };
 
 export default function TicketCard({ ticket }: GeneratedTicketProps) {
-  const { t } = useTranslation("generateTicket");
-
   return (
     <Card variant="outlined">
       <CardContent>
@@ -46,21 +43,6 @@ export default function TicketCard({ ticket }: GeneratedTicketProps) {
           <Typography variant="body2" color="text.secondary">
             {ticket.description}
           </Typography>
-
-          <Typography variant="body2">
-            <strong>
-              {`${t("estimatedEffort")}: `}
-              {t("estimatedDays", {
-                count: ticket.estimatedDays,
-              })}
-            </strong>
-          </Typography>
-
-          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
-            {ticket.tags.map((tag) => (
-              <Chip key={tag} label={tag} size="small" variant="outlined" />
-            ))}
-          </Stack>
         </Stack>
       </CardContent>
     </Card>

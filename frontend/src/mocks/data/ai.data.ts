@@ -7,6 +7,4 @@ export const mockGeneratedTicket: GeneratedTicket = {
     "the current view as a PDF file. The export should include all visible " +
     "data and respect the current filters applied by the user.",
   priority: "medium",
-  estimatedDays: 3,
-  tags: ["export", "pdf", "reports", "frontend"],
 };

@@ -2,64 +2,54 @@
 
 > ⚠️ **Work in progress** — This project is currently under active development.
 
-TeamFlow is a web application that transforms free-form customer requests into structured tickets using AI.
+TeamFlow is a web platform for managing software development projects and tickets. It supports multi-role access control and includes an AI-powered feature to automatically generate structured tickets from customer requests.
 
 ---
 
-## How it works
+## Current status
 
-A manager pastes a customer email or message into the app. TeamFlow analyses the text and returns a structured ticket with a title, description, priority level, estimated effort, and relevant tags — ready to be reviewed and saved.
-
-```
-Customer email or message
-          │
-          ▼
-    TeamFlow web app
-          │
-          ▼
-    NestJS backend
-          │
-          ▼
-  Gemini 3 Flash API
-          │
-          ▼
-  Structured ticket
-  ┌─────────────────────┐
-  │ Title               │
-  │ Description         │
-  │ Priority   [ high ] │
-  │ Estimate   [ 3d ]   │
-  │ Tags                │
-  └─────────────────────┘
-```
+| Feature              | Status         |
+| -------------------- | -------------- |
+| Login page           | ✅ Available   |
+| AI ticket generation | ✅ Available   |
+| Landing page         | 🔜 Coming soon |
+| User management      | 🔜 Coming soon |
+| Projects             | 🔜 Coming soon |
+| Tickets              | 🔜 Coming soon |
 
 ---
 
-## Architecture
+## Features
 
-```
-teamflow/                          # Monorepo root
-├── frontend/                      # React 19 SPA (Vite + MUI)
-│   └── Dockerfile.dev
-├── backend/                       # NestJS REST API
-│   └── Dockerfile.dev
-├── docker-compose.yml             # Local development
-└── .env.example                   # Environment variables template
-```
+### User management
 
-### System diagram
+The platform requires authentication. Each user is assigned one of three roles:
 
-```
-  Browser ──────────────▶ React SPA :5173
-                               │
-                               │ POST /api/ai/generate-ticket
-                               ▼
-                          NestJS API :3000
-                               │
-                               │ Gemini 3 Flash
-                               ▼
-                         Google AI API
-```
+| Role       | Description                                            |
+| ---------- | ------------------------------------------------------ |
+| `ADMIN`    | Full access to the platform, including user management |
+| `MANAGER`  | Manages projects, tickets and team assignments         |
+| `EMPLOYEE` | Views and updates their own assigned tickets           |
+
+### Permissions
+
+|                                  | ADMIN | MANAGER | EMPLOYEE |
+| -------------------------------- | :---: | :-----: | :------: |
+| Create / edit / delete users     |  ✅   |   ❌    |    ❌    |
+| Assign roles to users            |  ✅   |   ❌    |    ❌    |
+| Create / edit / archive projects |  ✅   |   ✅    |    ❌    |
+| Assign projects to users         |  ✅   |   ✅    |    ❌    |
+| View own projects                |  ✅   |   ✅    |    ❌    |
+| Create / edit / close tickets    |  ✅   |   ✅    |    ❌    |
+| Assign tickets to users          |  ✅   |   ✅    |    ❌    |
+| View all tickets in a project    |  ✅   |   ✅    |    ❌    |
+| Generate tickets via AI          |  ✅   |   ✅    |    ❌    |
+| View own assigned tickets        |  ✅   |   ✅    |    ✅    |
+| Update status of own tickets     |  ✅   |   ✅    |    ✅    |
+
+### AI ticket generation
+
+Managers can paste a customer email or message into the platform. TeamFlow analyses the text using AI and returns a structured ticket with a title, description and priority level — ready to be reviewed and saved.
 
 ---
 
@@ -79,41 +69,21 @@ teamflow/                          # Monorepo root
 
 ### Prerequisites
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) _(recommended)_
-- [Yarn 4](https://yarnpkg.com/getting-started/install) (`corepack enable`) _(without Docker)_
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - A [Gemini API key](https://aistudio.google.com) (free)
 
-### Option A — With Docker _(recommended)_
+### Setup
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/AndreaRossi92/teamflow.git
 cd teamflow
 
-# 2. Create your environment files
-cp .env.example backend/.env
-# Add your GEMINI_API_KEY to backend/.env
+# 2. Create your environment file and add your GEMINI_API_KEY
+echo "GEMINI_API_KEY=your_api_key_here" > .env
 
 # 3. Start all services
 docker-compose up --build
-```
-
-### Option B — Without Docker
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/AndreaRossi92/teamflow.git
-cd teamflow
-
-# 2. Install dependencies
-yarn install
-
-# 3. Create your environment files
-cp .env.example backend/.env
-# Add your GEMINI_API_KEY to backend/.env
-
-# 4. Start frontend and backend
-yarn dev
 ```
 
 ### Services
@@ -125,11 +95,24 @@ yarn dev
 
 ### Environment variables
 
-| Variable         | Location              | Description                                                                                   |
-| ---------------- | --------------------- | --------------------------------------------------------------------------------------------- |
-| `GEMINI_API_KEY` | `backend/.env`        | Google AI API key (required)                                                                  |
-| `VITE_THEME`     | `frontend/.env`       | Force UI theme: `light` or `dark`. Leave empty to follow OS preference                        |
-| `VITE_API_URL`   | set by Docker Compose | API base URL. Defaults to `http://localhost:3000`, set to `http://backend:3000` inside Docker |
+Create a `.env` file in the project root. The following variables are available:
+
+| Variable         | Required | Description                                                                                                              |
+| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `GEMINI_API_KEY` | ✅ Yes   | Google AI API key                                                                                                        |
+| `VITE_DEMO_MODE` | No       | Set to `true` to enable demo mode with mocked data (no backend required), or either `false` or leave empty to disable it |
+| `VITE_THEME`     | No       | Force UI theme: `"light"` for light mode, `"dark"` for dark mode, or leave empty to follow OS preference                 |
+
+---
+
+## Default credentials
+
+On first run, an `ADMIN` account is automatically created:
+
+| Field    | Value              |
+| -------- | ------------------ |
+| Email    | admin@teamflow.com |
+| Password | admin123           |
 
 ---
 

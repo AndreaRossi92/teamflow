@@ -10,7 +10,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export enum Role {
   ADMIN = 'admin',
   MANAGER = 'manager',
-  EMPLOYEE = 'employee',
+  DEV = 'dev',
 }
 
 @Entity('users')
@@ -26,11 +26,11 @@ export class User {
   @Column()
   passwordHash!: string;
 
-  @ApiProperty({ enum: Role, example: Role.EMPLOYEE })
+  @ApiProperty({ enum: Role, example: Role.DEV })
   @Column({
     type: 'text',
     enum: Role,
-    default: Role.EMPLOYEE,
+    default: Role.DEV,
   })
   role!: Role;
 

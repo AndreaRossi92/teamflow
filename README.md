@@ -25,27 +25,27 @@ TeamFlow is a web platform for managing software development projects and ticket
 
 The platform requires authentication. Each user is assigned one of three roles:
 
-| Role       | Description                                            |
-| ---------- | ------------------------------------------------------ |
-| `ADMIN`    | Full access to the platform, including user management |
-| `MANAGER`  | Manages projects, tickets and team assignments         |
-| `EMPLOYEE` | Views and updates their own assigned tickets           |
+| Role      | Description                                            |
+| --------- | ------------------------------------------------------ |
+| `ADMIN`   | Full access to the platform, including user management |
+| `MANAGER` | Manages projects, tickets and team assignments         |
+| `DEV`     | Views and updates their own assigned tickets           |
 
 ### Permissions
 
-|                                  | ADMIN | MANAGER | EMPLOYEE |
-| -------------------------------- | :---: | :-----: | :------: |
-| Create / edit / delete users     |  ✅   |   ❌    |    ❌    |
-| Assign roles to users            |  ✅   |   ❌    |    ❌    |
-| Create / edit / archive projects |  ✅   |   ✅    |    ❌    |
-| Assign projects to users         |  ✅   |   ✅    |    ❌    |
-| View own projects                |  ✅   |   ✅    |    ❌    |
-| Create / edit / close tickets    |  ✅   |   ✅    |    ❌    |
-| Assign tickets to users          |  ✅   |   ✅    |    ❌    |
-| View all tickets in a project    |  ✅   |   ✅    |    ❌    |
-| Generate tickets via AI          |  ✅   |   ✅    |    ❌    |
-| View own assigned tickets        |  ✅   |   ✅    |    ✅    |
-| Update status of own tickets     |  ✅   |   ✅    |    ✅    |
+|                                  | ADMIN | MANAGER | DEV |
+| -------------------------------- | :---: | :-----: | :-: |
+| Create / edit / delete users     |  ✅   |   ❌    | ❌  |
+| Assign roles to users            |  ✅   |   ❌    | ❌  |
+| Create / edit / archive projects |  ✅   |   ✅    | ❌  |
+| Assign projects to users         |  ✅   |   ✅    | ❌  |
+| View own projects                |  ✅   |   ✅    | ❌  |
+| Create / edit / close tickets    |  ✅   |   ✅    | ❌  |
+| Assign tickets to users          |  ✅   |   ✅    | ❌  |
+| View all tickets in a project    |  ✅   |   ✅    | ❌  |
+| Generate tickets via AI          |  ✅   |   ✅    | ❌  |
+| View own assigned tickets        |  ✅   |   ✅    | ✅  |
+| Update status of own tickets     |  ✅   |   ✅    | ✅  |
 
 ### AI ticket generation
 

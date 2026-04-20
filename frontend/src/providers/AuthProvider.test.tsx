@@ -53,6 +53,7 @@ describe("AuthProvider — interceptor", () => {
       id: "1",
       email: "u@test.com",
       role: "user",
+      fullName: "User"
     });
   });
 
@@ -100,6 +101,7 @@ describe("AuthProvider — interceptor", () => {
       id: "1",
       email: "u@test.com",
       role: "user",
+      fullName: "User"
     });
 
     const retrySpy = vi
@@ -203,7 +205,7 @@ describe("AuthProvider — inizializzazione", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("should set user on successful initial refresh", async () => {
-    const mockUser = { id: "1", email: "u@test.com", role: "user" };
+    const mockUser = { id: "1", email: "u@test.com", role: "user", fullName: "User" };
     mockRefreshToken.mockResolvedValue(mockUser);
     await mountProvider();
     expect(mockRefreshToken).toHaveBeenCalledTimes(1);

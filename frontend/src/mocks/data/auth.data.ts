@@ -4,4 +4,5 @@ export const mockAdminUser: AuthUser = {
   id: "mock-uuid-admin",
   email: "admin@teamflow.com",
   role: "admin",
+  fullName: "Admin",
 };

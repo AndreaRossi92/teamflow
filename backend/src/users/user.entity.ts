@@ -23,6 +23,10 @@ export class User {
   @Column({ unique: true })
   email!: string;
 
+  @ApiProperty({ example: 'Admin' })
+  @Column()
+  fullName!: string;
+
   @Column()
   passwordHash!: string;
 

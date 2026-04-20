@@ -18,6 +18,7 @@ export class AdminUserSeeder {
   async run(): Promise<void> {
     const email = this.config.get<string>('ADMIN_EMAIL', 'admin@teamflow.com');
     const password = this.config.get<string>('ADMIN_PASSWORD', 'admin123');
+    const fullName = this.config.get<string>('ADMIN_FULL_NAME', 'Admin');
 
     const existing = await this.userRepository.findOne({ where: { email } });
     if (existing) {
@@ -30,6 +31,7 @@ export class AdminUserSeeder {
       email,
       passwordHash,
       role: Role.ADMIN,
+      fullName,
       isActive: true,
     });
 

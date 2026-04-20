@@ -16,6 +16,7 @@ jest.mock('bcrypt', () => ({
 const mockUser: User = {
   id: 'uuid-123',
   email: 'admin@teamflow.com',
+  fullName: 'Admin',
   passwordHash: 'hashed-password',
   role: Role.ADMIN,
   isActive: true,

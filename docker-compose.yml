@@ -38,6 +38,7 @@ services:
       # Default admin credentials
       ADMIN_EMAIL: admin@teamflow.com
       ADMIN_PASSWORD: admin123
+      ADMIN_FULL_NAME: Admin
     depends_on:
       db:
         condition: service_healthy

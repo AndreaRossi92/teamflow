@@ -9,13 +9,6 @@ Generate the ticket content in the language specified by this BCP 47 language ta
 
 Customer request:
 ${customerRequest}
-
-Reply with a JSON object with this structure:
-{
-  "title": "short and clear title (max 60 characters)",
-  "description": "detailed technical description of what needs to be implemented",
-  "priority": "low" | "medium" | "high",
-}
   
 Priority criteria:
 - high: urgent, blocking the customer or impacting production

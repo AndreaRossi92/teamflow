@@ -5,6 +5,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 
 const LoginPage = lazy(() => import("../pages/LoginPage"));
 const GenerateTicketPage = lazy(() => import("../pages/GenerateTicketPage"));
+const DashboardPage = lazy(() => import("../pages/DashboardPage"));
 
 function PageLoader() {
   return (
@@ -26,14 +27,10 @@ export default function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <GenerateTicketPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route element={<ProtectedRoute />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="/ai" element={<GenerateTicketPage />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

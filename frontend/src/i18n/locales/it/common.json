@@ -5,5 +5,10 @@
   "demoMode": "Modalità demo — il backend non è attivo. I dati sono simulati.",
   "demo": "Demo",
   "hidePassword": "Nascondi password",
-  "showPassword": "Mostra password"
+  "showPassword": "Mostra password",
+  "projects": "Progetti",
+  "users": "Utenti",
+  "tickets": "Ticket",
+  "openSection": "Sezione aperta",
+  "underDevelopment": "In fase di sviluppo"
 }

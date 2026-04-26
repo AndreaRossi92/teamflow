@@ -5,5 +5,10 @@
   "demoMode": "Demo mode — running without backend. Data is mocked.",
   "demo": "Demo",
   "hidePassword": "Hide password",
-  "showPassword": "Show password"
+  "showPassword": "Show password",
+  "projects": "Projects",
+  "users": "Users",
+  "tickets": "Tickets",
+  "openSection": "Open section",
+  "underDevelopment": "Under development"
 }

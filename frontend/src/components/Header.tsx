@@ -1,7 +1,6 @@
 import {
   AppBar,
   Toolbar,
-  Typography,
   Select,
   MenuItem,
   type SelectChangeEvent,
@@ -9,10 +8,12 @@ import {
   Tooltip,
   Chip,
   IconButton,
+  Button,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import LogoutIcon from "@mui/icons-material/Logout";
 import useLogoutMutation from "../hooks/auth/useLogoutMutation";
+import { useNavigate } from "react-router-dom";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -30,6 +31,7 @@ function resolveLanguageCode(lng: string): LanguageCode {
 
 export default function Header() {
   const { i18n, t } = useTranslation("common");
+  const navigate = useNavigate();
 
   const logoutMutation = useLogoutMutation();
 
@@ -43,9 +45,15 @@ export default function Header() {
     <AppBar position="static" color="default" elevation={1}>
       <Toolbar sx={{ justifyContent: "space-between" }}>
         <Stack direction="row" spacing={1}>
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          <Button
+            variant="text"
+            sx={{ fontWeight: "bold" }}
+            onClick={() => {
+              navigate("/", { replace: true });
+            }}
+          >
             TeamFlow
-          </Typography>
+          </Button>
           {isDemoMode && (
             <Tooltip title={t("demoMode")}>
               <Chip label={t("demo")} variant="outlined" />

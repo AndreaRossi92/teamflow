@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Container,
   TextField,
   Typography,
   Alert,
@@ -33,81 +32,77 @@ export default function GenerateTicketPage() {
   };
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ py: 6 }}>
-        <Typography variant="h4" gutterBottom>
-          {t("title")}
-        </Typography>
+    <Box sx={{ py: 6 }}>
+      <Typography variant="h4" gutterBottom>
+        {t("title")}
+      </Typography>
 
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          {t("subtitle")}
-        </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+        {t("subtitle")}
+      </Typography>
 
-        {isDemoMode && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            {t("demoMode")}
-          </Alert>
-        )}
+      {isDemoMode && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          {t("demoMode")}
+        </Alert>
+      )}
 
-        <TextField
+      <TextField
+        fullWidth
+        multiline
+        rows={6}
+        label={t("label")}
+        placeholder={t("placeholder")}
+        value={customerRequest}
+        onChange={(e) => setCustomerRequest(e.target.value)}
+        sx={{ mb: 2 }}
+      />
+
+      {genrateTicketMutation.isError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {tCommon("error")}
+        </Alert>
+      )}
+
+      <Stack direction="column" spacing={2} sx={{ alignItems: "center" }}>
+        <Button
           fullWidth
-          multiline
-          rows={6}
-          label={t("label")}
-          placeholder={t("placeholder")}
-          value={customerRequest}
-          onChange={(e) => setCustomerRequest(e.target.value)}
-          sx={{ mb: 2 }}
-        />
+          variant="contained"
+          size="large"
+          disabled={!customerRequest.trim() || genrateTicketMutation.isPending}
+          loading={genrateTicketMutation.isPending}
+          onClick={() => genrateTicketMutation.mutate(customerRequest)}
+          startIcon={
+            genrateTicketMutation.isPending ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : null
+          }
+          sx={{ maxWidth: "sm" }}
+        >
+          {t("generate")}
+        </Button>
 
-        {genrateTicketMutation.isError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {tCommon("error")}
-          </Alert>
-        )}
-
-        <Stack direction="column" spacing={2} sx={{ alignItems: "center" }}>
+        {(ticket || genrateTicketMutation.isError) && (
           <Button
-            fullWidth
-            variant="contained"
+            variant="outlined"
             size="large"
-            disabled={
-              !customerRequest.trim() || genrateTicketMutation.isPending
-            }
-            loading={genrateTicketMutation.isPending}
-            onClick={() => genrateTicketMutation.mutate(customerRequest)}
-            startIcon={
-              genrateTicketMutation.isPending ? (
-                <CircularProgress size={18} color="inherit" />
-              ) : null
-            }
+            onClick={handleReset}
+            fullWidth
             sx={{ maxWidth: "sm" }}
           >
-            {t("generate")}
+            {tCommon("reset")}
           </Button>
-
-          {(ticket || genrateTicketMutation.isError) && (
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={handleReset}
-              fullWidth
-              sx={{ maxWidth: "sm" }}
-            >
-              {tCommon("reset")}
-            </Button>
-          )}
-        </Stack>
-
-        {ticket && (
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              {t("result")}
-            </Typography>
-            <TicketCard ticket={ticket} />
-          </Box>
         )}
-      </Box>
-    </Container>
+      </Stack>
+
+      {ticket && (
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            {t("result")}
+          </Typography>
+          <TicketCard ticket={ticket} />
+        </Box>
+      )}
+    </Box>
   );
 }

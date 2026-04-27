@@ -1,4 +1,4 @@
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { Container, CssBaseline, ThemeProvider } from "@mui/material";
 import useAppTheme from "./theme";
 import "./i18n";
 import Header from "./components/Header";
@@ -14,7 +14,9 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Header />
-      <AppRoutes />
+      <Container sx={{ p: 2 }}>
+        <AppRoutes />
+      </Container>
     </ThemeProvider>
   );
 }

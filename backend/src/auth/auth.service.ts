@@ -13,7 +13,7 @@ import * as crypto from 'crypto';
 export type AuthTokens = {
   accessToken: string;
   refreshToken: string;
-  user: Pick<User, 'id' | 'email' | 'role'>;
+  user: Pick<User, 'id' | 'email' | 'role' | 'fullName'>;
 };
 
 @Injectable()
@@ -38,6 +38,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      fullName: user.fullName,
     };
     return this.jwtService.sign(payload);
   }
@@ -105,7 +106,12 @@ export class AuthService {
     return {
       accessToken: this.buildAccessToken(user),
       refreshToken: rawRefreshToken,
-      user: { id: user.id, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        fullName: user.fullName,
+      },
     };
   }
 }

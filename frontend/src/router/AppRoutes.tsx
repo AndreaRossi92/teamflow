@@ -1,38 +1,38 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { CircularProgress, Box } from "@mui/material";
 import ProtectedRoute from "../components/ProtectedRoute";
+import PageLoader from "../components/PageLoader";
 
-const LoginPage = lazy(() => import("../pages/LoginPage"));
-const GenerateTicketPage = lazy(() => import("../pages/GenerateTicketPage"));
-const DashboardPage = lazy(() => import("../pages/DashboardPage"));
-
-function PageLoader() {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-      }}
-    >
-      <CircularProgress />
-    </Box>
+const lazyWithLoader = (
+  importFn: () => Promise<{ default: ComponentType }>,
+) => {
+  const LazyComponent = lazy(importFn);
+  return () => (
+    <Suspense fallback={<PageLoader />}>
+      <LazyComponent />
+    </Suspense>
   );
-}
+};
+
+const LoginPage = lazyWithLoader(() => import("../pages/LoginPage"));
+const GenerateTicketPage = lazyWithLoader(
+  () => import("../pages/GenerateTicketPage"),
+);
+const DashboardPage = lazyWithLoader(() => import("../pages/DashboardPage"));
+const UsersListPage = lazyWithLoader(
+  () => import("../pages/users/UsersListPage"),
+);
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route element={<ProtectedRoute />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="/ai" element={<GenerateTicketPage />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route index element={<DashboardPage />} />
+        <Route path="/ai" element={<GenerateTicketPage />} />
+        <Route path="/users" element={<UsersListPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

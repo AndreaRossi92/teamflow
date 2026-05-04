@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { ErrorCode } from '../../app-error.codes';
 
 @Injectable()
 export class JwtRefreshGuard implements CanActivate {
@@ -12,7 +13,8 @@ export class JwtRefreshGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<Request>();
     const token = (req.cookies as Record<string, string>)?.refresh_token;
 
-    if (!token) throw new UnauthorizedException('Refresh token missing');
+    if (!token)
+      throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_MISSING);
 
     req.user = token as unknown as Express.User;
     return true;

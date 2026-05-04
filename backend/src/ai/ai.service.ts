@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
 import { z } from 'zod';
 import { buildTicketPrompt } from './ai.prompts';
+import { ErrorCode } from '../app-error.codes';
 
 const ticketSchema = z.object({
   title: z.string().describe('Short title of the support ticket.'),
@@ -21,7 +22,7 @@ export class AiService {
   constructor(private config: ConfigService) {
     const apiKey = this.config.get<string>('GEMINI_API_KEY');
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not defined in environment variables');
+      throw new Error(ErrorCode.GEMINI_API_KEY_NOT_DEFINED);
     }
     this.ai = new GoogleGenAI({ apiKey });
   }
@@ -42,7 +43,7 @@ export class AiService {
     });
 
     if (!response.text) {
-      throw new Error('Empty response from Gemini API');
+      throw new Error(ErrorCode.GEMINI_EMPTY_RESPONSE);
     }
 
     return ticketSchema.parse(JSON.parse(response.text));

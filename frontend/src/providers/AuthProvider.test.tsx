@@ -42,7 +42,7 @@ function getInterceptorErrorHandler() {
     rejected: (e: unknown) => unknown;
   }>;
   const last = handlers.at(-1);
-  if (!last) throw new Error("Nessun interceptor registrato");
+  if (!last) throw new Error("No registered interceptor");
   return last.rejected;
 }
 
@@ -53,7 +53,7 @@ describe("AuthProvider — interceptor", () => {
       id: "1",
       email: "u@test.com",
       role: "user",
-      fullName: "User"
+      fullName: "User",
     });
   });
 
@@ -101,7 +101,7 @@ describe("AuthProvider — interceptor", () => {
       id: "1",
       email: "u@test.com",
       role: "user",
-      fullName: "User"
+      fullName: "User",
     });
 
     const retrySpy = vi
@@ -205,7 +205,12 @@ describe("AuthProvider — inizializzazione", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("should set user on successful initial refresh", async () => {
-    const mockUser = { id: "1", email: "u@test.com", role: "user", fullName: "User" };
+    const mockUser = {
+      id: "1",
+      email: "u@test.com",
+      role: "user",
+      fullName: "User",
+    };
     mockRefreshToken.mockResolvedValue(mockUser);
     await mountProvider();
     expect(mockRefreshToken).toHaveBeenCalledTimes(1);

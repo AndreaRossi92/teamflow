@@ -12,7 +12,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { Add, Edit, SettingsBackupRestore } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import UsersList from "../../components/users/UsersList";
 import useUsersListQuery from "../../hooks/users/useUsersListQuery";
@@ -20,9 +20,16 @@ import PageHeader from "../../components/PageHeader";
 import { ROLES, type Role } from "../../types/user";
 import SearchIcon from "@mui/icons-material/Search";
 import { useDebounce } from "use-debounce";
+import DeleteIconButton from "../../components/DeleteIconButton";
+import useDeactivateUserMutation from "../../hooks/users/useDeactivateUserMutation";
+import { useNavigate } from "react-router-dom";
+import useReactivateUserMutation from "../../hooks/users/useReactivateUserMutation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UserListPage() {
   const { t } = useTranslation("user");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [fullName, setFullName] = useState("");
   const [debouncedFullName] = useDebounce(fullName, 400);
@@ -38,6 +45,8 @@ export default function UserListPage() {
       isActive:
         isActive === "active" ? true : isActive === "inactive" ? false : null,
     });
+  const deactivateUserMutation = useDeactivateUserMutation();
+  const reactivateUserMutation = useReactivateUserMutation();
 
   const users = data?.pages.flat() ?? [];
 
@@ -181,7 +190,50 @@ export default function UserListPage() {
 
       {isFetching && !isFetchingNextPage && <LinearProgress />}
 
-      <UsersList users={users} />
+      <UsersList
+        users={users}
+        actions={(user) => (
+          <Stack direction="row" spacing={1}>
+            <IconButton
+              size="small"
+              title={t("edit")}
+              onClick={() => {
+                navigate(`/user/${user.id}/edit`);
+              }}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+            {user.isActive && (
+              <DeleteIconButton
+                dialogTitle={user.fullName}
+                dialogText={t("deactivateConfirm")}
+                onDelete={() =>
+                  deactivateUserMutation
+                    .mutateAsync(user.id)
+                    .then(() =>
+                      queryClient.invalidateQueries({ queryKey: ["users"] }),
+                    )
+                }
+              />
+            )}
+            {!user.isActive && (
+              <IconButton
+                size="small"
+                title={t("restore")}
+                onClick={() => {
+                  reactivateUserMutation
+                    .mutateAsync(user.id)
+                    .then(() =>
+                      queryClient.invalidateQueries({ queryKey: ["users"] }),
+                    );
+                }}
+              >
+                <SettingsBackupRestore fontSize="small" />
+              </IconButton>
+            )}
+          </Stack>
+        )}
+      />
 
       <div ref={sentinelRef} style={{ height: 1 }} />
 

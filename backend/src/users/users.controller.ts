@@ -20,13 +20,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @Crud({
   model: { type: User },
   routes: {
-    only: [
-      'createOneBase',
-      'getManyBase',
-      'getOneBase',
-      'updateOneBase',
-      'deleteOneBase',
-    ],
+    only: ['createOneBase', 'getManyBase', 'getOneBase', 'updateOneBase'],
   },
   dto: {
     create: CreateUserDto,
@@ -55,12 +49,6 @@ export class UsersController implements CrudController<User> {
   @ApiBody({ type: CreateUserDto })
   create(@Body() dto: CreateUserDto) {
     return this.service.createUser(dto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Soft-delete: sets isActive = false' })
-  async softDelete(@Param('id') id: string) {
-    return this.service.deactivateUser(id);
   }
 
   @Patch(':id/deactivate')

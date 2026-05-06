@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 type UsersListProps = { users: User[] };
 
 export default function UsersList({ users }: UsersListProps) {
-  const { t } = useTranslation("users");
+  const { t } = useTranslation("user");
   const navigate = useNavigate();
 
   if (users.length === 0)

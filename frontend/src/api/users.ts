@@ -1,4 +1,4 @@
-import { type User } from "../types/user";
+import { type User, type UserFilters } from "../types/user";
 import { api } from "./axios.instance";
 
 const PAGE_SIZE = 20;
@@ -6,13 +6,24 @@ const PAGE_SIZE = 20;
 export async function usersList({
   page = 1,
   limit = PAGE_SIZE,
+  filters,
 }: {
   page?: number;
   limit?: number;
+  filters?: UserFilters;
 } = {}): Promise<User[]> {
-  const response = await api.get("/users", {
-    params: { page, limit },
-  });
+  const params = new URLSearchParams();
+
+  if (filters?.role) params.append("filter", `role||$eq||${filters.role}`);
+  if (filters?.fullName)
+    params.append("filter", `fullName||$contL||${filters.fullName}`);
+  if (typeof filters?.isActive === "boolean")
+    params.append("filter", `isActive||$eq||${filters.isActive}`);
+
+  params.set("page", String(page));
+  params.set("limit", String(limit));
+
+  const response = await api.get(`/users?${params.toString()}`);
 
   return response.data.data;
 }

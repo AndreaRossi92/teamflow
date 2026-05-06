@@ -1,15 +1,43 @@
-import { useEffect, useRef } from "react";
-import { IconButton, LinearProgress } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import {
+  Box,
+  Divider,
+  Icon,
+  IconButton,
+  InputAdornment,
+  LinearProgress,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import UsersList from "../../components/users/UsersList";
 import useUsersListQuery from "../../hooks/users/useUsersListQuery";
 import PageHeader from "../../components/PageHeader";
+import { ROLES, type Role } from "../../types/user";
+import SearchIcon from "@mui/icons-material/Search";
+import { useDebounce } from "use-debounce";
 
 export default function UserListPage() {
   const { t } = useTranslation("user");
+
+  const [fullName, setFullName] = useState("");
+  const [debouncedFullName] = useDebounce(fullName, 400);
+  const [role, setRole] = useState<Role | null>(null);
+  const [isActive, setIsActive] = useState<"active" | "inactive" | null>(
+    "active",
+  );
+
   const { data, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useUsersListQuery();
+    useUsersListQuery({
+      role,
+      fullName: debouncedFullName,
+      isActive:
+        isActive === "active" ? true : isActive === "inactive" ? false : null,
+    });
 
   const users = data?.pages.flat() ?? [];
 
@@ -43,6 +71,113 @@ export default function UserListPage() {
           </IconButton>
         }
       />
+
+      <TextField
+        fullWidth
+        size="small"
+        placeholder={t("searchByName")}
+        label={t("name")}
+        value={fullName}
+        onChange={(e) => setFullName(e.target.value)}
+        sx={{ mb: 2 }}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Icon>
+                  <SearchIcon />
+                </Icon>
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{ mb: 2 }}
+        divider={<Divider orientation="vertical" flexItem />}
+      >
+        <Box>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mb: 0.5, display: "block" }}
+          >
+            {t("role")}
+          </Typography>
+          <ToggleButtonGroup
+            value={role}
+            exclusive
+            onChange={(_, v) => setRole(v === "ALL" ? null : v)}
+            size="small"
+          >
+            <ToggleButton value="ALL">{t("all")}</ToggleButton>
+            {ROLES.map((role) => (
+              <ToggleButton
+                key={role}
+                value={role}
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: `${role}.main`,
+                    color: `${role}.contrastText`,
+                    "&:hover": {
+                      backgroundColor: `${role}.dark`,
+                    },
+                  },
+                }}
+              >
+                {role}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </Box>
+        <Box>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mb: 0.5, display: "block" }}
+          >
+            {t("status")}
+          </Typography>
+          <ToggleButtonGroup
+            value={isActive}
+            exclusive
+            onChange={(_, v) => setIsActive(v === "ALL" ? null : v)}
+            size="small"
+          >
+            <ToggleButton value="ALL">{t("all")}</ToggleButton>
+            <ToggleButton
+              value="active"
+              sx={{
+                "&.Mui-selected": {
+                  backgroundColor: "success.main",
+                  color: "success.contrastText",
+                  "&:hover": {
+                    backgroundColor: "success.dark",
+                  },
+                },
+              }}
+            >
+              {t("active")}
+            </ToggleButton>
+            <ToggleButton
+              value="inactive"
+              sx={{
+                "&.Mui-selected": {
+                  backgroundColor: "error.main",
+                  color: "error.contrastText",
+                  "&:hover": {
+                    backgroundColor: "error.dark",
+                  },
+                },
+              }}
+            >
+              {t("inactive")}
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+      </Stack>
 
       {isFetching && !isFetchingNextPage && <LinearProgress />}
 

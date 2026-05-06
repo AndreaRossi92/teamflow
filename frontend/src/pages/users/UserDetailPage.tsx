@@ -1,16 +1,24 @@
 import { useTranslation } from "react-i18next";
 import useUserDetailQuery from "../../hooks/users/useUserDetailQuery";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import UserDetail from "../../components/users/UserDetail";
 import PageLoader from "../../components/PageLoader";
 import { IconButton, Stack } from "@mui/material";
-import { Delete, Edit } from "@mui/icons-material";
+import { Edit, SettingsBackupRestore } from "@mui/icons-material";
+import DeleteIconButton from "../../components/DeleteIconButton";
+import useDeactivateUserMutation from "../../hooks/users/useDeactivateUserMutation";
+import { useQueryClient } from "@tanstack/react-query";
+import useReactivateUserMutation from "../../hooks/users/useReactivateUserMutation";
 
 export default function UserDetailPage() {
   const { t } = useTranslation("user");
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { id } = useParams();
   const user = useUserDetailQuery(id ?? "");
+  const deactivateUserMutation = useDeactivateUserMutation();
+  const reactivateUserMutation = useReactivateUserMutation();
 
   return (
     <>
@@ -18,14 +26,47 @@ export default function UserDetailPage() {
         title={t("user")}
         subtitle={t("detail")}
         actions={
-          <Stack direction="row" spacing={1}>
-            <IconButton size="small" title={t("edit")}>
-              <Edit fontSize="small" />
-            </IconButton>
-            <IconButton size="small" title={t("delete")}>
-              <Delete fontSize="small" />
-            </IconButton>
-          </Stack>
+          user.isSuccess && (
+            <Stack direction="row" spacing={1}>
+              <IconButton
+                size="small"
+                title={t("edit")}
+                onClick={() => {
+                  navigate(`/user/${id}/edit`);
+                }}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+              {user.data.isActive && (
+                <DeleteIconButton
+                  dialogTitle={user.data.fullName}
+                  dialogText={t("deactivateConfirm")}
+                  onDelete={() =>
+                    deactivateUserMutation
+                      .mutateAsync(user.data.id)
+                      .then(() =>
+                        queryClient.invalidateQueries({ queryKey: ["users"] }),
+                      )
+                  }
+                />
+              )}
+              {!user.data.isActive && (
+                <IconButton
+                  size="small"
+                  title={t("restore")}
+                  onClick={() => {
+                    reactivateUserMutation
+                      .mutateAsync(user.data.id)
+                      .then(() =>
+                        queryClient.invalidateQueries({ queryKey: ["users"] }),
+                      );
+                  }}
+                >
+                  <SettingsBackupRestore fontSize="small" />
+                </IconButton>
+              )}
+            </Stack>
+          )
         }
       />
       {user.isFetching && <PageLoader />}

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Box,
   Divider,
   Icon,
   IconButton,
   InputAdornment,
   LinearProgress,
+  Snackbar,
   Stack,
   TextField,
   ToggleButton,
@@ -37,6 +39,10 @@ export default function UserListPage() {
   const [isActive, setIsActive] = useState<"active" | "inactive" | null>(
     "active",
   );
+  const [openDeactivatedUserSnackbar, setOpenDeactivatedUserSnackbar] =
+    useState(false);
+  const [openReactivatedUserSnackbar, setOpenReactivatedUserSnackbar] =
+    useState(false);
 
   const { data, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useUsersListQuery({
@@ -213,6 +219,7 @@ export default function UserListPage() {
                     .then(() =>
                       queryClient.invalidateQueries({ queryKey: ["users"] }),
                     )
+                    .then(() => setOpenDeactivatedUserSnackbar(true))
                 }
               />
             )}
@@ -225,7 +232,8 @@ export default function UserListPage() {
                     .mutateAsync(user.id)
                     .then(() =>
                       queryClient.invalidateQueries({ queryKey: ["users"] }),
-                    );
+                    )
+                    .then(() => setOpenReactivatedUserSnackbar(true));
                 }}
               >
                 <SettingsBackupRestore fontSize="small" />
@@ -238,6 +246,43 @@ export default function UserListPage() {
       <div ref={sentinelRef} style={{ height: 1 }} />
 
       {isFetchingNextPage && <LinearProgress />}
+
+      <Snackbar
+        open={openDeactivatedUserSnackbar}
+        autoHideDuration={5000}
+        onClose={() => {
+          setOpenDeactivatedUserSnackbar(false);
+        }}
+      >
+        <Alert
+          onClose={() => {
+            setOpenDeactivatedUserSnackbar(false);
+          }}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {t("deactivated")}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openReactivatedUserSnackbar}
+        autoHideDuration={5000}
+        onClose={() => {
+          setOpenReactivatedUserSnackbar(false);
+        }}
+      >
+        <Alert
+          onClose={() => {
+            setOpenReactivatedUserSnackbar(false);
+          }}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {t("reactivated")}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

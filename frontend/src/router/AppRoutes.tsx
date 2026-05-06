@@ -22,8 +22,12 @@ const DashboardPage = lazyWithLoader(() => import("../pages/DashboardPage"));
 const UsersListPage = lazyWithLoader(
   () => import("../pages/users/UsersListPage"),
 );
-const UsersDetailPage = lazyWithLoader(
+const UserDetailPage = lazyWithLoader(
   () => import("../pages/users/UserDetailPage"),
+);
+
+const UserEditPage = lazyWithLoader(
+  () => import("../pages/users/UserEditPage"),
 );
 
 export default function AppRoutes() {
@@ -34,7 +38,8 @@ export default function AppRoutes() {
         <Route index element={<DashboardPage />} />
         <Route path="/ai" element={<GenerateTicketPage />} />
         <Route path="/users" element={<UsersListPage />} />
-        <Route path="/users/:id" element={<UsersDetailPage />} />
+        <Route path="/user/:id" element={<UserDetailPage />} />
+        <Route path="/user/:id/edit" element={<UserEditPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

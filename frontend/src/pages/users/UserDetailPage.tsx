@@ -8,7 +8,7 @@ import { IconButton, Stack } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 
 export default function UserDetailPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("user");
   const { id } = useParams();
   const user = useUserDetailQuery(id ?? "");
 

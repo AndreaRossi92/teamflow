@@ -16,7 +16,7 @@ import ActiveDot from "../ActiveDot";
 type UserDetailProps = { user: User };
 
 export default function UserDetail({ user }: UserDetailProps) {
-  const { i18n, t } = useTranslation();
+  const { i18n, t } = useTranslation("user");
 
   return (
     <Box

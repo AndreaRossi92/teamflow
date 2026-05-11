@@ -5,9 +5,17 @@ import type { User } from "../../types/user";
 import { createUser } from "../../api/users";
 
 export default function useUserCreateMutation(
-  options?: UseMutationOptions<User, AxiosError, UserCreateFormValues>,
+  options?: UseMutationOptions<
+    User,
+    AxiosError,
+    Omit<UserCreateFormValues, "confirmPassword">
+  >,
 ) {
-  return useMutation<User, AxiosError, UserCreateFormValues>({
+  return useMutation<
+    User,
+    AxiosError,
+    Omit<UserCreateFormValues, "confirmPassword">
+  >({
     ...options,
     mutationFn: (data) => createUser(data),
   });

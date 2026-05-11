@@ -35,8 +35,8 @@ export default function UserCreatePage() {
     },
   });
 
-  const handleSubmit = userCreateForm.handleSubmit((data) =>
-    userCreateMutation.mutate(data),
+  const handleSubmit = userCreateForm.handleSubmit(
+    ({ confirmPassword, ...data }) => userCreateMutation.mutate(data),
   );
 
   return (

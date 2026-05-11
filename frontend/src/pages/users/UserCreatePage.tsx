@@ -11,6 +11,7 @@ import { UserCreateForm } from "../../forms/users/UserCreateForm";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import PageHeader from "../../components/PageHeader";
+import { omit } from "lodash";
 
 export default function UserCreatePage() {
   const { t } = useTranslation("user");
@@ -35,8 +36,8 @@ export default function UserCreatePage() {
     },
   });
 
-  const handleSubmit = userCreateForm.handleSubmit(
-    ({ confirmPassword, ...data }) => userCreateMutation.mutate(data),
+  const handleSubmit = userCreateForm.handleSubmit((data) =>
+    userCreateMutation.mutate(omit(data, "confirmPassword")),
   );
 
   return (

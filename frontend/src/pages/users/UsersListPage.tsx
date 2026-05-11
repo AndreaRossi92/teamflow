@@ -28,6 +28,8 @@ import { useNavigate } from "react-router-dom";
 import useReactivateUserMutation from "../../hooks/users/useReactivateUserMutation";
 import { useQueryClient } from "@tanstack/react-query";
 
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
+
 export default function UserListPage() {
   const { t } = useTranslation("user");
   const navigate = useNavigate();
@@ -90,6 +92,12 @@ export default function UserListPage() {
           </IconButton>
         }
       />
+
+      {isDemoMode && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          {t("demoList")}
+        </Alert>
+      )}
 
       <TextField
         fullWidth

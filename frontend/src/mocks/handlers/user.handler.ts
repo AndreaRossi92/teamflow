@@ -29,6 +29,17 @@ export const userHandlers = [
     return HttpResponse.json(user);
   }),
 
+  http.post<never, Partial<User>>("/api/users", async ({ request }) => {
+    await delay(500);
+    const body = await request.json();
+    return HttpResponse.json({
+      ...body,
+      id: "mock-uuid-dev",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }),
+
   http.patch<{ id: string }, Partial<User>>(
     "/api/users/:id",
     async ({ params, request }) => {

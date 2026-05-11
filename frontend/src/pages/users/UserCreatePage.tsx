@@ -31,7 +31,7 @@ export default function UserCreatePage() {
   const userCreateMutation = useUserCreateMutation({
     onSuccess: (user) => {
       queryClient.setQueryData(["users", user.id], user);
-      navigate(`/user/${user.id}`);
+      navigate(`/user/${user.id}`, { replace: true });
     },
   });
 

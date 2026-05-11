@@ -12,3 +12,11 @@ export const userCreateFormSchema = z
   .refine((v) => v.password === v.confirmPassword);
 
 export type UserCreateFormValues = z.infer<typeof userCreateFormSchema>;
+
+export const userEditFormSchema = z.object({
+  fullName: z.string().min(1),
+  email: z.email(),
+  role: z.enum(ROLES),
+});
+
+export type UserEditFormValues = z.infer<typeof userEditFormSchema>;

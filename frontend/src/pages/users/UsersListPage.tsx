@@ -81,7 +81,11 @@ export default function UserListPage() {
         title={t("users")}
         subtitle={t("list")}
         actions={
-          <IconButton>
+          <IconButton
+            onClick={() => {
+              navigate("/user/create");
+            }}
+          >
             <Add />
           </IconButton>
         }

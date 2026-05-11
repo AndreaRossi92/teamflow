@@ -78,9 +78,7 @@ export default function UserDetailPage() {
       />
       {user.isFetching && <PageLoader />}
       {!user.isFetching && user.isError && (
-        <Alert severity="error">
-          {t(user.error?.message ?? "somethingWentWrong")}
-        </Alert>
+        <Alert severity="error">{t("somethingWentWrong")}</Alert>
       )}
       {!user.isFetching && !user.isError && !!user.data && (
         <UserDetail user={user.data} />

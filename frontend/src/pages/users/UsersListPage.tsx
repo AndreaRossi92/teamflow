@@ -53,7 +53,6 @@ export default function UserListPage() {
     hasNextPage,
     fetchNextPage,
     isError,
-    error,
   } = useUsersListQuery({
     role,
     fullName: debouncedFullName,
@@ -220,9 +219,7 @@ export default function UserListPage() {
       )}
 
       {!isFetching && isError && (
-        <Alert severity="error">
-          {t(error.message ?? "somethingWentWrong")}
-        </Alert>
+        <Alert severity="error">{t("somethingWentWrong")}</Alert>
       )}
 
       {!isFetching && !isError && users.length !== 0 && (

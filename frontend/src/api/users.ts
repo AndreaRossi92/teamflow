@@ -35,14 +35,14 @@ export async function userById(id: string): Promise<User> {
   return response.data;
 }
 
-export async function deactivateUserById(id: string): Promise<void> {
-  const response = await api.patch<void>(`/users/${id}/deactivate`);
+export async function deactivateUserById(id: string): Promise<User> {
+  const response = await api.patch<User>(`/users/${id}/deactivate`);
 
   return response.data;
 }
 
-export async function reactivateUserById(id: string): Promise<void> {
-  const response = await api.patch<void>(`/users/${id}/reactivate`);
+export async function reactivateUserById(id: string): Promise<User> {
+  const response = await api.patch<User>(`/users/${id}/reactivate`);
 
   return response.data;
 }

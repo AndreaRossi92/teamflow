@@ -46,13 +46,20 @@ export default function UserListPage() {
   const [openReactivatedUserSnackbar, setOpenReactivatedUserSnackbar] =
     useState(false);
 
-  const { data, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useUsersListQuery({
-      role,
-      fullName: debouncedFullName,
-      isActive:
-        isActive === "active" ? true : isActive === "inactive" ? false : null,
-    });
+  const {
+    data,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isError,
+    error,
+  } = useUsersListQuery({
+    role,
+    fullName: debouncedFullName,
+    isActive:
+      isActive === "active" ? true : isActive === "inactive" ? false : null,
+  });
   const deactivateUserMutation = useDeactivateUserMutation();
   const reactivateUserMutation = useReactivateUserMutation();
 
@@ -208,52 +215,64 @@ export default function UserListPage() {
 
       {isFetching && !isFetchingNextPage && <LinearProgress />}
 
-      <UsersList
-        users={users}
-        actions={(user) => (
-          <Stack direction="row" spacing={1}>
-            <IconButton
-              size="small"
-              title={t("edit")}
-              onClick={() => {
-                navigate(`/user/${user.id}/edit`);
-              }}
-            >
-              <Edit fontSize="small" />
-            </IconButton>
-            {user.isActive && (
-              <DeleteIconButton
-                dialogTitle={user.fullName}
-                dialogText={t("deactivateConfirm")}
-                onDelete={() =>
-                  deactivateUserMutation
-                    .mutateAsync(user.id)
-                    .then(() =>
-                      queryClient.invalidateQueries({ queryKey: ["users"] }),
-                    )
-                    .then(() => setOpenDeactivatedUserSnackbar(true))
-                }
-              />
-            )}
-            {!user.isActive && (
+      {!isFetching && !isError && users.length === 0 && (
+        <Alert severity="info">{t("noUsersFound")}</Alert>
+      )}
+
+      {!isFetching && isError && (
+        <Alert severity="error">
+          {t(error.message ?? "somethingWentWrong")}
+        </Alert>
+      )}
+
+      {!isFetching && !isError && users.length !== 0 && (
+        <UsersList
+          users={users}
+          actions={(user) => (
+            <Stack direction="row" spacing={1}>
               <IconButton
                 size="small"
-                title={t("restore")}
+                title={t("edit")}
                 onClick={() => {
-                  reactivateUserMutation
-                    .mutateAsync(user.id)
-                    .then(() =>
-                      queryClient.invalidateQueries({ queryKey: ["users"] }),
-                    )
-                    .then(() => setOpenReactivatedUserSnackbar(true));
+                  navigate(`/user/${user.id}/edit`);
                 }}
               >
-                <SettingsBackupRestore fontSize="small" />
+                <Edit fontSize="small" />
               </IconButton>
-            )}
-          </Stack>
-        )}
-      />
+              {user.isActive && (
+                <DeleteIconButton
+                  dialogTitle={user.fullName}
+                  dialogText={t("deactivateConfirm")}
+                  onDelete={() =>
+                    deactivateUserMutation
+                      .mutateAsync(user.id)
+                      .then(() =>
+                        queryClient.invalidateQueries({ queryKey: ["users"] }),
+                      )
+                      .then(() => setOpenDeactivatedUserSnackbar(true))
+                  }
+                />
+              )}
+              {!user.isActive && (
+                <IconButton
+                  size="small"
+                  title={t("restore")}
+                  onClick={() => {
+                    reactivateUserMutation
+                      .mutateAsync(user.id)
+                      .then(() =>
+                        queryClient.invalidateQueries({ queryKey: ["users"] }),
+                      )
+                      .then(() => setOpenReactivatedUserSnackbar(true));
+                  }}
+                >
+                  <SettingsBackupRestore fontSize="small" />
+                </IconButton>
+              )}
+            </Stack>
+          )}
+        />
+      )}
 
       <div ref={sentinelRef} style={{ height: 1 }} />
 

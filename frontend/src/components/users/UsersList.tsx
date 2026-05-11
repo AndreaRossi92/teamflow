@@ -9,7 +9,6 @@ import {
   Typography,
 } from "@mui/material";
 import type { User } from "../../types/user";
-import { useTranslation } from "react-i18next";
 import ActiveDot from "../ActiveDot";
 import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
@@ -17,11 +16,7 @@ import type { ReactNode } from "react";
 type UsersListProps = { users: User[]; actions?: (user: User) => ReactNode };
 
 export default function UsersList({ users, actions }: UsersListProps) {
-  const { t } = useTranslation("user");
   const navigate = useNavigate();
-
-  if (users.length === 0)
-    return <Typography variant="body2">{t("noUsersFound")}</Typography>;
 
   return (
     <List disablePadding dense>

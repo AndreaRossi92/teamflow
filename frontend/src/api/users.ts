@@ -1,5 +1,8 @@
 import { type User, type UserFilters } from "../types/user";
-import type { UserCreateFormValues } from "../types/userForm";
+import type {
+  UserCreateFormValues,
+  UserEditFormValues,
+} from "../types/userForm";
 import { api } from "./axios.instance";
 
 const PAGE_SIZE = 20;
@@ -51,6 +54,15 @@ export async function createUser(
   data: Omit<UserCreateFormValues, "confirmPassword">,
 ): Promise<User> {
   const response = await api.post<User>("/users", data);
+
+  return response.data;
+}
+
+export async function editUser(
+  id: string,
+  data: UserEditFormValues,
+): Promise<User> {
+  const response = await api.patch<User>(`/users/${id}`, data);
 
   return response.data;
 }

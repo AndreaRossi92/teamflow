@@ -5,8 +5,9 @@ export const mockDevUser: User = {
   email: "dev@teamflow.com",
   role: "dev",
   fullName: "Dev User",
-  createdAt: new Date("2024-01-01T00:00:00.000Z"),
-  updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+  isActive: true,
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
 export const mockManagerUser: User = {
@@ -14,8 +15,9 @@ export const mockManagerUser: User = {
   email: "manager@teamflow.com",
   role: "manager",
   fullName: "Manager User",
-  createdAt: new Date("2024-01-01T00:00:00.000Z"),
-  updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+  isActive: true,
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
 export const mockAdminUser: User = {
@@ -23,8 +25,9 @@ export const mockAdminUser: User = {
   email: "admin@teamflow.com",
   role: "admin",
   fullName: "Admin User",
-  createdAt: new Date("2024-01-01T00:00:00.000Z"),
-  updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+  isActive: true,
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
 export const mockUsers: User[] = [mockAdminUser, mockManagerUser, mockDevUser];

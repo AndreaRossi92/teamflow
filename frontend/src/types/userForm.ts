@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { ROLES } from "./user";
+import i18n from "../i18n";
 
 export const userCreateFormSchema = z
   .object({
@@ -9,7 +10,10 @@ export const userCreateFormSchema = z
     confirmPassword: z.string(),
     role: z.enum(ROLES),
   })
-  .refine((v) => v.password === v.confirmPassword);
+  .refine((v) => v.password === v.confirmPassword, {
+    path: ["confirmPassword"],
+    error: i18n.t("passwordsDontMatch", { ns: "errors", lng: i18n.language }),
+  });
 
 export type UserCreateFormValues = z.infer<typeof userCreateFormSchema>;
 

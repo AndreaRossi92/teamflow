@@ -18,9 +18,7 @@ export default function BackButton({
   return (
     <IconButton
       title={t("back")}
-      onClick={() => {
-        !!path ? navigate(path, { replace }) : navigate(-1);
-      }}
+      onClick={() => (path ? navigate(path, { replace }) : navigate(-1))}
       {...props}
     >
       <ArrowBack />

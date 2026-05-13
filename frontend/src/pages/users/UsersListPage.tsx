@@ -98,6 +98,7 @@ export default function UserListPage() {
             <Add />
           </IconButton>
         }
+        BackButtonProps={{ path: "/", replace: true }}
       />
 
       {isDemoMode && (

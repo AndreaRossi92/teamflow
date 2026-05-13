@@ -44,7 +44,7 @@ export default function Header() {
   return (
     <AppBar position="static" color="default" elevation={1}>
       <Toolbar sx={{ justifyContent: "space-between" }}>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <Button
             variant="text"
             sx={{ fontWeight: "bold" }}

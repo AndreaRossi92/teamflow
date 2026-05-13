@@ -10,12 +10,6 @@ const DEFAULT_SCHEMA = z.object({
   field: z.string().min(3, "At least 3 characters required"),
 });
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
 function Wrapper({
   schema = DEFAULT_SCHEMA,
   defaultValues = { field: "" },

@@ -9,11 +9,12 @@ import { JwtPayload } from './strategies/jwt.strategy';
 import { User } from '../users/user.entity';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { ErrorCode } from '../app-error.codes';
 
 export type AuthTokens = {
   accessToken: string;
   refreshToken: string;
-  user: Pick<User, 'id' | 'email' | 'role'>;
+  user: Pick<User, 'id' | 'email' | 'role' | 'fullName'>;
 };
 
 @Injectable()
@@ -38,6 +39,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      fullName: user.fullName,
     };
     return this.jwtService.sign(payload);
   }
@@ -46,12 +48,12 @@ export class AuthService {
     const user = await this.usersService.findByEmail(dto.email);
 
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
     const passwordMatch = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordMatch) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
     return this.issueTokens(user);
@@ -67,11 +69,13 @@ export class AuthService {
 
     // Token not found, expired or revoked
     if (!stored || stored.expiresAt < new Date()) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      throw new UnauthorizedException(
+        ErrorCode.INVALID_OR_EXPIRED_REFRESH_TOKEN,
+      );
     }
 
     if (!stored.user.isActive) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
     // Rotation: revoke old token, emit a new one
@@ -105,7 +109,12 @@ export class AuthService {
     return {
       accessToken: this.buildAccessToken(user),
       refreshToken: rawRefreshToken,
-      user: { id: user.id, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        fullName: user.fullName,
+      },
     };
   }
 }

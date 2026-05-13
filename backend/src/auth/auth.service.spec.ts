@@ -1,17 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
-import * as bcrypt from 'bcrypt';
 import { Role, User } from '../users/user.entity';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { RefreshToken } from './refresh-token.entity';
+import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
 }));
+
+// ─── Fixtures ────────────────────────────────────────────────────────────────
 
 const mockUser: User = {
   id: 'uuid-123',
@@ -34,6 +36,8 @@ const mockStoredToken: RefreshToken = {
   createdAt: new Date(),
 };
 
+// ─── Mocks ───────────────────────────────────────────────────────────────────
+
 const mockUsersService = {
   findByEmail: jest.fn(),
 };
@@ -49,6 +53,8 @@ const mockRefreshTokenRepo = {
   update: jest.fn(),
 };
 
+// ─── Module factory ──────────────────────────────────────────────────────────
+
 async function buildModule(): Promise<TestingModule> {
   return Test.createTestingModule({
     providers: [
@@ -63,20 +69,31 @@ async function buildModule(): Promise<TestingModule> {
   }).compile();
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 const rawLogoutToken = 'some-raw-token';
 const expectedLogoutHash = crypto
   .createHash('sha256')
   .update(rawLogoutToken)
   .digest('hex');
 
+// ─── Tests ───────────────────────────────────────────────────────────────────
+
 describe('AuthService', () => {
   let service: AuthService;
+  let module: TestingModule;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    const module = await buildModule();
+    module = await buildModule();
     service = module.get<AuthService>(AuthService);
   });
+
+  afterEach(async () => {
+    await module.close();
+  });
+
+  // ── login ──────────────────────────────────────────────────────────────────
 
   describe('login', () => {
     it('should return accessToken and user on valid credentials', async () => {
@@ -84,7 +101,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.login({
-        email: 'admin@teamflow.com',
+        email: mockUser.email,
         password: 'admin123',
       });
 
@@ -93,7 +110,27 @@ describe('AuthService', () => {
         id: mockUser.id,
         email: mockUser.email,
         role: mockUser.role,
+        fullName: mockUser.fullName,
       });
+    });
+
+    it('should also return a refreshToken on valid credentials', async () => {
+      mockUsersService.findByEmail.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      mockRefreshTokenRepo.create.mockImplementation(
+        (data) => data as RefreshToken,
+      );
+      mockRefreshTokenRepo.save.mockImplementation((data) =>
+        Promise.resolve(data as RefreshToken),
+      );
+
+      const result = await service.login({
+        email: mockUser.email,
+        password: 'admin123',
+      });
+
+      expect(result.refreshToken).toBeDefined();
+      expect(typeof result.refreshToken).toBe('string');
     });
 
     it('should throw UnauthorizedException on invalid password', async () => {
@@ -101,10 +138,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
-        service.login({
-          email: 'admin@teamflow.com',
-          password: 'wrongpassword',
-        }),
+        service.login({ email: mockUser.email, password: 'wrong' }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -112,10 +146,7 @@ describe('AuthService', () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
 
       await expect(
-        service.login({
-          email: 'notexisting@teamflow.com',
-          password: 'admin123',
-        }),
+        service.login({ email: 'ghost@teamflow.com', password: 'admin123' }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -126,25 +157,20 @@ describe('AuthService', () => {
       });
 
       await expect(
-        service.login({
-          email: 'admin@teamflow.com',
-          password: 'admin123',
-        }),
+        service.login({ email: mockUser.email, password: 'admin123' }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it('should not reveal whether the email exists or not', async () => {
+    it('should return the same error message whether email is missing or password is wrong', async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
-
       const errorNotFound = await service
-        .login({ email: 'notexisting@teamflow.com', password: 'admin123' })
+        .login({ email: 'ghost@teamflow.com', password: 'admin123' })
         .catch((e: UnauthorizedException) => e);
 
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
-
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
       const errorWrongPassword = await service
-        .login({ email: 'admin@teamflow.com', password: 'wrong' })
+        .login({ email: mockUser.email, password: 'wrong' })
         .catch((e: UnauthorizedException) => e);
 
       expect((errorNotFound as UnauthorizedException).message).toBe(
@@ -153,15 +179,20 @@ describe('AuthService', () => {
     });
   });
 
+  // ── refresh ────────────────────────────────────────────────────────────────
+
   describe('refresh', () => {
     const rawToken = 'valid-raw-token';
 
-    it('should issue new tokens on valid refresh token', async () => {
-      mockRefreshTokenRepo.findOne.mockResolvedValue(mockStoredToken);
-      mockRefreshTokenRepo.save.mockResolvedValue(mockStoredToken);
+    beforeEach(() => {
       mockRefreshTokenRepo.create.mockImplementation(
         (data) => data as RefreshToken,
       );
+      mockRefreshTokenRepo.save.mockResolvedValue(mockStoredToken);
+    });
+
+    it('should issue new tokens on a valid refresh token', async () => {
+      mockRefreshTokenRepo.findOne.mockResolvedValue(mockStoredToken);
 
       const result = await service.refresh(rawToken);
 
@@ -170,15 +201,12 @@ describe('AuthService', () => {
         id: mockUser.id,
         email: mockUser.email,
         role: mockUser.role,
+        fullName: mockUser.fullName,
       });
     });
 
-    it('should revoke the old token on refresh (rotation)', async () => {
+    it('should revoke the old token before issuing a new one (rotation)', async () => {
       mockRefreshTokenRepo.findOne.mockResolvedValue({ ...mockStoredToken });
-      mockRefreshTokenRepo.save.mockResolvedValue({});
-      mockRefreshTokenRepo.create.mockImplementation(
-        (data) => data as RefreshToken,
-      );
 
       await service.refresh(rawToken);
 
@@ -206,7 +234,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('should throw when user is not active', async () => {
+    it('should throw when the associated user is not active', async () => {
       mockRefreshTokenRepo.findOne.mockResolvedValue({
         ...mockStoredToken,
         user: { ...mockUser, isActive: false },
@@ -218,11 +246,13 @@ describe('AuthService', () => {
     });
   });
 
+  // ── logout ─────────────────────────────────────────────────────────────────
+
   describe('logout', () => {
-    it('should revoke the refresh token', async () => {
+    it('should revoke the refresh token by its hash', async () => {
       mockRefreshTokenRepo.update.mockResolvedValue({});
 
-      await service.logout('some-raw-token');
+      await service.logout(rawLogoutToken);
 
       expect(mockRefreshTokenRepo.update).toHaveBeenCalledWith(
         { tokenHash: expectedLogoutHash },
@@ -230,10 +260,10 @@ describe('AuthService', () => {
       );
     });
 
-    it('should hash the token before revoking', async () => {
+    it('should hash the raw token and never store it in plain text', async () => {
       mockRefreshTokenRepo.update.mockResolvedValue({});
 
-      await service.logout('plain-token');
+      await service.logout(rawLogoutToken);
 
       expect(mockRefreshTokenRepo.update).not.toHaveBeenCalledWith(
         { tokenHash: rawLogoutToken },

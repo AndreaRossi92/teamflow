@@ -10,6 +10,8 @@ import enAuth from "./locales/en/auth.json";
 import itAuth from "./locales/it/auth.json";
 import enErrors from "./locales/en/errors.json";
 import itErrors from "./locales/it/errors.json";
+import itUser from "./locales/it/user.json";
+import enUser from "./locales/en/user.json";
 
 i18n
   .use(LanguageDetector)
@@ -21,12 +23,14 @@ i18n
         common: enCommon,
         generateTicket: enGenerateTicket,
         errors: enErrors,
+        user: enUser,
       },
       it: {
         auth: itAuth,
         common: itCommon,
         generateTicket: itGenerateTicket,
         errors: itErrors,
+        user: itUser,
       },
     },
     fallbackLng: "en",

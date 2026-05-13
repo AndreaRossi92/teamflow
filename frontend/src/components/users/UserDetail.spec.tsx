@@ -2,10 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import UserDetail from "./UserDetail";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }),
-}));
-
 vi.mock("../../formatters/date", () => ({
   formatDateTime: (date: string) => date,
 }));

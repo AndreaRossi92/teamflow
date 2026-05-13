@@ -27,12 +27,6 @@ vi.mock("../providers/useAuth", () => ({
   useAuth: () => ({ setUser: mockSetUser }),
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
 const server = setupServer();
 beforeEach(() => {
   vi.clearAllMocks();

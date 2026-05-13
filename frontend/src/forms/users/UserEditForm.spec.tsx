@@ -5,10 +5,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import { UserEditForm } from "./UserEditForm";
 import type { UserEditFormValues } from "../../types/userForm";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
-
 // ── Render helper ──────────────────────────────────────────────────────────────
 function renderUserEditForm(
   onEnter?: () => void,

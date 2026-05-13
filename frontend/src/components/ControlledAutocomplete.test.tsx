@@ -24,10 +24,6 @@ const MULTI_SCHEMA = z.object({
   roles: z.array(z.string()).min(1, "Select at least one option"),
 });
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
-
 // ─── Wrappers ─────────────────────────────────────────────────────────────────
 
 function SingleWrapper({

@@ -5,10 +5,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import { UserCreateForm } from "./UserCreateForm";
 import type { UserCreateFormValues } from "../../types/userForm";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
-
 // ── Render helper ──────────────────────────────────────────────────────────────
 // UserCreateForm relies on FormProvider/useFormContext, so we need to wrap it
 // in a form context with sensible defaults.

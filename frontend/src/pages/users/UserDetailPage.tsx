@@ -75,6 +75,7 @@ export default function UserDetailPage() {
             </Stack>
           )
         }
+        BackButtonProps={{ path: "/users", replace: true }}
       />
       {user.isFetching && <PageLoader />}
       {!user.isFetching && user.isError && (

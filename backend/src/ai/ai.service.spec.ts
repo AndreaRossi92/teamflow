@@ -41,12 +41,17 @@ async function buildModule(apiKey: string | undefined): Promise<TestingModule> {
 
 describe('AiService', () => {
   let service: AiService;
+  let module: TestingModule;
 
   beforeEach(async () => {
     jest.clearAllMocks();
     mockGenerateContent.mockResolvedValue({ text: JSON.stringify(mockTicket) });
-    const module = await buildModule('mock-api-key');
+    module = await buildModule('mock-api-key');
     service = module.get<AiService>(AiService);
+  });
+
+  afterEach(async () => {
+    await module.close();
   });
 
   // ── initialization ─────────────────────────────────────────────────────────

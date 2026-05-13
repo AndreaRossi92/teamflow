@@ -57,11 +57,16 @@ async function buildModule(): Promise<TestingModule> {
 
 describe('UsersService', () => {
   let service: UsersService;
+  let module: TestingModule;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    const module = await buildModule();
+    module = await buildModule();
     service = module.get<UsersService>(UsersService);
+  });
+
+  afterEach(async () => {
+    await module.close();
   });
 
   // ── findByEmail ────────────────────────────────────────────────────────────

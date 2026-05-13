@@ -81,11 +81,16 @@ const expectedLogoutHash = crypto
 
 describe('AuthService', () => {
   let service: AuthService;
+  let module: TestingModule;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    const module = await buildModule();
+    module = await buildModule();
     service = module.get<AuthService>(AuthService);
+  });
+
+  afterEach(async () => {
+    await module.close();
   });
 
   // ── login ──────────────────────────────────────────────────────────────────

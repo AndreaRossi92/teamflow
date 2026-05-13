@@ -10,5 +10,9 @@
   "users": "Utenti",
   "tickets": "Ticket",
   "openSection": "Sezione aperta",
-  "underDevelopment": "In fase di sviluppo"
+  "underDevelopment": "In fase di sviluppo",
+  "add": "Aggiungi",
+  "cancel": "Annulla",
+  "delete": "Elimina",
+  "dialogDeleteText": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata."
 }

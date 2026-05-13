@@ -12,10 +12,12 @@ import type { User } from "../../types/user";
 import ActiveDot from "../ActiveDot";
 import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 type UsersListProps = { users: User[]; actions?: (user: User) => ReactNode };
 
 export default function UsersList({ users, actions }: UsersListProps) {
+  const { t } = useTranslation("user");
   const navigate = useNavigate();
 
   return (
@@ -44,7 +46,7 @@ export default function UsersList({ users, actions }: UsersListProps) {
               }
               secondary={user.email}
             />
-            <Chip label={user.role} color={user.role} size="small" />
+            <Chip label={t(user.role)} color={user.role} size="small" />
           </ListItemButton>
           {!!actions && (
             <ListItemSecondaryAction>{actions(user)}</ListItemSecondaryAction>

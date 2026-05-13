@@ -43,7 +43,7 @@ export default function UserDetail({ user }: UserDetailProps) {
               <Typography variant="h5" gutterBottom>
                 {user.fullName}
               </Typography>
-              <Chip label={user.role} color={user.role} size="small" />
+              <Chip label={t(user.role)} color={user.role} size="small" />
             </Stack>
           </Stack>
 

@@ -34,7 +34,7 @@ export default function DeleteIconButton({
 
   return (
     <>
-      <IconButton size="small" title="delete" onClick={handleOpen}>
+      <IconButton size="small" title={t("delete")} onClick={handleOpen}>
         <Delete fontSize="small" />
       </IconButton>
 
@@ -49,10 +49,10 @@ export default function DeleteIconButton({
 
         <DialogActions>
           <Button onClick={handleClose} color="inherit">
-            {t("Cancel")}
+            {t("cancel")}
           </Button>
           <Button onClick={handleConfirm} color="error" variant="contained">
-            {t("Delete")}
+            {t("delete")}
           </Button>
         </DialogActions>
       </Dialog>

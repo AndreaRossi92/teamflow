@@ -93,6 +93,7 @@ export default function UserListPage() {
             onClick={() => {
               navigate("/user/create");
             }}
+            title={t("add", { ns: "common" })}
           >
             <Add />
           </IconButton>

@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
   return (
     <Grid container spacing={2}>
-      <Grid size={{ sm: 12, md: 6, lg: 4 }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardActionArea
             onClick={() => {
@@ -29,7 +29,7 @@ export default function DashboardPage() {
           </CardActionArea>
         </Card>
       </Grid>
-      <Grid size={{ sm: 12, md: 6, lg: 4 }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardActionArea
             onClick={() => {
@@ -43,7 +43,7 @@ export default function DashboardPage() {
           </CardActionArea>
         </Card>
       </Grid>
-      <Grid size={{ sm: 12, md: 6, lg: 4 }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card sx={{ opacity: 0.5 }}>
           <CardHeader title={t("projects")} />
           <CardContent>
@@ -51,7 +51,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </Grid>
-      <Grid size={{ sm: 12, md: 6, lg: 4 }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card sx={{ opacity: 0.5 }}>
           <CardHeader title={t("tickets")} />
           <CardContent>

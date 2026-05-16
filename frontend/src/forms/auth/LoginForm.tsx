@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
-import { ControlledTextField } from "../components/ControlledTextField";
+import { ControlledTextField } from "../../components/ControlledTextField";
 import { useTranslation } from "react-i18next";
-import { ControlledPasswordField } from "../components/ControlledPasswordField";
+import { ControlledPasswordField } from "../../components/ControlledPasswordField";
 
 type LoginFormProps = { onEnter?: () => void };
 
@@ -13,7 +13,7 @@ export function LoginForm({ onEnter }: LoginFormProps) {
       <ControlledTextField
         name="email"
         fullWidth
-        label={t("login.email")}
+        label={t("email")}
         type="email"
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter?.();
@@ -23,7 +23,7 @@ export function LoginForm({ onEnter }: LoginFormProps) {
       <ControlledPasswordField
         name="password"
         fullWidth
-        label={t("login.password")}
+        label={t("password")}
         type="password"
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter?.();

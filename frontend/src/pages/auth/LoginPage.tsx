@@ -8,13 +8,13 @@ import {
   Paper,
 } from "@mui/material";
 import { FormProvider } from "react-hook-form";
-import { LoginForm } from "../forms/LoginForm";
+import { LoginForm } from "../../forms/auth/LoginForm";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
-import useCustomForm from "../hooks/useCustomForm";
-import { loginFormSchema, type LoginFormValues } from "../types/loginForm";
-import useLoginMutation from "../hooks/auth/useLoginMutation";
+import useCustomForm from "../../hooks/useCustomForm";
+import { loginFormSchema, type LoginFormValues } from "../../types/loginForm";
+import useLoginMutation from "../../hooks/auth/useLoginMutation";
 
 export default function LoginPage() {
   const { t } = useTranslation("auth");

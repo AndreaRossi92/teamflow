@@ -234,7 +234,7 @@ describe("LoginPage", () => {
 
       // force re-import with new env variable
       vi.resetModules();
-      const { default: LoginPage } = await import("../pages/LoginPage");
+      const { default: LoginPage } = await import("./LoginPage");
 
       await act(async () => {
         render(

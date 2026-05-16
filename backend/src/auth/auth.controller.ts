@@ -99,15 +99,9 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const currentUser = req.user as JwtUser;
-    const currentRawRefreshToken = (req.cookies as Record<string, string>)
-      ?.refresh_token;
 
     const { accessToken, refreshToken, user } =
-      await this.authService.changePassword(
-        currentUser.id,
-        dto,
-        currentRawRefreshToken,
-      );
+      await this.authService.changePassword(currentUser.id, dto);
 
     this.setTokenCookies(res, accessToken, refreshToken);
     return { user };

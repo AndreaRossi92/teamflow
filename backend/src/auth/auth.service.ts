@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { RefreshToken } from './refresh-token.entity';
 import { LoginDto } from './dto/login.dto';
@@ -50,7 +50,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthTokens> {
     const user = await this.usersService.findByEmail(dto.email);
 
-    // Always execute bcrypt.compare to avoid timing attack
+    // Always execute bcrypt.compare to avoid timing attacks
     const hashToCheck = user?.passwordHash ?? DUMMY_HASH;
     const passwordMatch = await bcrypt.compare(dto.password, hashToCheck);
 
@@ -63,39 +63,42 @@ export class AuthService {
 
   async refresh(rawRefreshToken: string): Promise<AuthTokens> {
     const hash = this.hashToken(rawRefreshToken);
+    const now = new Date();
 
-    const stored = await this.refreshTokenRepo.findOne({
-      where: { tokenHash: hash, revoked: false },
-      relations: ['user'],
-    });
+    const deleteResult = await this.refreshTokenRepo
+      .createQueryBuilder()
+      .delete()
+      .where('tokenHash = :hash AND expiresAt > :now', { hash, now })
+      .returning(['userId'])
+      .execute();
 
-    // Token not found, expired or revoked
-    if (!stored || stored.expiresAt < new Date()) {
+    if (!deleteResult.affected) {
+      // Token not found, already consumed by a concurrent request, or expired
       throw new UnauthorizedException(
         ErrorCode.INVALID_OR_EXPIRED_REFRESH_TOKEN,
       );
     }
 
-    if (!stored.user.isActive) {
+    // Safe to cast: RETURNING guarantees the row existed
+    const { userId } = (deleteResult.raw as { userId: string }[])[0];
+
+    const user = await this.usersService.findOneBy({ id: userId });
+
+    if (!user || !user.isActive) {
       throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
-    // Rotation: revoke old token, emit a new one
-    stored.revoked = true;
-    await this.refreshTokenRepo.save(stored);
-
-    return this.issueTokens(stored.user);
+    return this.issueTokens(user);
   }
 
   async logout(rawRefreshToken: string): Promise<void> {
     const hash = this.hashToken(rawRefreshToken);
-    await this.refreshTokenRepo.update({ tokenHash: hash }, { revoked: true });
+    await this.refreshTokenRepo.delete({ tokenHash: hash });
   }
 
   async changePassword(
     userId: string,
     dto: ChangePasswordDto,
-    currentRawRefreshToken: string | undefined,
   ): Promise<AuthTokens> {
     const user = await this.usersService.findOneBy({ id: userId });
 
@@ -112,23 +115,7 @@ export class AuthService {
     }
 
     await this.usersService.updatePassword(userId, dto.newPassword);
-
-    if (currentRawRefreshToken) {
-      const currentHash = this.hashToken(currentRawRefreshToken);
-      await this.refreshTokenRepo.update(
-        { userId, revoked: false, tokenHash: Not(currentHash) },
-        { revoked: true },
-      );
-      await this.refreshTokenRepo.update(
-        { tokenHash: currentHash },
-        { revoked: true },
-      );
-    } else {
-      await this.refreshTokenRepo.update(
-        { userId, revoked: false },
-        { revoked: true },
-      );
-    }
+    await this.refreshTokenRepo.delete({ userId });
 
     const updatedUser = await this.usersService.findOneBy({ id: userId });
     if (!updatedUser) {

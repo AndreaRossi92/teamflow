@@ -9,11 +9,17 @@ import {
   Chip,
   IconButton,
   Button,
+  Menu,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import LogoutIcon from "@mui/icons-material/Logout";
+import SettingsIcon from "@mui/icons-material/Settings";
 import useLogoutMutation from "../hooks/auth/useLogoutMutation";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import PasswordIcon from "@mui/icons-material/Password";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -40,6 +46,8 @@ export default function Header() {
   const handleLanguageChange = (event: SelectChangeEvent) => {
     i18n.changeLanguage(event.target.value);
   };
+
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   return (
     <AppBar position="static" color="default" elevation={1}>
@@ -91,13 +99,43 @@ export default function Header() {
             ))}
           </Select>
           <IconButton
-            title="Logout"
-            onClick={() => {
-              logoutMutation.mutate();
+            title={t("settings")}
+            onClick={(e) => {
+              setAnchorEl(e.currentTarget);
             }}
           >
-            <LogoutIcon />
+            <SettingsIcon />
           </IconButton>
+          <Menu
+            open={!!anchorEl}
+            anchorEl={anchorEl}
+            onClose={() => {
+              setAnchorEl(null);
+            }}
+          >
+            {/* TODO: Add change password logic */}
+            <MenuItem
+              onClick={() => {
+                setAnchorEl(null);
+              }}
+            >
+              <ListItemIcon>
+                <PasswordIcon />
+              </ListItemIcon>
+              <ListItemText>{t("changePassword")}</ListItemText>
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                logoutMutation.mutate();
+                setAnchorEl(null);
+              }}
+            >
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText>{t("logout")}</ListItemText>
+            </MenuItem>
+          </Menu>
         </Stack>
       </Toolbar>
     </AppBar>

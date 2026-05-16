@@ -13,7 +13,7 @@ export function LoginForm({ onEnter }: LoginFormProps) {
       <ControlledTextField
         name="email"
         fullWidth
-        label={t("email")}
+        label={t("login.email")}
         type="email"
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter?.();
@@ -23,7 +23,7 @@ export function LoginForm({ onEnter }: LoginFormProps) {
       <ControlledPasswordField
         name="password"
         fullWidth
-        label={t("password")}
+        label={t("login.password")}
         type="password"
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter?.();

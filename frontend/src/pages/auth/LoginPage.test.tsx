@@ -23,7 +23,7 @@ vi.mock("react-router-dom", async (importOriginal) => ({
 }));
 
 const mockSetUser = vi.fn();
-vi.mock("../providers/useAuth", () => ({
+vi.mock("../../providers/useAuth", () => ({
   useAuth: () => ({ setUser: mockSetUser }),
 }));
 

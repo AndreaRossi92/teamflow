@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { AuthUser } from "../types/authUser";
+import { api } from "./axios.instance";
 
 export async function login(
   email: string,
@@ -23,5 +24,16 @@ export async function refreshToken(): Promise<AuthUser> {
 }
 
 export async function logout(): Promise<void> {
-  await axios.post("/api/auth/logout", {}, { withCredentials: true });
+  await api.post("/auth/logout", {}, { withCredentials: true });
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<AuthUser> {
+  const response = await api.post<{ user: AuthUser }>("/auth/change-password", {
+    currentPassword,
+    newPassword,
+  });
+  return response.data.user;
 }

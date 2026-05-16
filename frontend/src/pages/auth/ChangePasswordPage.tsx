@@ -1,60 +1,50 @@
 import { useTranslation } from "react-i18next";
 import { Alert, Button, Container, Paper, Snackbar } from "@mui/material";
 import { FormProvider } from "react-hook-form";
-import {
-  userCreateFormSchema,
-  type UserCreateFormValues,
-} from "../../types/userForm";
 import useCustomForm from "../../hooks/useCustomForm";
-import useUserCreateMutation from "../../hooks/users/useUserCreateMutation";
-import { UserCreateForm } from "../../forms/users/UserCreateForm";
-import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 import PageHeader from "../../components/PageHeader";
 import { omit } from "lodash";
 import { useState } from "react";
+import {
+  changePasswordFormSchema,
+  type ChangePasswordFormValues,
+} from "../../types/changePasswordForm";
+import useChangePasswordMutation from "../../hooks/auth/useChangePasswordMutation";
+import { ChangePasswordForm } from "../../forms/auth/ChangePasswordForm";
 
-export default function UserCreatePage() {
-  const { t } = useTranslation("user");
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+export default function ChangePasswordPage() {
+  const { t } = useTranslation("auth");
 
   const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
 
-  const userCreateForm = useCustomForm<UserCreateFormValues>({
-    schema: userCreateFormSchema,
+  const changePasswordForm = useCustomForm<ChangePasswordFormValues>({
+    schema: changePasswordFormSchema,
     defaultValues: {
-      email: "",
-      fullName: "",
-      password: "",
-      confirmPassword: "",
-      role: "dev",
+      currentPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
     },
   });
 
-  const userCreateMutation = useUserCreateMutation({
-    onSuccess: (user) => {
-      queryClient.setQueryData(["users", user.id], user);
-      navigate(`/user/${user.id}`, { replace: true });
-    },
+  const changePasswordMutation = useChangePasswordMutation({
     onError: () => {
       setOpenErrorSnackbar(true);
     },
   });
 
-  const handleSubmit = userCreateForm.handleSubmit((data) =>
-    userCreateMutation.mutate(omit(data, "confirmPassword")),
+  const handleSubmit = changePasswordForm.handleSubmit((data) =>
+    changePasswordMutation.mutate(omit(data, "confirmNewPassword")),
   );
 
   return (
     <>
-      <PageHeader title={t("users")} subtitle={t("create")} />
-      <Container maxWidth="sm">
+      <PageHeader title={t("changePassword", { ns: "common" })} />
+      <Container maxWidth="xs">
         <Paper elevation={3} sx={{ p: 4 }}>
-          <FormProvider {...userCreateForm}>
-            <UserCreateForm
+          <FormProvider {...changePasswordForm}>
+            <ChangePasswordForm
               onEnter={() => {
-                if (userCreateForm.formState.isValid) handleSubmit();
+                if (changePasswordForm.formState.isValid) handleSubmit();
               }}
             />
           </FormProvider>
@@ -64,10 +54,11 @@ export default function UserCreatePage() {
             variant="contained"
             size="large"
             disabled={
-              !userCreateForm.formState.isValid || userCreateMutation.isPending
+              !changePasswordForm.formState.isValid ||
+              changePasswordMutation.isPending
             }
             onClick={handleSubmit}
-            loading={userCreateMutation.isPending}
+            loading={changePasswordMutation.isPending}
             sx={{ mt: 2 }}
           >
             {t("submit", { ns: "common" })}

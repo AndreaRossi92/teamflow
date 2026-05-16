@@ -28,10 +28,10 @@ export class UsersService extends TypeOrmCrudService<User> {
     });
 
     if (existing) {
-      if (!existing.isActive) {
-        throw new ConflictException(ErrorCode.USER_INACTIVE);
+      if (existing.isActive) {
+        throw new ConflictException(ErrorCode.USER_EMAIL_ALREADY_EXISTS);
       }
-      throw new ConflictException(ErrorCode.USER_EMAIL_ALREADY_EXISTS);
+      throw new ConflictException(ErrorCode.USER_INACTIVE);
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
@@ -57,5 +57,10 @@ export class UsersService extends TypeOrmCrudService<User> {
 
     user.isActive = true;
     return this.repo.save(user);
+  }
+
+  async updatePassword(id: string, newPassword: string): Promise<void> {
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.repo.update(id, { passwordHash });
   }
 }

@@ -9,10 +9,13 @@ import {
   Req,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiCookieAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtGuard } from './guards/jwt.guard';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { JwtUser } from './strategies/jwt.strategy';
 
 const COOKIE_BASE = {
   httpOnly: true,
@@ -81,5 +84,32 @@ export class AuthController {
       ...COOKIE_BASE,
       path: 'api/auth/refresh',
     });
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtGuard)
+  @ApiCookieAuth()
+  @ApiOperation({
+    summary: 'Change own password — invalidates all other active sessions',
+  })
+  async changePassword(
+    @Req() req: Request,
+    @Body() dto: ChangePasswordDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const currentUser = req.user as JwtUser;
+    const currentRawRefreshToken = (req.cookies as Record<string, string>)
+      ?.refresh_token;
+
+    const { accessToken, refreshToken, user } =
+      await this.authService.changePassword(
+        currentUser.id,
+        dto,
+        currentRawRefreshToken,
+      );
+
+    this.setTokenCookies(res, accessToken, refreshToken);
+    return { user };
   }
 }

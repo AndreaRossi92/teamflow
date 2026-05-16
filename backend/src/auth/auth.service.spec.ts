@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Not } from 'typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { Role, User } from '../users/user.entity';
@@ -11,6 +12,7 @@ import * as crypto from 'crypto';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
+  hashSync: jest.fn().mockReturnValue('dummy-hash'),
 }));
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -40,6 +42,8 @@ const mockStoredToken: RefreshToken = {
 
 const mockUsersService = {
   findByEmail: jest.fn(),
+  findOneBy: jest.fn(),
+  updatePassword: jest.fn(),
 };
 
 const mockJwtService = {
@@ -75,6 +79,12 @@ const rawLogoutToken = 'some-raw-token';
 const expectedLogoutHash = crypto
   .createHash('sha256')
   .update(rawLogoutToken)
+  .digest('hex');
+
+const rawChangePasswordToken = 'current-session-token';
+const expectedChangePasswordHash = crypto
+  .createHash('sha256')
+  .update(rawChangePasswordToken)
   .digest('hex');
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -268,6 +278,166 @@ describe('AuthService', () => {
       expect(mockRefreshTokenRepo.update).not.toHaveBeenCalledWith(
         { tokenHash: rawLogoutToken },
         expect.anything(),
+      );
+    });
+  });
+
+  // ── changePassword ─────────────────────────────────────────────────────────
+
+  describe('changePassword', () => {
+    const dto = { currentPassword: 'old-pass', newPassword: 'new-pass' };
+
+    beforeEach(() => {
+      mockRefreshTokenRepo.create.mockImplementation(
+        (data) => data as RefreshToken,
+      );
+      mockRefreshTokenRepo.save.mockImplementation((data) =>
+        Promise.resolve(data as RefreshToken),
+      );
+      mockRefreshTokenRepo.update.mockResolvedValue({});
+      mockUsersService.updatePassword.mockResolvedValue(undefined);
+    });
+
+    it('should return new tokens when credentials are valid', async () => {
+      mockUsersService.findOneBy
+        .mockResolvedValueOnce(mockUser) // initial lookup
+        .mockResolvedValueOnce(mockUser); // post-update lookup
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const result = await service.changePassword(mockUser.id, dto, undefined);
+
+      expect(result.accessToken).toBe('mock-jwt-token');
+      expect(result.user).toEqual({
+        id: mockUser.id,
+        email: mockUser.email,
+        role: mockUser.role,
+        fullName: mockUser.fullName,
+      });
+    });
+
+    it('should return a new refreshToken after a successful password change', async () => {
+      mockUsersService.findOneBy
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const result = await service.changePassword(mockUser.id, dto, undefined);
+
+      expect(result.refreshToken).toBeDefined();
+      expect(typeof result.refreshToken).toBe('string');
+    });
+
+    it('should throw UnauthorizedException when user is not found', async () => {
+      mockUsersService.findOneBy.mockResolvedValue(null);
+
+      await expect(
+        service.changePassword(mockUser.id, dto, undefined),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when user is not active', async () => {
+      mockUsersService.findOneBy.mockResolvedValue({
+        ...mockUser,
+        isActive: false,
+      });
+
+      await expect(
+        service.changePassword(mockUser.id, dto, undefined),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when the current password is wrong', async () => {
+      mockUsersService.findOneBy.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        service.changePassword(mockUser.id, dto, undefined),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when updatedUser is not found after password update', async () => {
+      mockUsersService.findOneBy
+        .mockResolvedValueOnce(mockUser) // initial lookup succeeds
+        .mockResolvedValueOnce(null); // post-update lookup returns nothing
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await expect(
+        service.changePassword(mockUser.id, dto, undefined),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should revoke all user tokens when no currentRawRefreshToken is provided', async () => {
+      mockUsersService.findOneBy
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await service.changePassword(mockUser.id, dto, undefined);
+
+      expect(mockRefreshTokenRepo.update).toHaveBeenCalledWith(
+        { userId: mockUser.id, revoked: false },
+        { revoked: true },
+      );
+    });
+
+    it('should revoke all OTHER tokens (excluding the current session) when currentRawRefreshToken is provided', async () => {
+      mockUsersService.findOneBy
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await service.changePassword(mockUser.id, dto, rawChangePasswordToken);
+
+      expect(mockRefreshTokenRepo.update).toHaveBeenCalledWith(
+        {
+          userId: mockUser.id,
+          revoked: false,
+          tokenHash: Not(expectedChangePasswordHash),
+        },
+        { revoked: true },
+      );
+    });
+
+    it('should also revoke the current session token after revoking the others', async () => {
+      mockUsersService.findOneBy
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await service.changePassword(mockUser.id, dto, rawChangePasswordToken);
+
+      expect(mockRefreshTokenRepo.update).toHaveBeenCalledWith(
+        { tokenHash: expectedChangePasswordHash },
+        { revoked: true },
+      );
+    });
+
+    it('should hash the current session token and never use it in plain text', async () => {
+      mockUsersService.findOneBy
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await service.changePassword(mockUser.id, dto, rawChangePasswordToken);
+
+      const allCalls = mockRefreshTokenRepo.update.mock.calls;
+      const usedRawToken = allCalls.some((args) =>
+        JSON.stringify(args).includes(rawChangePasswordToken),
+      );
+      expect(usedRawToken).toBe(false);
+    });
+
+    it('should call updatePassword with the correct userId and new password', async () => {
+      mockUsersService.findOneBy
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await service.changePassword(mockUser.id, dto, undefined);
+
+      expect(mockUsersService.updatePassword).toHaveBeenCalledWith(
+        mockUser.id,
+        dto.newPassword,
       );
     });
   });

@@ -20,6 +20,7 @@ import useLogoutMutation from "../hooks/auth/useLogoutMutation";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import PasswordIcon from "@mui/icons-material/Password";
+import { useAuth } from "../providers/useAuth";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -38,6 +39,7 @@ function resolveLanguageCode(lng: string): LanguageCode {
 export default function Header() {
   const { i18n, t } = useTranslation("common");
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const logoutMutation = useLogoutMutation();
 
@@ -98,14 +100,16 @@ export default function Header() {
               </MenuItem>
             ))}
           </Select>
-          <IconButton
-            title={t("settings")}
-            onClick={(e) => {
-              setAnchorEl(e.currentTarget);
-            }}
-          >
-            <SettingsIcon />
-          </IconButton>
+          {isAuthenticated && (
+            <IconButton
+              title={t("settings")}
+              onClick={(e) => {
+                setAnchorEl(e.currentTarget);
+              }}
+            >
+              <SettingsIcon />
+            </IconButton>
+          )}
           <Menu
             open={!!anchorEl}
             anchorEl={anchorEl}
@@ -113,10 +117,10 @@ export default function Header() {
               setAnchorEl(null);
             }}
           >
-            {/* TODO: Add change password logic */}
             <MenuItem
               onClick={() => {
                 setAnchorEl(null);
+                navigate("/change-password");
               }}
             >
               <ListItemIcon>

@@ -85,7 +85,7 @@ export default function UserCreatePage() {
           onClose={() => {
             setOpenErrorSnackbar(false);
           }}
-          severity="success"
+          severity="error"
           variant="filled"
           sx={{ width: "100%" }}
         >

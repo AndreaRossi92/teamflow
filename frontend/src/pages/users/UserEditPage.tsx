@@ -69,7 +69,7 @@ export default function UserEditPage() {
             loading={userEditMutation.isPending}
             sx={{ mt: 2 }}
           >
-            {t("submit")}
+            {t("submit", { ns: "common" })}
           </Button>
         </Paper>
       </Container>

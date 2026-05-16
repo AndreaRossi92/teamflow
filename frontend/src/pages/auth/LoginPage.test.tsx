@@ -23,7 +23,7 @@ vi.mock("react-router-dom", async (importOriginal) => ({
 }));
 
 const mockSetUser = vi.fn();
-vi.mock("../providers/useAuth", () => ({
+vi.mock("../../providers/useAuth", () => ({
   useAuth: () => ({ setUser: mockSetUser }),
 }));
 
@@ -234,7 +234,7 @@ describe("LoginPage", () => {
 
       // force re-import with new env variable
       vi.resetModules();
-      const { default: LoginPage } = await import("../pages/LoginPage");
+      const { default: LoginPage } = await import("./LoginPage");
 
       await act(async () => {
         render(

@@ -1,10 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { RefreshToken } from './refresh-token.entity';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { User } from '../users/user.entity';
 import * as bcrypt from 'bcrypt';
@@ -16,6 +17,8 @@ export type AuthTokens = {
   refreshToken: string;
   user: Pick<User, 'id' | 'email' | 'role' | 'fullName'>;
 };
+
+const DUMMY_HASH = bcrypt.hashSync('dummy-timing-protection', 10);
 
 @Injectable()
 export class AuthService {
@@ -47,12 +50,11 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthTokens> {
     const user = await this.usersService.findByEmail(dto.email);
 
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
-    }
+    // Always execute bcrypt.compare to avoid timing attack
+    const hashToCheck = user?.passwordHash ?? DUMMY_HASH;
+    const passwordMatch = await bcrypt.compare(dto.password, hashToCheck);
 
-    const passwordMatch = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!passwordMatch) {
+    if (!user || !user.isActive || !passwordMatch) {
       throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
@@ -88,6 +90,52 @@ export class AuthService {
   async logout(rawRefreshToken: string): Promise<void> {
     const hash = this.hashToken(rawRefreshToken);
     await this.refreshTokenRepo.update({ tokenHash: hash }, { revoked: true });
+  }
+
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+    currentRawRefreshToken: string | undefined,
+  ): Promise<AuthTokens> {
+    const user = await this.usersService.findOneBy({ id: userId });
+
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+    if (!passwordMatch) {
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
+    }
+
+    await this.usersService.updatePassword(userId, dto.newPassword);
+
+    if (currentRawRefreshToken) {
+      const currentHash = this.hashToken(currentRawRefreshToken);
+      await this.refreshTokenRepo.update(
+        { userId, revoked: false, tokenHash: Not(currentHash) },
+        { revoked: true },
+      );
+      await this.refreshTokenRepo.update(
+        { tokenHash: currentHash },
+        { revoked: true },
+      );
+    } else {
+      await this.refreshTokenRepo.update(
+        { userId, revoked: false },
+        { revoked: true },
+      );
+    }
+
+    const updatedUser = await this.usersService.findOneBy({ id: userId });
+    if (!updatedUser) {
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
+    }
+
+    return this.issueTokens(updatedUser);
   }
 
   private async issueTokens(user: User): Promise<AuthTokens> {

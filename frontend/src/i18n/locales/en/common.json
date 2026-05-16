@@ -16,5 +16,7 @@
   "delete": "Delete",
   "dialogDeleteText": "Are you sure you want to delete this item? This action cannot be undone.",
   "changePassword": "Change password",
-  "logout": "Logout"
+  "logout": "Logout",
+  "settings": "Settings",
+  "submit": "Submit"
 }

@@ -14,7 +14,7 @@ const lazyWithLoader = (
   );
 };
 
-const LoginPage = lazyWithLoader(() => import("../pages/LoginPage"));
+const LoginPage = lazyWithLoader(() => import("../pages/auth/LoginPage"));
 const GenerateTicketPage = lazyWithLoader(
   () => import("../pages/GenerateTicketPage"),
 );
@@ -31,6 +31,9 @@ const UserEditPage = lazyWithLoader(
 const UserCreatePage = lazyWithLoader(
   () => import("../pages/users/UserCreatePage"),
 );
+const ChangePasswordPage = lazyWithLoader(
+  () => import("../pages/auth/ChangePasswordPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -43,6 +46,7 @@ export default function AppRoutes() {
         <Route path="/user/create" element={<UserCreatePage />} />
         <Route path="/user/:id" element={<UserDetailPage />} />
         <Route path="/user/:id/edit" element={<UserEditPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

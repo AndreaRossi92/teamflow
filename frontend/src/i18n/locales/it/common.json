@@ -16,5 +16,7 @@
   "delete": "Elimina",
   "dialogDeleteText": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata.",
   "changePassword": "Modifica password",
-  "logout": "Esci"
+  "logout": "Esci",
+  "settings": "Impostazioni",
+  "submit": "Salva"
 }

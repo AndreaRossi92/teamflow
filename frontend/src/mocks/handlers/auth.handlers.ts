@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockAdminUser } from "../data/auth.data";
+import type { ChangePasswordFormValues } from "../../types/changePasswordForm";
 
 export const authHandlers = [
   http.post<never, { email: string; password: string }>(
@@ -24,4 +25,22 @@ export const authHandlers = [
     await delay(300);
     return HttpResponse.json({ success: true });
   }),
+
+  http.post<never, Omit<ChangePasswordFormValues, "confirmNewPassword">>(
+    "/api/auth/change-password",
+    async ({ request }) => {
+      await delay(500);
+      const { currentPassword } = await request.json();
+      if (currentPassword !== "admin123")
+        return HttpResponse.json(
+          {
+            message: "Invalid credentials",
+            error: "Unauthorized",
+            statusCode: 401,
+          },
+          { status: 401 },
+        );
+      return HttpResponse.json({ user: mockAdminUser });
+    },
+  ),
 ];

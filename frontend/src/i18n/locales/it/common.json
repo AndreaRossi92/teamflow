@@ -14,5 +14,7 @@
   "add": "Aggiungi",
   "cancel": "Annulla",
   "delete": "Elimina",
-  "dialogDeleteText": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata."
+  "dialogDeleteText": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata.",
+  "changePassword": "Modifica password",
+  "logout": "Esci"
 }

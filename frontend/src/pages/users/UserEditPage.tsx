@@ -47,7 +47,19 @@ export default function UserEditPage() {
 
   return (
     <>
-      <PageHeader title={t("users")} subtitle={t("edit")} />
+      <PageHeader
+        title={t("users")}
+        subtitle={t("edit")}
+        actions={
+          <Button
+            onClick={() => {
+              navigate(`/user/${id}/reset-password`);
+            }}
+          >
+            {t("resetPassword")}
+          </Button>
+        }
+      />
       <Container maxWidth="sm">
         <Paper elevation={3} sx={{ p: 4 }}>
           <FormProvider {...userEditForm}>

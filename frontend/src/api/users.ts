@@ -66,3 +66,13 @@ export async function editUser(
 
   return response.data;
 }
+
+export async function resetPassword(
+  id: string,
+  newPassword: string,
+): Promise<void> {
+  const response = await api.patch<void>(`/users/${id}/reset-password`, {
+    newPassword,
+  });
+  return response.data;
+}

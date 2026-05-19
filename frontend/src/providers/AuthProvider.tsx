@@ -37,7 +37,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       pendingQueue = [];
     }
 
-    const SKIP_REFRESH_URLS = ["/auth/refresh", "/auth/login"];
+    const SKIP_REFRESH_URLS = ["/auth/refresh", "/auth/login", "/auth/logout"];
 
     const interceptorId = api.interceptors.response.use(
       (response) => response,
@@ -47,7 +47,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
         if (
           error.response?.status !== 401 ||
           SKIP_REFRESH_URLS.some((url) => requestUrl.includes(url)) ||
-          isDemoMode
+          isDemoMode ||
+          error.config._retry // already retried once, don't loop
         ) {
           return Promise.reject(error);
         }
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         }
 
         isRefreshing = true;
+        error.config._retry = true;
 
         try {
           await refreshToken();
@@ -66,7 +68,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           return api.request(error.config);
         } catch (refreshError) {
           flushQueue(refreshError);
-          logout();
+          await logout();
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;

@@ -125,6 +125,10 @@ export class AuthService {
     return this.issueTokens(updatedUser);
   }
 
+  async revokeAllUserSessions(userId: string): Promise<void> {
+    await this.refreshTokenRepo.delete({ userId });
+  }
+
   private async issueTokens(user: User): Promise<AuthTokens> {
     const rawRefreshToken = this.generateRefreshToken();
     const hash = this.hashToken(rawRefreshToken);

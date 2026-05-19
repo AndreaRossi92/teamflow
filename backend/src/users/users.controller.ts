@@ -15,11 +15,15 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import {
   ApiBody,
   ApiCookieAuth,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { AuthService } from '../auth/auth.service';
 
 @Crud({
   model: { type: User },
@@ -47,7 +51,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @UseGuards(JwtGuard, RolesGuard)
 @Roles(Role.ADMIN)
 export class UsersController implements CrudController<User> {
-  constructor(public service: UsersService) {}
+  constructor(
+    public service: UsersService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post()
   @ApiBody({ type: CreateUserDto })
@@ -67,5 +74,20 @@ export class UsersController implements CrudController<User> {
   @ApiOkResponse({ type: User })
   reactivate(@Param('id') id: string) {
     return this.service.reactivateUser(id);
+  }
+
+  @Patch(':id/reset-password')
+  @ApiOperation({
+    summary:
+      'Reset a user password (admin only) — invalidates all active sessions for that user',
+  })
+  @ApiNoContentResponse({ description: 'Password reset successfully' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  async resetPassword(
+    @Param('id') id: string,
+    @Body() dto: ResetPasswordDto,
+  ): Promise<void> {
+    await this.service.resetUserPassword(id, dto.newPassword);
+    await this.authService.revokeAllUserSessions(id);
   }
 }

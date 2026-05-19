@@ -27,5 +27,9 @@
   "demoList": "Questo è un ambiente demo. I dati mostrati sono solo a scopo dimostrativo. Filtri e disattivazione / riattivazione / creazione / modifica utente non hanno effetti",
   "dev": "Sviluppatore",
   "admin": "Amministratore",
-  "manager": "Responsabile"
+  "manager": "Responsabile",
+  "newPassword": "Nuova password",
+  "confirmNewPassword": "Conferma nuova password",
+  "resetPassword": "Reset password",
+  "passwordReset": "Password resettata"
 }

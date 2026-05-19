@@ -16,6 +16,7 @@ export default function ChangePasswordPage() {
   const { t } = useTranslation("auth");
 
   const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
+  const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
   const changePasswordForm = useCustomForm<ChangePasswordFormValues>({
     schema: changePasswordFormSchema,
@@ -27,6 +28,9 @@ export default function ChangePasswordPage() {
   });
 
   const changePasswordMutation = useChangePasswordMutation({
+    onSuccess: () => {
+      setOpenSuccessSnackbar(true);
+    },
     onError: () => {
       setOpenErrorSnackbar(true);
     },
@@ -81,6 +85,24 @@ export default function ChangePasswordPage() {
           sx={{ width: "100%" }}
         >
           {t("somethingWentWrong", { ns: "errors" })}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openSuccessSnackbar}
+        autoHideDuration={5000}
+        onClose={() => {
+          setOpenSuccessSnackbar(false);
+        }}
+      >
+        <Alert
+          onClose={() => {
+            setOpenSuccessSnackbar(false);
+          }}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {t("passwordChanged")}
         </Alert>
       </Snackbar>
     </>

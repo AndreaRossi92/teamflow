@@ -63,4 +63,11 @@ export class UsersService extends TypeOrmCrudService<User> {
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await this.repo.update(id, { passwordHash });
   }
+
+  async resetUserPassword(id: string, newPassword: string): Promise<void> {
+    const user = await this.repo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+
+    await this.updatePassword(id, newPassword);
+  }
 }

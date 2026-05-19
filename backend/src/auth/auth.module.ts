@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,7 +14,7 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [
     PassportModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
     ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([RefreshToken]),
     JwtModule.registerAsync({
@@ -28,5 +28,6 @@ import { UsersModule } from '../users/users.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, TokenCleanupService],
+  exports: [AuthService],
 })
 export class AuthModule {}

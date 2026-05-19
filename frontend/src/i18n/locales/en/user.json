@@ -27,5 +27,9 @@
   "demoList": "This is a demo environment. Data shown is for demonstration purposes only. Filters and deactivation / reactivation / creation / modification of users have no effects",
   "dev": "Developer",
   "admin": "Administrator",
-  "manager": "Manager"
+  "manager": "Manager",
+  "newPassword": "New password",
+  "confirmNewPassword": "Confirm new password",
+  "resetPassword": "Reset password",
+  "passwordReset": "Password reset"
 }

@@ -1,54 +1,69 @@
 import { useTranslation } from "react-i18next";
-import { Alert, Button, Container, Paper, Snackbar } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Container,
+  Paper,
+  Snackbar,
+  Typography,
+} from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import useCustomForm from "../../hooks/useCustomForm";
 import PageHeader from "../../components/PageHeader";
 import { omit } from "lodash";
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import useUserDetailQuery from "../../hooks/users/useUserDetailQuery";
 import {
-  changePasswordFormSchema,
-  type ChangePasswordFormValues,
-} from "../../types/changePasswordForm";
-import useChangePasswordMutation from "../../hooks/auth/useChangePasswordMutation";
-import { ChangePasswordForm } from "../../forms/auth/ChangePasswordForm";
+  resetPasswordFormSchema,
+  type ResetPasswordFormValues,
+} from "../../types/resetPasswordForm";
+import useResetPasswordMutation from "../../hooks/users/useResetPasswordMutation";
+import { ResetPasswordForm } from "../../forms/users/ResetPasswordForm";
 
-export default function ChangePasswordPage() {
-  const { t } = useTranslation("auth");
+export default function ResetPasswordPage() {
+  const { t } = useTranslation("user");
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const user = useUserDetailQuery(id ?? "");
 
   const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
   const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
-  const changePasswordForm = useCustomForm<ChangePasswordFormValues>({
-    schema: changePasswordFormSchema,
+  const resetPasswordForm = useCustomForm<ResetPasswordFormValues>({
+    schema: resetPasswordFormSchema,
     defaultValues: {
-      currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
     },
   });
 
-  const changePasswordMutation = useChangePasswordMutation({
+  const resetPasswordMutation = useResetPasswordMutation(id ?? "", {
     onSuccess: () => {
       setOpenSuccessSnackbar(true);
+      navigate(`/user/${id}`, { replace: true });
     },
     onError: () => {
       setOpenErrorSnackbar(true);
     },
   });
 
-  const handleSubmit = changePasswordForm.handleSubmit((data) =>
-    changePasswordMutation.mutate(omit(data, "confirmNewPassword")),
+  const handleSubmit = resetPasswordForm.handleSubmit((data) =>
+    resetPasswordMutation.mutate(omit(data, "confirmNewPassword")),
   );
 
   return (
     <>
-      <PageHeader title={t("changePassword", { ns: "common" })} />
+      <PageHeader title={t("resetPassword")} />
       <Container maxWidth="xs">
+        <Typography sx={{ textAlign: "center", mb: 2 }} variant="h5">
+          {user.data?.fullName}
+        </Typography>
         <Paper elevation={3} sx={{ p: 4 }}>
-          <FormProvider {...changePasswordForm}>
-            <ChangePasswordForm
+          <FormProvider {...resetPasswordForm}>
+            <ResetPasswordForm
               onEnter={() => {
-                if (changePasswordForm.formState.isValid) handleSubmit();
+                if (resetPasswordForm.formState.isValid) handleSubmit();
               }}
             />
           </FormProvider>
@@ -58,11 +73,11 @@ export default function ChangePasswordPage() {
             variant="contained"
             size="large"
             disabled={
-              !changePasswordForm.formState.isValid ||
-              changePasswordMutation.isPending
+              !resetPasswordForm.formState.isValid ||
+              resetPasswordMutation.isPending
             }
             onClick={handleSubmit}
-            loading={changePasswordMutation.isPending}
+            loading={resetPasswordMutation.isPending}
             sx={{ mt: 2 }}
           >
             {t("submit", { ns: "common" })}
@@ -102,7 +117,7 @@ export default function ChangePasswordPage() {
           variant="filled"
           sx={{ width: "100%" }}
         >
-          {t("passwordChanged")}
+          {t("passwordReset")}
         </Alert>
       </Snackbar>
     </>

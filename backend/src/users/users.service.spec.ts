@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User, Role } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -40,6 +40,7 @@ const mockUserRepo = {
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  update: jest.fn(),
 };
 
 // ─── Module factory ──────────────────────────────────────────────────────────
@@ -196,6 +197,63 @@ describe('UsersService', () => {
       );
 
       await expect(service.createUser(dto)).rejects.toThrow(ConflictException);
+    });
+  });
+
+  // ── resetUserPassword ──────────────────────────────────────────────────────
+
+  describe('resetUserPassword', () => {
+    const newPassword = 'newTemporaryPass1';
+
+    beforeEach(() => {
+      (bcrypt.hash as jest.Mock).mockResolvedValue('new-hashed-password');
+      mockUserRepo.update.mockResolvedValue({ affected: 1 });
+    });
+
+    it('should hash the new password with bcrypt', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+
+      await service.resetUserPassword(mockUser.id, newPassword);
+
+      expect(bcrypt.hash).toHaveBeenCalledWith(newPassword, 10);
+    });
+
+    it('should persist the hashed password via repo.update', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+
+      await service.resetUserPassword(mockUser.id, newPassword);
+
+      expect(mockUserRepo.update).toHaveBeenCalledWith(mockUser.id, {
+        passwordHash: 'new-hashed-password',
+      });
+    });
+
+    it('should never persist the plain-text password', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+
+      await service.resetUserPassword(mockUser.id, newPassword);
+
+      const calls = mockUserRepo.update.mock.calls as [
+        string,
+        Partial<User> & { password?: string },
+      ][];
+      expect(calls[0][1]).not.toHaveProperty('password');
+    });
+
+    it('should throw NotFoundException when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.resetUserPassword('nonexistent-id', newPassword),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should resolve without returning a value on success', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+
+      const result = await service.resetUserPassword(mockUser.id, newPassword);
+
+      expect(result).toBeUndefined();
     });
   });
 });

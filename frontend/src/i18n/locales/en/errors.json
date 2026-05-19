@@ -1,5 +1,6 @@
 {
   "invalidEmail": "Invalid email",
   "minLength": "Minimum {{count}} characters",
-  "passwordsDontMatch": "Passwords do not match"
+  "passwordsDontMatch": "Passwords do not match",
+  "somethingWentWrong": "Something went wrong"
 }

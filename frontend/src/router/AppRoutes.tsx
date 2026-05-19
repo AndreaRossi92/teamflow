@@ -34,6 +34,9 @@ const UserCreatePage = lazyWithLoader(
 const ChangePasswordPage = lazyWithLoader(
   () => import("../pages/auth/ChangePasswordPage"),
 );
+const ResetPasswordPage = lazyWithLoader(
+  () => import("../pages/users/ResetPasswordPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -46,6 +49,10 @@ export default function AppRoutes() {
         <Route path="/user/create" element={<UserCreatePage />} />
         <Route path="/user/:id" element={<UserDetailPage />} />
         <Route path="/user/:id/edit" element={<UserEditPage />} />
+        <Route
+          path="/user/:id/reset-password"
+          element={<ResetPasswordPage />}
+        />
         <Route path="/change-password" element={<ChangePasswordPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

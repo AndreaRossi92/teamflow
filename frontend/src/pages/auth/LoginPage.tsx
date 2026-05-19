@@ -15,9 +15,12 @@ const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 import useCustomForm from "../../hooks/useCustomForm";
 import { loginFormSchema, type LoginFormValues } from "../../types/loginForm";
 import useLoginMutation from "../../hooks/auth/useLoginMutation";
+import { useAuth } from "../../providers/useAuth";
+import { Navigate } from "react-router-dom";
 
 export default function LoginPage() {
   const { t } = useTranslation("auth");
+  const { isAuthenticated } = useAuth();
 
   const loginForm = useCustomForm<LoginFormValues>({
     schema: loginFormSchema,
@@ -32,6 +35,8 @@ export default function LoginPage() {
   const handleLogin = loginForm.handleSubmit((data) =>
     loginMutation.mutate(data),
   );
+
+  if (isAuthenticated) return <Navigate to="/" />;
 
   return (
     <Container maxWidth="xs">

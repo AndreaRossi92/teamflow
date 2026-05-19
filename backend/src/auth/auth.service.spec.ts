@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Not } from 'typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { Role, User } from '../users/user.entity';
@@ -31,7 +30,6 @@ const mockUser: User = {
 const mockStoredToken: RefreshToken = {
   id: 'uuid-456',
   tokenHash: 'hashed',
-  revoked: false,
   expiresAt: new Date(Date.now() + 1000 * 60 * 60),
   user: mockUser,
   userId: mockUser.id,
@@ -50,11 +48,21 @@ const mockJwtService = {
   sign: jest.fn().mockReturnValue('mock-jwt-token'),
 };
 
+// QueryBuilder mock — models the fluent chain used in the atomic DELETE
+const mockQbExecute = jest.fn();
+const mockQueryBuilder = {
+  delete: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  returning: jest.fn().mockReturnThis(),
+  execute: mockQbExecute,
+};
+
 const mockRefreshTokenRepo = {
   findOne: jest.fn(),
   save: jest.fn(),
   create: jest.fn(),
-  update: jest.fn(),
+  delete: jest.fn(),
+  createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
 
 // ─── Module factory ──────────────────────────────────────────────────────────
@@ -79,12 +87,6 @@ const rawLogoutToken = 'some-raw-token';
 const expectedLogoutHash = crypto
   .createHash('sha256')
   .update(rawLogoutToken)
-  .digest('hex');
-
-const rawChangePasswordToken = 'current-session-token';
-const expectedChangePasswordHash = crypto
-  .createHash('sha256')
-  .update(rawChangePasswordToken)
   .digest('hex');
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -193,6 +195,25 @@ describe('AuthService', () => {
 
   describe('refresh', () => {
     const rawToken = 'valid-raw-token';
+    const expectedHash = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
+
+    // Helper: configure the atomic DELETE queryBuilder to simulate a
+    // successful token consumption (affected = 1, raw returns the userId row).
+    function mockAtomicDeleteSuccess() {
+      mockQbExecute.mockResolvedValue({
+        affected: 1,
+        raw: [{ userId: mockUser.id }],
+      });
+    }
+
+    // Helper: simulate the token not being found / already consumed / expired
+    // (the WHERE clause matched nothing → affected = 0).
+    function mockAtomicDeleteMiss() {
+      mockQbExecute.mockResolvedValue({ affected: 0, raw: [] });
+    }
 
     beforeEach(() => {
       mockRefreshTokenRepo.create.mockImplementation(
@@ -202,7 +223,8 @@ describe('AuthService', () => {
     });
 
     it('should issue new tokens on a valid refresh token', async () => {
-      mockRefreshTokenRepo.findOne.mockResolvedValue(mockStoredToken);
+      mockAtomicDeleteSuccess();
+      mockUsersService.findOneBy.mockResolvedValue(mockUser);
 
       const result = await service.refresh(rawToken);
 
@@ -215,29 +237,32 @@ describe('AuthService', () => {
       });
     });
 
-    it('should revoke the old token before issuing a new one (rotation)', async () => {
-      mockRefreshTokenRepo.findOne.mockResolvedValue({ ...mockStoredToken });
+    it('should atomically delete the old token during rotation', async () => {
+      mockAtomicDeleteSuccess();
+      mockUsersService.findOneBy.mockResolvedValue(mockUser);
 
       await service.refresh(rawToken);
 
-      expect(mockRefreshTokenRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ revoked: true }),
+      // The WHERE clause must include the hashed token and the expiry guard
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'tokenHash = :hash AND expiresAt > :now',
+        expect.objectContaining({ hash: expectedHash }),
       );
+      expect(mockQbExecute).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw when token is not found or already revoked', async () => {
-      mockRefreshTokenRepo.findOne.mockResolvedValue(null);
+    it('should throw when the token is not found or already consumed (affected = 0)', async () => {
+      mockAtomicDeleteMiss();
 
       await expect(service.refresh(rawToken)).rejects.toThrow(
         UnauthorizedException,
       );
     });
 
-    it('should throw when token is expired', async () => {
-      mockRefreshTokenRepo.findOne.mockResolvedValue({
-        ...mockStoredToken,
-        expiresAt: new Date(Date.now() - 1000),
-      });
+    it('should throw when token is expired (filtered out by the WHERE clause)', async () => {
+      // An expired token is excluded by the `expiresAt > :now` predicate,
+      // so the DELETE reports affected = 0 — same path as "not found".
+      mockAtomicDeleteMiss();
 
       await expect(service.refresh(rawToken)).rejects.toThrow(
         UnauthorizedException,
@@ -245,40 +270,47 @@ describe('AuthService', () => {
     });
 
     it('should throw when the associated user is not active', async () => {
-      mockRefreshTokenRepo.findOne.mockResolvedValue({
-        ...mockStoredToken,
-        user: { ...mockUser, isActive: false },
+      mockAtomicDeleteSuccess();
+      mockUsersService.findOneBy.mockResolvedValue({
+        ...mockUser,
+        isActive: false,
       });
 
       await expect(service.refresh(rawToken)).rejects.toThrow(
         UnauthorizedException,
       );
     });
+
+    it('should not call findOneBy when the atomic delete reports no affected rows', async () => {
+      mockAtomicDeleteMiss();
+
+      await service.refresh(rawToken).catch(() => {});
+
+      expect(mockUsersService.findOneBy).not.toHaveBeenCalled();
+    });
   });
 
   // ── logout ─────────────────────────────────────────────────────────────────
 
   describe('logout', () => {
-    it('should revoke the refresh token by its hash', async () => {
-      mockRefreshTokenRepo.update.mockResolvedValue({});
+    it('should delete the refresh token by its hash', async () => {
+      mockRefreshTokenRepo.delete.mockResolvedValue({ affected: 1 });
 
       await service.logout(rawLogoutToken);
 
-      expect(mockRefreshTokenRepo.update).toHaveBeenCalledWith(
-        { tokenHash: expectedLogoutHash },
-        { revoked: true },
-      );
+      expect(mockRefreshTokenRepo.delete).toHaveBeenCalledWith({
+        tokenHash: expectedLogoutHash,
+      });
     });
 
-    it('should hash the raw token and never store it in plain text', async () => {
-      mockRefreshTokenRepo.update.mockResolvedValue({});
+    it('should hash the raw token and never use it in plain text', async () => {
+      mockRefreshTokenRepo.delete.mockResolvedValue({ affected: 1 });
 
       await service.logout(rawLogoutToken);
 
-      expect(mockRefreshTokenRepo.update).not.toHaveBeenCalledWith(
-        { tokenHash: rawLogoutToken },
-        expect.anything(),
-      );
+      expect(mockRefreshTokenRepo.delete).not.toHaveBeenCalledWith({
+        tokenHash: rawLogoutToken,
+      });
     });
   });
 
@@ -294,17 +326,17 @@ describe('AuthService', () => {
       mockRefreshTokenRepo.save.mockImplementation((data) =>
         Promise.resolve(data as RefreshToken),
       );
-      mockRefreshTokenRepo.update.mockResolvedValue({});
+      mockRefreshTokenRepo.delete.mockResolvedValue({ affected: 1 });
       mockUsersService.updatePassword.mockResolvedValue(undefined);
     });
 
     it('should return new tokens when credentials are valid', async () => {
       mockUsersService.findOneBy
-        .mockResolvedValueOnce(mockUser) // initial lookup
-        .mockResolvedValueOnce(mockUser); // post-update lookup
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      const result = await service.changePassword(mockUser.id, dto, undefined);
+      const result = await service.changePassword(mockUser.id, dto);
 
       expect(result.accessToken).toBe('mock-jwt-token');
       expect(result.user).toEqual({
@@ -321,7 +353,7 @@ describe('AuthService', () => {
         .mockResolvedValueOnce(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      const result = await service.changePassword(mockUser.id, dto, undefined);
+      const result = await service.changePassword(mockUser.id, dto);
 
       expect(result.refreshToken).toBeDefined();
       expect(typeof result.refreshToken).toBe('string');
@@ -330,9 +362,9 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when user is not found', async () => {
       mockUsersService.findOneBy.mockResolvedValue(null);
 
-      await expect(
-        service.changePassword(mockUser.id, dto, undefined),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.changePassword(mockUser.id, dto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should throw UnauthorizedException when user is not active', async () => {
@@ -341,90 +373,43 @@ describe('AuthService', () => {
         isActive: false,
       });
 
-      await expect(
-        service.changePassword(mockUser.id, dto, undefined),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.changePassword(mockUser.id, dto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should throw UnauthorizedException when the current password is wrong', async () => {
       mockUsersService.findOneBy.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(
-        service.changePassword(mockUser.id, dto, undefined),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.changePassword(mockUser.id, dto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should throw UnauthorizedException when updatedUser is not found after password update', async () => {
       mockUsersService.findOneBy
-        .mockResolvedValueOnce(mockUser) // initial lookup succeeds
-        .mockResolvedValueOnce(null); // post-update lookup returns nothing
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(null);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      await expect(
-        service.changePassword(mockUser.id, dto, undefined),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.changePassword(mockUser.id, dto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
-    it('should revoke all user tokens when no currentRawRefreshToken is provided', async () => {
+    it('should delete all tokens for the user on password change', async () => {
       mockUsersService.findOneBy
         .mockResolvedValueOnce(mockUser)
         .mockResolvedValueOnce(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      await service.changePassword(mockUser.id, dto, undefined);
+      await service.changePassword(mockUser.id, dto);
 
-      expect(mockRefreshTokenRepo.update).toHaveBeenCalledWith(
-        { userId: mockUser.id, revoked: false },
-        { revoked: true },
-      );
-    });
-
-    it('should revoke all OTHER tokens (excluding the current session) when currentRawRefreshToken is provided', async () => {
-      mockUsersService.findOneBy
-        .mockResolvedValueOnce(mockUser)
-        .mockResolvedValueOnce(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-
-      await service.changePassword(mockUser.id, dto, rawChangePasswordToken);
-
-      expect(mockRefreshTokenRepo.update).toHaveBeenCalledWith(
-        {
-          userId: mockUser.id,
-          revoked: false,
-          tokenHash: Not(expectedChangePasswordHash),
-        },
-        { revoked: true },
-      );
-    });
-
-    it('should also revoke the current session token after revoking the others', async () => {
-      mockUsersService.findOneBy
-        .mockResolvedValueOnce(mockUser)
-        .mockResolvedValueOnce(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-
-      await service.changePassword(mockUser.id, dto, rawChangePasswordToken);
-
-      expect(mockRefreshTokenRepo.update).toHaveBeenCalledWith(
-        { tokenHash: expectedChangePasswordHash },
-        { revoked: true },
-      );
-    });
-
-    it('should hash the current session token and never use it in plain text', async () => {
-      mockUsersService.findOneBy
-        .mockResolvedValueOnce(mockUser)
-        .mockResolvedValueOnce(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-
-      await service.changePassword(mockUser.id, dto, rawChangePasswordToken);
-
-      const allCalls = mockRefreshTokenRepo.update.mock.calls;
-      const usedRawToken = allCalls.some((args) =>
-        JSON.stringify(args).includes(rawChangePasswordToken),
-      );
-      expect(usedRawToken).toBe(false);
+      expect(mockRefreshTokenRepo.delete).toHaveBeenCalledTimes(1);
+      expect(mockRefreshTokenRepo.delete).toHaveBeenCalledWith({
+        userId: mockUser.id,
+      });
     });
 
     it('should call updatePassword with the correct userId and new password', async () => {
@@ -433,7 +418,7 @@ describe('AuthService', () => {
         .mockResolvedValueOnce(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      await service.changePassword(mockUser.id, dto, undefined);
+      await service.changePassword(mockUser.id, dto);
 
       expect(mockUsersService.updatePassword).toHaveBeenCalledWith(
         mockUser.id,

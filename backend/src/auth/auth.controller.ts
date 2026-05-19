@@ -40,7 +40,7 @@ export class AuthController {
     res.cookie('refresh_token', refreshToken, {
       ...COOKIE_BASE,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/auth/refresh',
+      path: '/api/auth',
     });
   }
 
@@ -82,7 +82,7 @@ export class AuthController {
     res.clearCookie('access_token', COOKIE_BASE);
     res.clearCookie('refresh_token', {
       ...COOKIE_BASE,
-      path: 'api/auth/refresh',
+      path: '/api/auth',
     });
   }
 
@@ -99,15 +99,9 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const currentUser = req.user as JwtUser;
-    const currentRawRefreshToken = (req.cookies as Record<string, string>)
-      ?.refresh_token;
 
     const { accessToken, refreshToken, user } =
-      await this.authService.changePassword(
-        currentUser.id,
-        dto,
-        currentRawRefreshToken,
-      );
+      await this.authService.changePassword(currentUser.id, dto);
 
     this.setTokenCookies(res, accessToken, refreshToken);
     return { user };

@@ -26,9 +26,6 @@ export class RefreshToken {
   @Column()
   expiresAt!: Date;
 
-  @Column({ default: false })
-  revoked!: boolean;
-
   @CreateDateColumn()
   createdAt!: Date;
 }

@@ -7,7 +7,6 @@ import {
   IconButton,
   InputAdornment,
   LinearProgress,
-  Snackbar,
   Stack,
   TextField,
   ToggleButton,
@@ -27,6 +26,7 @@ import useDeactivateUserMutation from "../../hooks/users/useDeactivateUserMutati
 import { useNavigate } from "react-router-dom";
 import useReactivateUserMutation from "../../hooks/users/useReactivateUserMutation";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSnackbar } from "../../providers/useSnackbar";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -34,6 +34,7 @@ export default function UserListPage() {
   const { t } = useTranslation("user");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { showMessage } = useSnackbar();
 
   const [fullName, setFullName] = useState("");
   const [debouncedFullName] = useDebounce(fullName, 400);
@@ -41,10 +42,6 @@ export default function UserListPage() {
   const [isActive, setIsActive] = useState<"active" | "inactive" | null>(
     "active",
   );
-  const [openDeactivatedUserSnackbar, setOpenDeactivatedUserSnackbar] =
-    useState(false);
-  const [openReactivatedUserSnackbar, setOpenReactivatedUserSnackbar] =
-    useState(false);
 
   const {
     data,
@@ -59,8 +56,22 @@ export default function UserListPage() {
     isActive:
       isActive === "active" ? true : isActive === "inactive" ? false : null,
   });
-  const deactivateUserMutation = useDeactivateUserMutation();
-  const reactivateUserMutation = useReactivateUserMutation();
+  const deactivateUserMutation = useDeactivateUserMutation({
+    onSuccess: () => {
+      showMessage("deactivated", "success");
+    },
+    onError: () => {
+      showMessage("somethingWentWrong", "error");
+    },
+  });
+  const reactivateUserMutation = useReactivateUserMutation({
+    onSuccess: () => {
+      showMessage("reactivated", "success");
+    },
+    onError: () => {
+      showMessage("somethingWentWrong", "error");
+    },
+  });
 
   const users = data?.pages.flat() ?? [];
 
@@ -248,7 +259,6 @@ export default function UserListPage() {
                       .then(() =>
                         queryClient.invalidateQueries({ queryKey: ["users"] }),
                       )
-                      .then(() => setOpenDeactivatedUserSnackbar(true))
                   }
                 />
               )}
@@ -261,8 +271,7 @@ export default function UserListPage() {
                       .mutateAsync(user.id)
                       .then(() =>
                         queryClient.invalidateQueries({ queryKey: ["users"] }),
-                      )
-                      .then(() => setOpenReactivatedUserSnackbar(true));
+                      );
                   }}
                 >
                   <SettingsBackupRestore fontSize="small" />
@@ -276,43 +285,6 @@ export default function UserListPage() {
       <div ref={sentinelRef} style={{ height: 1 }} />
 
       {isFetchingNextPage && <LinearProgress />}
-
-      <Snackbar
-        open={openDeactivatedUserSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenDeactivatedUserSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenDeactivatedUserSnackbar(false);
-          }}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("deactivated")}
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={openReactivatedUserSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenReactivatedUserSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenReactivatedUserSnackbar(false);
-          }}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("reactivated")}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

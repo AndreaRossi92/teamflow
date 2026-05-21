@@ -9,6 +9,7 @@ import { AuthProvider } from "./providers/AuthProvider";
 import { BrowserRouter } from "react-router-dom";
 import { Suspense } from "react";
 import PageLoader from "./components/PageLoader";
+import { SnackbarProvider } from "./providers/SnackbarProvider";
 
 export default function App() {
   const queryClient = new QueryClient();
@@ -18,19 +19,21 @@ export default function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Suspense fallback={<PageLoader />}>
-            <BrowserRouter>
-              <CssBaseline />
-              <Header />
-              <Container sx={{ p: 2 }}>
-                <AppRoutes />
-              </Container>
-            </BrowserRouter>
-          </Suspense>
-        </AuthProvider>
-      </QueryClientProvider>
+      <SnackbarProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <Suspense fallback={<PageLoader />}>
+              <BrowserRouter>
+                <CssBaseline />
+                <Header />
+                <Container sx={{ p: 2 }}>
+                  <AppRoutes />
+                </Container>
+              </BrowserRouter>
+            </Suspense>
+          </AuthProvider>
+        </QueryClientProvider>
+      </SnackbarProvider>
     </ThemeProvider>
   );
 }

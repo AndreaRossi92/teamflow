@@ -1,22 +1,20 @@
 import { useTranslation } from "react-i18next";
-import { Alert, Button, Container, Paper, Snackbar } from "@mui/material";
+import { Button, Container, Paper } from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import useCustomForm from "../../hooks/useCustomForm";
 import PageHeader from "../../components/PageHeader";
 import { omit } from "lodash";
-import { useState } from "react";
 import {
   changePasswordFormSchema,
   type ChangePasswordFormValues,
 } from "../../types/changePasswordForm";
 import useChangePasswordMutation from "../../hooks/auth/useChangePasswordMutation";
 import { ChangePasswordForm } from "../../forms/auth/ChangePasswordForm";
+import { useSnackbar } from "../../providers/useSnackbar";
 
 export default function ChangePasswordPage() {
   const { t } = useTranslation("auth");
-
-  const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
-  const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
+  const { showMessage } = useSnackbar();
 
   const changePasswordForm = useCustomForm<ChangePasswordFormValues>({
     schema: changePasswordFormSchema,
@@ -29,10 +27,10 @@ export default function ChangePasswordPage() {
 
   const changePasswordMutation = useChangePasswordMutation({
     onSuccess: () => {
-      setOpenSuccessSnackbar(true);
+      showMessage(t("passwordChanged"), "success");
     },
     onError: () => {
-      setOpenErrorSnackbar(true);
+      showMessage(t("somethingWentWrong"), "error");
     },
   });
 
@@ -69,42 +67,6 @@ export default function ChangePasswordPage() {
           </Button>
         </Paper>
       </Container>
-      <Snackbar
-        open={openErrorSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenErrorSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenErrorSnackbar(false);
-          }}
-          severity="error"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("somethingWentWrong", { ns: "errors" })}
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={openSuccessSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenSuccessSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenSuccessSnackbar(false);
-          }}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("passwordChanged")}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

@@ -18,5 +18,7 @@
   "changePassword": "Change password",
   "logout": "Logout",
   "settings": "Settings",
-  "submit": "Submit"
+  "submit": "Submit",
+  "pageNotFound": "Page not found",
+  "home": "Home"
 }

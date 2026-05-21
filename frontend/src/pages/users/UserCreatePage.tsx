@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Alert, Button, Container, Paper, Snackbar } from "@mui/material";
+import { Button, Container, Paper } from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import {
   userCreateFormSchema,
@@ -12,14 +12,13 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import PageHeader from "../../components/PageHeader";
 import { omit } from "lodash";
-import { useState } from "react";
+import { useSnackbar } from "../../providers/useSnackbar";
 
 export default function UserCreatePage() {
   const { t } = useTranslation("user");
+  const { showMessage } = useSnackbar();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
 
   const userCreateForm = useCustomForm<UserCreateFormValues>({
     schema: userCreateFormSchema,
@@ -38,7 +37,7 @@ export default function UserCreatePage() {
       navigate(`/user/${user.id}`, { replace: true });
     },
     onError: () => {
-      setOpenErrorSnackbar(true);
+      showMessage("somethingWentWrong", "error");
     },
   });
 
@@ -74,24 +73,6 @@ export default function UserCreatePage() {
           </Button>
         </Paper>
       </Container>
-      <Snackbar
-        open={openErrorSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenErrorSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenErrorSnackbar(false);
-          }}
-          severity="error"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("somethingWentWrong", { ns: "errors" })}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

@@ -4,26 +4,37 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import UserDetail from "../../components/users/UserDetail";
 import PageLoader from "../../components/PageLoader";
-import { Alert, IconButton, Snackbar, Stack } from "@mui/material";
+import { Alert, IconButton, Stack } from "@mui/material";
 import { Edit, SettingsBackupRestore } from "@mui/icons-material";
 import DeleteIconButton from "../../components/DeleteIconButton";
 import useDeactivateUserMutation from "../../hooks/users/useDeactivateUserMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import useReactivateUserMutation from "../../hooks/users/useReactivateUserMutation";
-import { useState } from "react";
+import { useSnackbar } from "../../providers/useSnackbar";
 
 export default function UserDetailPage() {
   const { t } = useTranslation("user");
+  const { showMessage } = useSnackbar();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { id } = useParams();
-  const [openDeactivatedUserSnackbar, setOpenDeactivatedUserSnackbar] =
-    useState(false);
-  const [openReactivatedUserSnackbar, setOpenReactivatedUserSnackbar] =
-    useState(false);
   const user = useUserDetailQuery(id ?? "");
-  const deactivateUserMutation = useDeactivateUserMutation();
-  const reactivateUserMutation = useReactivateUserMutation();
+  const deactivateUserMutation = useDeactivateUserMutation({
+    onSuccess: () => {
+      showMessage("deactivated", "success");
+    },
+    onError: () => {
+      showMessage("somethingWentWrong", "error");
+    },
+  });
+  const reactivateUserMutation = useReactivateUserMutation({
+    onSuccess: () => {
+      showMessage("reactivated", "success");
+    },
+    onError: () => {
+      showMessage("somethingWentWrong", "error");
+    },
+  });
 
   return (
     <>
@@ -52,7 +63,6 @@ export default function UserDetailPage() {
                       .then(() =>
                         queryClient.invalidateQueries({ queryKey: ["users"] }),
                       )
-                      .then(() => setOpenDeactivatedUserSnackbar(true))
                   }
                 />
               )}
@@ -65,8 +75,7 @@ export default function UserDetailPage() {
                       .mutateAsync(user.data.id)
                       .then(() =>
                         queryClient.invalidateQueries({ queryKey: ["users"] }),
-                      )
-                      .then(() => setOpenReactivatedUserSnackbar(true));
+                      );
                   }}
                 >
                   <SettingsBackupRestore fontSize="small" />
@@ -84,42 +93,6 @@ export default function UserDetailPage() {
       {!user.isFetching && !user.isError && !!user.data && (
         <UserDetail user={user.data} />
       )}
-      <Snackbar
-        open={openDeactivatedUserSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenDeactivatedUserSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenDeactivatedUserSnackbar(false);
-          }}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("deactivated")}
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={openReactivatedUserSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenReactivatedUserSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenReactivatedUserSnackbar(false);
-          }}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("reactivated")}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

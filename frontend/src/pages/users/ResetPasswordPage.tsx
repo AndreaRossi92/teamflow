@@ -1,17 +1,9 @@
 import { useTranslation } from "react-i18next";
-import {
-  Alert,
-  Button,
-  Container,
-  Paper,
-  Snackbar,
-  Typography,
-} from "@mui/material";
+import { Button, Container, Paper, Typography } from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import useCustomForm from "../../hooks/useCustomForm";
 import PageHeader from "../../components/PageHeader";
 import { omit } from "lodash";
-import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useUserDetailQuery from "../../hooks/users/useUserDetailQuery";
 import {
@@ -20,15 +12,14 @@ import {
 } from "../../types/resetPasswordForm";
 import useResetPasswordMutation from "../../hooks/users/useResetPasswordMutation";
 import { ResetPasswordForm } from "../../forms/users/ResetPasswordForm";
+import { useSnackbar } from "../../providers/useSnackbar";
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation("user");
+  const { showMessage } = useSnackbar();
   const { id } = useParams();
   const navigate = useNavigate();
   const user = useUserDetailQuery(id ?? "");
-
-  const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
-  const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
   const resetPasswordForm = useCustomForm<ResetPasswordFormValues>({
     schema: resetPasswordFormSchema,
@@ -40,11 +31,11 @@ export default function ResetPasswordPage() {
 
   const resetPasswordMutation = useResetPasswordMutation(id ?? "", {
     onSuccess: () => {
-      setOpenSuccessSnackbar(true);
+      showMessage("passwordReset", "success");
       navigate(`/user/${id}`, { replace: true });
     },
     onError: () => {
-      setOpenErrorSnackbar(true);
+      showMessage("somethingWentWrong", "error");
     },
   });
 
@@ -84,42 +75,6 @@ export default function ResetPasswordPage() {
           </Button>
         </Paper>
       </Container>
-      <Snackbar
-        open={openErrorSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenErrorSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenErrorSnackbar(false);
-          }}
-          severity="error"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("somethingWentWrong", { ns: "errors" })}
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={openSuccessSnackbar}
-        autoHideDuration={5000}
-        onClose={() => {
-          setOpenSuccessSnackbar(false);
-        }}
-      >
-        <Alert
-          onClose={() => {
-            setOpenSuccessSnackbar(false);
-          }}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {t("passwordReset")}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

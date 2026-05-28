@@ -6,8 +6,10 @@ import {
 } from "react";
 import type { AuthUser } from "../types/authUser";
 import { AuthContext } from "./Auth.Context";
-import { refreshToken, logout as logoutApi } from "../api/auth";
+import { logout as logoutApi } from "../api/auth";
 import { api } from "../api/axios.instance";
+import { setupAuthInterceptor } from "./setupAuthInterceptor";
+import { refreshCoordinator } from "./refreshCoordinator";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -24,69 +26,25 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    let isRefreshing = false;
-    let pendingQueue: Array<{
-      resolve: () => void;
-      reject: (reason?: unknown) => void;
-    }> = [];
+    const teardown = setupAuthInterceptor(api, {
+      onRefreshSuccess: setUser,
+      onRefreshFailure: logout,
+    });
 
-    function flushQueue(error: unknown = null): void {
-      pendingQueue.forEach(({ resolve, reject }) =>
-        error ? reject(error) : resolve(),
-      );
-      pendingQueue = [];
-    }
-
-    const SKIP_REFRESH_URLS = ["/auth/refresh", "/auth/login", "/auth/logout"];
-
-    const interceptorId = api.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const requestUrl: string = error.config?.url ?? "";
-
-        if (
-          error.response?.status !== 401 ||
-          SKIP_REFRESH_URLS.some((url) => requestUrl.includes(url)) ||
-          isDemoMode ||
-          error.config._retry // already retried once, don't loop
-        ) {
-          return Promise.reject(error);
-        }
-
-        if (isRefreshing) {
-          return new Promise<void>((resolve, reject) => {
-            pendingQueue.push({ resolve, reject });
-          }).then(() => api.request(error.config));
-        }
-
-        isRefreshing = true;
-        error.config._retry = true;
-
-        try {
-          await refreshToken();
-          flushQueue();
-          return api.request(error.config);
-        } catch (refreshError) {
-          flushQueue(refreshError);
-          await logout();
-          return Promise.reject(refreshError);
-        } finally {
-          isRefreshing = false;
-        }
-      },
-    );
-
-    // Remove the interceptor when the component unmounts
-    return () => api.interceptors.response.eject(interceptorId);
+    return teardown;
   }, [logout]);
 
   useEffect(() => {
-    if (isDemoMode) setIsLoading(false);
-    else
-      refreshToken()
-        .then(setUser)
-        .catch(() => setUser(null))
-        .finally(() => setIsLoading(false));
+    if (isDemoMode) {
+      setIsLoading(false);
+      return;
+    }
+
+    refreshCoordinator
+      .refresh()
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setIsLoading(false));
   }, []);
 
   if (isLoading) return null;

@@ -45,6 +45,9 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route index element={<DashboardPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
         <Route path="/ai" element={<GenerateTicketPage />} />
         <Route path="/users" element={<UsersListPage />} />
         <Route path="/user/create" element={<UserCreatePage />} />

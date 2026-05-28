@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import PageLoader from "../components/PageLoader";
 
@@ -14,6 +14,7 @@ const lazyWithLoader = (
   );
 };
 
+const NotFoundPage = lazyWithLoader(() => import("../pages/NotFoundPage"));
 const LoginPage = lazyWithLoader(() => import("../pages/auth/LoginPage"));
 const GenerateTicketPage = lazyWithLoader(
   () => import("../pages/GenerateTicketPage"),
@@ -44,6 +45,9 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route index element={<DashboardPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
         <Route path="/ai" element={<GenerateTicketPage />} />
         <Route path="/users" element={<UsersListPage />} />
         <Route path="/user/create" element={<UserCreatePage />} />
@@ -55,7 +59,7 @@ export default function AppRoutes() {
         />
         <Route path="/change-password" element={<ChangePasswordPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

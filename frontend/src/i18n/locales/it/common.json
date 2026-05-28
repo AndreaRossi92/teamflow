@@ -18,5 +18,7 @@
   "changePassword": "Modifica password",
   "logout": "Esci",
   "settings": "Impostazioni",
-  "submit": "Salva"
+  "submit": "Salva",
+  "pageNotFound": "Pagina non trovata",
+  "home": "Home"
 }

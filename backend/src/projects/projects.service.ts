@@ -52,8 +52,6 @@ export class ProjectsService {
     return this.findProjectWithAccess(id, requestingUser);
   }
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
-
   async createProject(
     dto: CreateProjectDto,
     requestingUser: JwtUser,
@@ -141,8 +139,6 @@ export class ProjectsService {
 
     return users.map((u) => ({ ...u, isMember: memberIds.has(u.id) }));
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   private async findProjectWithAccess(
     id: string,

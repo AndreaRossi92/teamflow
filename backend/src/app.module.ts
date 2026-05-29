@@ -7,6 +7,7 @@ import { User } from './users/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { SeedModule } from './seed/seed.module';
 import { RefreshToken } from './auth/refresh-token.entity';
+import { ProjectsModule } from './projects/project.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RefreshToken } from './auth/refresh-token.entity';
     UsersModule,
     AuthModule,
     SeedModule,
+    ProjectsModule,
   ],
 })
 export class AppModule {}

@@ -29,6 +29,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/auth.decorators';
 import { Role } from '../users/user.entity';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
+import { UserWithMemberDto } from './dto/users-with-member.dto';
 
 @ApiTags('Projects')
 @ApiCookieAuth()
@@ -112,7 +113,11 @@ export class ProjectsController {
     summary:
       'List all active non-admin users with isMember flag for a given project (admin or assigned manager)',
   })
-  @ApiOkResponse({ description: 'User list with isMember flag' })
+  @ApiOkResponse({
+    type: UserWithMemberDto,
+    isArray: true,
+    description: 'User list with isMember flag',
+  })
   @ApiForbiddenResponse({ description: 'Not a member of this project' })
   getAssignableUsers(
     @Param('id', ParseUUIDPipe) id: string,

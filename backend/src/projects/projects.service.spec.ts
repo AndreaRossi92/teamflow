@@ -9,6 +9,7 @@ import { ProjectsService } from './projects.service';
 import { Project } from './project.entity';
 import { User, Role } from '../users/user.entity';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
+import { ListProjectsDto } from './dto/list-projects.dto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -71,18 +72,14 @@ const mockProject: Project = {
 
 // QueryBuilder mock for findAllForUser (non-admin path)
 const mockGetMany = jest.fn();
-const mockSetParameter = jest.fn();
-const mockWhere = jest.fn();
 const mockQueryBuilder = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
-  where: jest.fn().mockImplementation(() => {
-    mockWhere();
-    return mockQueryBuilder;
-  }),
-  setParameter: jest.fn().mockImplementation(() => {
-    mockSetParameter();
-    return mockQueryBuilder;
-  }),
+  where: jest.fn().mockReturnThis(),
+  andWhere: jest.fn().mockReturnThis(),
+  setParameter: jest.fn().mockReturnThis(),
+  orderBy: jest.fn().mockReturnThis(),
+  take: jest.fn().mockReturnThis(),
+  skip: jest.fn().mockReturnThis(),
   subQuery: jest.fn().mockReturnThis(),
   select: jest.fn().mockReturnThis(),
   from: jest.fn().mockReturnThis(),
@@ -92,11 +89,13 @@ const mockQueryBuilder = {
       '(SELECT pm.projectId FROM project_members pm WHERE pm.userId = :userId)',
     ),
   getMany: mockGetMany,
+  getManyAndCount: jest.fn(), // ← nuovo
 };
 
 const mockProjectRepo = {
   find: jest.fn(),
   findOne: jest.fn(),
+  findAndCount: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
@@ -139,43 +138,138 @@ describe('ProjectsService', () => {
   // ── findAllForUser ─────────────────────────────────────────────────────────
 
   describe('findAllForUser', () => {
-    it('should call repo.find for admins (no filter)', async () => {
-      mockProjectRepo.find.mockResolvedValue([mockProject]);
+    const baseQuery: ListProjectsDto = { page: 1, limit: 20 };
 
-      const result = await service.findAllForUser(adminUser);
+    it('should call findAndCount for admins and return a paginated result', async () => {
+      mockProjectRepo.findAndCount.mockResolvedValue([[mockProject], 1]);
 
-      expect(mockProjectRepo.find).toHaveBeenCalledTimes(1);
+      const result = await service.findAllForUser(adminUser, baseQuery);
+
+      expect(mockProjectRepo.findAndCount).toHaveBeenCalledTimes(1);
       expect(mockProjectRepo.createQueryBuilder).not.toHaveBeenCalled();
-      expect(result).toEqual([mockProject]);
+      expect(result).toMatchObject({
+        data: [mockProject],
+        total: 1,
+        page: 1,
+        limit: 20,
+        hasNextPage: false,
+      });
     });
 
-    it('should use a filtered query for managers', async () => {
-      mockGetMany.mockResolvedValue([mockProject]);
+    it('should use a query builder for managers and return a paginated result', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockProject], 1]);
 
-      const result = await service.findAllForUser(managerUser);
+      const result = await service.findAllForUser(managerUser, baseQuery);
 
       expect(mockProjectRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
-      expect(mockProjectRepo.find).not.toHaveBeenCalled();
-      expect(result).toEqual([mockProject]);
+      expect(mockProjectRepo.findAndCount).not.toHaveBeenCalled();
+      expect(result).toMatchObject({ data: [mockProject], total: 1, page: 1 });
     });
 
-    it('should use a filtered query for devs', async () => {
-      mockGetMany.mockResolvedValue([]);
+    it('should use a query builder for devs', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
-      await service.findAllForUser(devUser);
+      await service.findAllForUser(devUser, baseQuery);
 
       expect(mockProjectRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    });
+
+    it('should pass the name filter via ILIKE for admins', async () => {
+      mockProjectRepo.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(adminUser, { ...baseQuery, name: 'flow' });
+
+      const calls = mockProjectRepo.findAndCount.mock.calls as {
+        where: { name?: unknown; isActive?: unknown };
+      }[][];
+      expect(calls[0][0].where.name).toMatchObject({
+        _type: 'ilike',
+        _value: '%flow%',
+      });
+    });
+
+    it('should pass the isActive filter for admins', async () => {
+      mockProjectRepo.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(adminUser, {
+        ...baseQuery,
+        isActive: false,
+      });
+
+      const calls = mockProjectRepo.findAndCount.mock.calls as {
+        where: { name?: unknown; isActive?: unknown };
+      }[][];
+      expect(calls[0][0].where.isActive).toBe(false);
+    });
+
+    it('should apply andWhere for name filter for non-admins', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(managerUser, { ...baseQuery, name: 'flow' });
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'project.name ILIKE :name',
+        { name: '%flow%' },
+      );
+    });
+
+    it('should apply andWhere for isActive filter for non-admins', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(managerUser, {
+        ...baseQuery,
+        isActive: true,
+      });
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'project.isActive = :isActive',
+        { isActive: true },
+      );
     });
 
     it('should scope the query by the requesting user id for non-admins', async () => {
-      mockGetMany.mockResolvedValue([]);
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
-      await service.findAllForUser(managerUser);
+      await service.findAllForUser(managerUser, baseQuery);
 
       expect(mockQueryBuilder.setParameter).toHaveBeenCalledWith(
         'userId',
         managerUser.id,
       );
+    });
+
+    it('should compute skip correctly (page 2, limit 20 → skip 20)', async () => {
+      mockProjectRepo.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(adminUser, { page: 2, limit: 20 });
+
+      expect(mockProjectRepo.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 20, take: 20 }),
+      );
+    });
+
+    it('should set hasNextPage to true when more pages exist', async () => {
+      // page 1, limit 20, total 25 → hasNextPage true
+      mockProjectRepo.findAndCount.mockResolvedValue([[mockProject], 25]);
+
+      const result = await service.findAllForUser(adminUser, {
+        page: 1,
+        limit: 20,
+      });
+
+      expect(result.hasNextPage).toBe(true);
+    });
+
+    it('should set hasNextPage to false on the last page', async () => {
+      // page 2, limit 20, total 25 → hasNextPage false
+      mockProjectRepo.findAndCount.mockResolvedValue([[mockProject], 25]);
+
+      const result = await service.findAllForUser(adminUser, {
+        page: 2,
+        limit: 20,
+      });
+
+      expect(result.hasNextPage).toBe(false);
     });
   });
 

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, In, Not, Repository } from 'typeorm';
 import { Project } from './project.entity';
 import { User, Role } from '../users/user.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -13,6 +13,8 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { AssignUsersDto } from './dto/assign-users.dto';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { ErrorCode } from '../app-error.codes';
+import { ListProjectsDto } from './dto/list-projects.dto';
+import { Paginated } from '../paginated-response.dto';
 
 const PROJECT_RELATIONS = ['members', 'createdBy'];
 
@@ -25,13 +27,30 @@ export class ProjectsService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  async findAllForUser(requestingUser: JwtUser): Promise<Project[]> {
+  async findAllForUser(
+    requestingUser: JwtUser,
+    query: ListProjectsDto,
+  ): Promise<Paginated<Project>> {
+    const { name, isActive, page = 1, limit = 20 } = query;
+    const skip = (page - 1) * limit;
+
     if (requestingUser.role === Role.ADMIN) {
-      return this.projectRepo.find({ relations: PROJECT_RELATIONS });
+      const where: FindOptionsWhere<Project> = {};
+      if (name !== undefined) where.name = ILike(`%${name}%`);
+      if (isActive !== undefined) where.isActive = isActive;
+
+      const [data, total] = await this.projectRepo.findAndCount({
+        where,
+        relations: PROJECT_RELATIONS,
+        order: { createdAt: 'DESC' },
+        take: limit,
+        skip,
+      });
+
+      return { data, total, page, limit, hasNextPage: page * limit < total };
     }
 
-    // Managers and Devs: only projects they are assigned to
-    return this.projectRepo
+    const qb = this.projectRepo
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.createdBy', 'createdBy')
       .leftJoinAndSelect('project.members', 'members')
@@ -45,7 +64,20 @@ export class ProjectsService {
         return `project.id IN ${sub}`;
       })
       .setParameter('userId', requestingUser.id)
-      .getMany();
+      .orderBy('project.createdAt', 'DESC')
+      .take(limit)
+      .skip(skip);
+
+    if (name !== undefined) {
+      qb.andWhere('project.name ILIKE :name', { name: `%${name}%` });
+    }
+    if (isActive !== undefined) {
+      qb.andWhere('project.isActive = :isActive', { isActive });
+    }
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return { data, total, page, limit, hasNextPage: page * limit < total };
   }
 
   async findOneForUser(id: string, requestingUser: JwtUser): Promise<Project> {

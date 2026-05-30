@@ -6,6 +6,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -30,6 +31,10 @@ import { Roles } from '../auth/decorators/auth.decorators';
 import { Role } from '../users/user.entity';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { UserWithMemberDto } from './dto/users-with-member.dto';
+import { ListProjectsDto } from './dto/list-projects.dto';
+import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
+
+class PaginatedProjectsResponse extends PaginatedResponseDto(Project) {}
 
 @ApiTags('Projects')
 @ApiCookieAuth()
@@ -43,9 +48,12 @@ export class ProjectsController {
     summary:
       'List projects visible to the current user — admins see all, others see only assigned ones',
   })
-  @ApiOkResponse({ type: [Project] })
-  findAll(@Req() req: Request): Promise<Project[]> {
-    return this.projectsService.findAllForUser(req.user as JwtUser);
+  @ApiOkResponse({ type: PaginatedProjectsResponse })
+  findAll(
+    @Req() req: Request,
+    @Query() query: ListProjectsDto,
+  ): Promise<Paginated<Project>> {
+    return this.projectsService.findAllForUser(req.user as JwtUser, query);
   }
 
   @Get(':id')

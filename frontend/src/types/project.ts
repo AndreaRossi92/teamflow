@@ -15,3 +15,10 @@ export type ProjectFilters = {
   name: string;
   isActive: boolean | null;
 };
+
+export type AssignableUser = Pick<
+  User,
+  "id" | "fullName" | "role" | "email"
+> & {
+  isMember: boolean;
+};

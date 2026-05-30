@@ -1,8 +1,9 @@
-import type { Project, ProjectFilters } from "../types/project";
+import type { AssignableUser, Project, ProjectFilters } from "../types/project";
 import type {
   ProjectCreateFormValues,
   ProjectEditFormValues,
 } from "../types/projectForm";
+import type { UserFilters } from "../types/user";
 import { api } from "./axios.instance";
 
 const PAGE_SIZE = 20;
@@ -61,6 +62,36 @@ export async function editProject(
   data: ProjectEditFormValues,
 ): Promise<Project> {
   const response = await api.patch<Project>(`/projects/${id}`, data);
+
+  return response.data;
+}
+
+export async function projectAssignableUsersList({
+  id,
+  filters,
+}: {
+  id: string;
+  filters?: Omit<UserFilters, "isActive">;
+}): Promise<AssignableUser[]> {
+  const params = new URLSearchParams();
+
+  if (filters?.fullName) params.append("fullName", filters.fullName);
+  if (filters?.role) params.append("role", filters.role);
+
+  const response = await api.get(
+    `/projects/${id}/assignable-users?${params.toString()}`,
+  );
+
+  return response.data;
+}
+
+export async function projectAssignUsers(
+  id: string,
+  userIds: string[],
+): Promise<Project> {
+  const response = await api.patch<Project>(`/projects/${id}/assign`, {
+    userIds,
+  });
 
   return response.data;
 }

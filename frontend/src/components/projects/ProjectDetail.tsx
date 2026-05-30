@@ -95,10 +95,15 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
               <Typography variant="subtitle2" color="textSecondary">
                 {t("members")}
               </Typography>
-              <UsersList
-                users={project.members}
-                listItemProps={{ disablePadding: true }}
-              />
+              {project.members.length > 0 && (
+                <UsersList
+                  users={project.members}
+                  listItemProps={{ disablePadding: true }}
+                />
+              )}
+              {project.members.length === 0 && (
+                <Alert severity="info">{t("noMembers")}</Alert>
+              )}
             </Grid>
           </Grid>
         </CardContent>

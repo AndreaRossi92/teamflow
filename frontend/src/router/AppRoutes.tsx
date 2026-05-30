@@ -50,6 +50,9 @@ const ProjectEditPage = lazyWithLoader(
 const ProjectCreatePage = lazyWithLoader(
   () => import("../pages/projects/ProjectCreatePage"),
 );
+const ProjectAssignUsersPage = lazyWithLoader(
+  () => import("../pages/projects/ProjectAssignUsersPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -77,6 +80,10 @@ export default function AppRoutes() {
         <Route path="/project/create" element={<ProjectCreatePage />} />
         <Route path="/project/:id" element={<ProjectDetailPage />} />
         <Route path="/project/:id/edit" element={<ProjectEditPage />} />
+        <Route
+          path="/project/:id/assign-users"
+          element={<ProjectAssignUsersPage />}
+        />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

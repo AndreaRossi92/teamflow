@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import PageLoader from "../../components/PageLoader";
 import { Alert, IconButton, Stack } from "@mui/material";
-import { Edit, SettingsBackupRestore } from "@mui/icons-material";
+import { Edit, Group, SettingsBackupRestore } from "@mui/icons-material";
 import DeleteIconButton from "../../components/DeleteIconButton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../providers/useSnackbar";
@@ -52,6 +52,15 @@ export default function ProjectDetailPage() {
                 }}
               >
                 <Edit fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                title={t("members")}
+                onClick={() => {
+                  navigate(`/project/${id}/assign-users`);
+                }}
+              >
+                <Group fontSize="small" />
               </IconButton>
               {project.data.isActive && (
                 <DeleteIconButton

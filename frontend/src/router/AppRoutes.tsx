@@ -44,6 +44,12 @@ const ProjectsListPage = lazyWithLoader(
 const ProjectDetailPage = lazyWithLoader(
   () => import("../pages/projects/ProjectDetailPage"),
 );
+const ProjectEditPage = lazyWithLoader(
+  () => import("../pages/projects/ProjectEditPage"),
+);
+const ProjectCreatePage = lazyWithLoader(
+  () => import("../pages/projects/ProjectCreatePage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -68,7 +74,9 @@ export default function AppRoutes() {
 
       <Route element={<ProtectedRoute allowedRoles={["admin", "manager"]} />}>
         <Route path="/projects" element={<ProjectsListPage />} />
+        <Route path="/project/create" element={<ProjectCreatePage />} />
         <Route path="/project/:id" element={<ProjectDetailPage />} />
+        <Route path="/project/:id/edit" element={<ProjectEditPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

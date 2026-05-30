@@ -19,6 +19,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -33,7 +34,6 @@ import { AuthService } from '../auth/auth.service';
   dto: {
     create: CreateUserDto,
     update: UpdateUserDto,
-    replace: CreateUserDto,
   },
   params: {
     id: {
@@ -46,6 +46,7 @@ import { AuthService } from '../auth/auth.service';
     exclude: ['passwordHash'],
   },
 })
+@ApiTags('Users')
 @ApiCookieAuth()
 @Controller('users')
 @UseGuards(JwtGuard, RolesGuard)

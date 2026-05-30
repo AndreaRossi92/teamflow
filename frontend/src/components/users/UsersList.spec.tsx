@@ -1,15 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import UsersList from "./UsersList";
 import type { User } from "../../types/user";
-
-const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("react-router-dom")>()),
-  useNavigate: () => mockNavigate,
-}));
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 const activeUser: User = {
@@ -35,12 +28,11 @@ const inactiveUser: User = {
 // ── Render helper ──────────────────────────────────────────────────────────────
 function renderUsersList(
   users: User[],
+  onClick?: (user: User) => void,
   actions?: (user: User) => React.ReactNode,
 ) {
   return render(
-    <MemoryRouter>
-      <UsersList users={users} actions={actions} />
-    </MemoryRouter>,
+    <UsersList users={users} onClick={onClick} actions={actions} />,
   );
 }
 
@@ -74,29 +66,40 @@ describe("UsersList", () => {
     });
   });
 
-  describe("navigation", () => {
-    it("navigates to the user detail page when a row is clicked", async () => {
-      renderUsersList([activeUser]);
+  describe("onClick", () => {
+    it("calls onClick with the correct user when a row is clicked", async () => {
+      const handleClick = vi.fn();
+      renderUsersList([activeUser], handleClick);
       const user = userEvent.setup();
 
       await user.click(screen.getByText("Alice Smith"));
 
-      expect(mockNavigate).toHaveBeenCalledWith(`/user/${activeUser.id}`);
+      expect(handleClick).toHaveBeenCalledWith(activeUser);
     });
 
-    it("navigates to the correct user when multiple rows are present", async () => {
-      renderUsersList([activeUser, inactiveUser]);
+    it("calls onClick with the correct user when multiple rows are present", async () => {
+      const handleClick = vi.fn();
+      renderUsersList([activeUser, inactiveUser], handleClick);
       const user = userEvent.setup();
 
       await user.click(screen.getByText("Bob Jones"));
 
-      expect(mockNavigate).toHaveBeenCalledWith(`/user/${inactiveUser.id}`);
+      expect(handleClick).toHaveBeenCalledWith(inactiveUser);
+    });
+
+    it("does not throw when onClick is not provided and a row is clicked", async () => {
+      renderUsersList([activeUser]);
+      const user = userEvent.setup();
+
+      await expect(
+        user.click(screen.getByText("Alice Smith")),
+      ).resolves.not.toThrow();
     });
   });
 
   describe("actions slot", () => {
     it("renders the actions for each user when provided", () => {
-      renderUsersList([activeUser, inactiveUser], (user) => (
+      renderUsersList([activeUser, inactiveUser], undefined, (user) => (
         <button>{`action-${user.id}`}</button>
       ));
 
@@ -106,7 +109,7 @@ describe("UsersList", () => {
 
     it("passes the correct user object to the actions callback", () => {
       const actions = vi.fn(() => null);
-      renderUsersList([activeUser], actions);
+      renderUsersList([activeUser], undefined, actions);
 
       expect(actions).toHaveBeenCalledWith(activeUser);
     });

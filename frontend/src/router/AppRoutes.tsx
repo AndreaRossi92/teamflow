@@ -38,6 +38,9 @@ const ChangePasswordPage = lazyWithLoader(
 const ResetPasswordPage = lazyWithLoader(
   () => import("../pages/users/ResetPasswordPage"),
 );
+const ProjectsListPage = lazyWithLoader(
+  () => import("../pages/projects/ProjectsListPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -45,6 +48,7 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route index element={<DashboardPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
@@ -57,7 +61,10 @@ export default function AppRoutes() {
           path="/user/:id/reset-password"
           element={<ResetPasswordPage />}
         />
-        <Route path="/change-password" element={<ChangePasswordPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+        <Route path="/projects" element={<ProjectsListPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

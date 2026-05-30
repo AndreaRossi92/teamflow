@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Box,
@@ -41,33 +41,35 @@ export default function ProjectAssignUsersPage() {
 
   const project = useProjectDetailQuery(id ?? "");
 
-  const allAssignableUsers = useProjectsAssignableUsersQuery(id ?? "");
-
   const assignableUsers = useProjectsAssignableUsersQuery(id ?? "", {
     role,
     fullName: debouncedFullName,
   });
 
+  const [hasInitialized, setHasInitialized] = useState(false);
   const [assignedUsers, setAssignedUsers] = useState<AssignableUser[]>([]);
 
   const projectAssignUsersMutation = useProjectAssignUsersMutation(id ?? "", {
     onSuccess: (project) => {
       queryClient.setQueryData(["projects", project.id], project);
+      queryClient.invalidateQueries({
+        queryKey: ["projects", project.id, "assignable-users"],
+      });
       navigate(`/project/${project.id}`, { replace: true });
     },
   });
 
-  useEffect(() => {
-    if (allAssignableUsers.isFetched && !allAssignableUsers.isError) {
-      setAssignedUsers(
-        (allAssignableUsers.data ?? []).filter((user) => user.isMember),
-      );
-    }
-  }, [
-    allAssignableUsers.data,
-    allAssignableUsers.isError,
-    allAssignableUsers.isFetched,
-  ]);
+  if (
+    !hasInitialized &&
+    assignableUsers.isFetched &&
+    !assignableUsers.isError
+  ) {
+    console.log(assignableUsers.data);
+    setHasInitialized(true);
+    setAssignedUsers(
+      (assignableUsers.data ?? []).filter((user) => user.isMember),
+    );
+  }
 
   const handleToggle = (assignedUser: AssignableUser) => {
     const foundAssignedUser = assignedUsers.find(
@@ -95,12 +97,12 @@ export default function ProjectAssignUsersPage() {
               );
             }}
             loading={
-              projectAssignUsersMutation.isPending ||
-              allAssignableUsers.isFetching
+              projectAssignUsersMutation.isPending || assignableUsers.isFetching
             }
             disabled={
-              allAssignableUsers.isFetching ||
-              allAssignableUsers.isError ||
+              !hasInitialized ||
+              assignableUsers.isFetching ||
+              assignableUsers.isError ||
               projectAssignUsersMutation.isPending
             }
           >
@@ -126,6 +128,7 @@ export default function ProjectAssignUsersPage() {
         label={t("name")}
         value={fullName}
         onChange={(e) => setFullName(e.target.value)}
+        disabled={!hasInitialized}
         sx={{ mb: 2 }}
         slotProps={{
           input: {
@@ -158,6 +161,7 @@ export default function ProjectAssignUsersPage() {
             exclusive
             onChange={(_, v) => setRole(v === "ALL" ? null : v)}
             size="small"
+            disabled={!hasInitialized}
           >
             <ToggleButton value="ALL">{t("all")}</ToggleButton>
             {ROLES.map((role) => (
@@ -181,9 +185,7 @@ export default function ProjectAssignUsersPage() {
         </Box>
       </Stack>
 
-      {(assignableUsers.isFetching || allAssignableUsers.isFetching) && (
-        <LinearProgress />
-      )}
+      {assignableUsers.isFetching && <LinearProgress />}
 
       {!assignableUsers.isFetching &&
         !assignableUsers.isError &&
@@ -191,14 +193,11 @@ export default function ProjectAssignUsersPage() {
           <Alert severity="info">{t("noUsersFound")}</Alert>
         )}
 
-      {(!assignableUsers.isFetching && assignableUsers.isError) ||
-        (!allAssignableUsers.isFetching && allAssignableUsers.isError && (
-          <Alert severity="error">{t("somethingWentWrong")}</Alert>
-        ))}
+      {!assignableUsers.isFetching && assignableUsers.isError && (
+        <Alert severity="error">{t("somethingWentWrong")}</Alert>
+      )}
 
-      {!allAssignableUsers.isLoading &&
-        !allAssignableUsers.isError &&
-        !assignableUsers.isLoading &&
+      {!assignableUsers.isLoading &&
         !assignableUsers.isError &&
         (assignableUsers.data ?? []).length !== 0 && (
           <ProjectAssignUsers
@@ -209,51 +208,6 @@ export default function ProjectAssignUsersPage() {
             onClick={(user) => {
               handleToggle(user);
             }}
-            //   listItemProps={{
-            //     sx: { pr: 12 },
-            //     disablePadding: true,
-            //   }}
-            //   actions={(user) => (
-            //     <Stack direction="row" spacing={1}>
-            //       <IconButton
-            //         size="small"
-            //         title={t("edit")}
-            //         onClick={() => {
-            //           navigate(`/user/${user.id}/edit`);
-            //         }}
-            //       >
-            //         <Edit fontSize="small" />
-            //       </IconButton>
-            //       {user.isActive && (
-            //         <DeleteIconButton
-            //           dialogTitle={user.fullName}
-            //           dialogText={t("deactivateConfirm")}
-            //           onDelete={() =>
-            //             deactivateUserMutation
-            //               .mutateAsync(user.id)
-            //               .then(() =>
-            //                 queryClient.invalidateQueries({ queryKey: ["users"] }),
-            //               )
-            //           }
-            //         />
-            //       )}
-            //       {!user.isActive && (
-            //         <IconButton
-            //           size="small"
-            //           title={t("restore")}
-            //           onClick={() => {
-            //             reactivateUserMutation
-            //               .mutateAsync(user.id)
-            //               .then(() =>
-            //                 queryClient.invalidateQueries({ queryKey: ["users"] }),
-            //               );
-            //           }}
-            //         >
-            //           <SettingsBackupRestore fontSize="small" />
-            //         </IconButton>
-            //       )}
-            //     </Stack>
-            //   )}
           />
         )}
     </>

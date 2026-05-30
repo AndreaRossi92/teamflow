@@ -610,7 +610,7 @@ describe('ProjectsService', () => {
       mockUserRepo.find.mockResolvedValue([managerEntity]);
 
       await service.getAssignableUsers(mockProject.id, adminUser, {
-        name: 'man',
+        fullName: 'man',
       });
 
       const calls = mockUserRepo.find.mock.calls as {

@@ -6,7 +6,7 @@ export class ListAssignableUsersDto {
   @ApiPropertyOptional({ example: 'Alice' })
   @IsOptional()
   @IsString()
-  name?: string;
+  fullName?: string;
 
   @ApiPropertyOptional({ enum: Role, example: Role.DEV })
   @IsOptional()

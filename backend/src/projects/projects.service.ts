@@ -165,10 +165,10 @@ export class ProjectsService {
     const project = await this.findProjectWithAccess(projectId, requestingUser);
     const memberIds = new Set(project.members.map((m) => m.id));
 
-    const { name, role } = query;
+    const { fullName, role } = query;
 
     const where: FindOptionsWhere<User> = { isActive: true };
-    if (name !== undefined) where.fullName = ILike(`%${name}%`);
+    if (fullName !== undefined) where.fullName = ILike(`%${fullName}%`);
     if (role !== undefined) where.role = role;
 
     const users = await this.userRepo.find({

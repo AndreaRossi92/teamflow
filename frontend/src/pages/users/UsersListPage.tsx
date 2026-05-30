@@ -238,6 +238,13 @@ export default function UserListPage() {
       {!isFetching && !isError && users.length !== 0 && (
         <UsersList
           users={users}
+          onClick={(user) => {
+            navigate(`/user/${user.id}`);
+          }}
+          listItemProps={{
+            sx: { pr: 12 },
+            disablePadding: true,
+          }}
           actions={(user) => (
             <Stack direction="row" spacing={1}>
               <IconButton

@@ -7,30 +7,44 @@ import {
   ListItemText,
   Stack,
   Typography,
+  type ListItemProps,
 } from "@mui/material";
 import type { User } from "../../types/user";
 import ActiveDot from "../ActiveDot";
-import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-type UsersListProps = { users: User[]; actions?: (user: User) => ReactNode };
+type UsersListProps = {
+  users: User[];
+  actions?: (user: User) => ReactNode;
+  onClick?: (user: User) => void;
+  listItemProps?: ListItemProps;
+};
 
-export default function UsersList({ users, actions }: UsersListProps) {
+export default function UsersList({
+  users,
+  actions,
+  onClick,
+  listItemProps,
+}: UsersListProps) {
   const { t } = useTranslation("user");
-  const navigate = useNavigate();
 
   return (
     <List disablePadding dense>
       {users.map((user) => (
-        <ListItem key={user.id} sx={{ pr: 12 }} disablePadding>
+        <ListItem key={user.id} {...listItemProps}>
           <ListItemButton
             sx={{
               flexDirection: { xs: "column", sm: "row" },
               alignItems: { xs: "flex-start", sm: "center" },
+              cursor: onClick ? "pointer" : "default",
+              "&:hover": {
+                backgroundColor: onClick ? "action.hover" : "transparent",
+              },
             }}
+            disableRipple={!onClick}
             onClick={() => {
-              navigate(`/user/${user.id}`);
+              onClick?.(user);
             }}
           >
             <ListItemText

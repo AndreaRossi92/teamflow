@@ -13,7 +13,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { Add, Edit, SettingsBackupRestore } from "@mui/icons-material";
+import { Add, Edit, Group, SettingsBackupRestore } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import PageHeader from "../../components/PageHeader";
 import SearchIcon from "@mui/icons-material/Search";
@@ -206,6 +206,13 @@ export default function ProjectsListPage() {
       {!isLoading && !isError && projects.length !== 0 && (
         <ProjectsList
           projects={projects}
+          onClick={(project) => {
+            navigate(`/project/${project.id}`);
+          }}
+          listItemProps={{
+            sx: { pr: 18 },
+            disablePadding: true,
+          }}
           actions={(project) => (
             <Stack direction="row" spacing={1}>
               <IconButton
@@ -216,6 +223,15 @@ export default function ProjectsListPage() {
                 }}
               >
                 <Edit fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                title={t("members")}
+                onClick={() => {
+                  navigate(`/project/${project.id}/assign-users`);
+                }}
+              >
+                <Group fontSize="small" />
               </IconButton>
               {project.isActive && (
                 <DeleteIconButton

@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Button, Container, Paper } from "@mui/material";
+import { Container, IconButton, Paper } from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import useCustomForm from "../../hooks/useCustomForm";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ import {
 } from "../../types/projectForm";
 import useProjectCreateMutation from "../../hooks/projects/useProjectCreateMutation";
 import { ProjectCreateForm } from "../../forms/projects/ProjectCreateForm";
+import { Save } from "@mui/icons-material";
 
 export default function ProjectCreatePage() {
   const { t } = useTranslation("project");
@@ -43,7 +44,24 @@ export default function ProjectCreatePage() {
 
   return (
     <>
-      <PageHeader title={t("projects")} subtitle={t("create")} />
+      <PageHeader
+        title={t("projects")}
+        subtitle={t("create")}
+        actions={
+          <IconButton
+            size="small"
+            title={t("save")}
+            onClick={handleSubmit}
+            loading={projectCreateMutation.isPending}
+            disabled={
+              !projectCreateForm.formState.isValid ||
+              projectCreateMutation.isPending
+            }
+          >
+            <Save fontSize="small" />
+          </IconButton>
+        }
+      />
       <Container maxWidth="sm">
         <Paper elevation={3} sx={{ p: 4 }}>
           <FormProvider {...projectCreateForm}>
@@ -53,21 +71,6 @@ export default function ProjectCreatePage() {
               }}
             />
           </FormProvider>
-
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={
-              !projectCreateForm.formState.isValid ||
-              projectCreateMutation.isPending
-            }
-            onClick={handleSubmit}
-            loading={projectCreateMutation.isPending}
-            sx={{ mt: 2 }}
-          >
-            {t("submit", { ns: "common" })}
-          </Button>
         </Paper>
       </Container>
     </>

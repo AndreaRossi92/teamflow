@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Button, Container, Paper } from "@mui/material";
+import { Container, IconButton, Paper } from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import useCustomForm from "../../hooks/useCustomForm";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,6 +12,7 @@ import {
 } from "../../types/projectForm";
 import useProjectEditMutation from "../../hooks/projects/useProjectEditMutation";
 import { ProjectEditForm } from "../../forms/projects/ProjectEditForm";
+import { Save } from "@mui/icons-material";
 
 export default function ProjectEditPage() {
   const { t } = useTranslation("project");
@@ -45,7 +46,24 @@ export default function ProjectEditPage() {
 
   return (
     <>
-      <PageHeader title={t("projects")} subtitle={t("edit")} />
+      <PageHeader
+        title={t("projects")}
+        subtitle={t("edit")}
+        actions={
+          <IconButton
+            size="small"
+            title={t("save")}
+            onClick={handleSubmit}
+            loading={projectEditMutation.isPending}
+            disabled={
+              !projectEditForm.formState.isValid ||
+              projectEditMutation.isPending
+            }
+          >
+            <Save fontSize="small" />
+          </IconButton>
+        }
+      />
       <Container maxWidth="sm">
         <Paper elevation={3} sx={{ p: 4 }}>
           <FormProvider {...projectEditForm}>
@@ -55,21 +73,6 @@ export default function ProjectEditPage() {
               }}
             />
           </FormProvider>
-
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={
-              !projectEditForm.formState.isValid ||
-              projectEditMutation.isPending
-            }
-            onClick={handleSubmit}
-            loading={projectEditMutation.isPending}
-            sx={{ mt: 2 }}
-          >
-            {t("submit", { ns: "common" })}
-          </Button>
         </Paper>
       </Container>
     </>

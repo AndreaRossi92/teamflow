@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, In, Not, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 import { Project } from './project.entity';
 import { User, Role } from '../users/user.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -14,7 +14,9 @@ import { AssignUsersDto } from './dto/assign-users.dto';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { ErrorCode } from '../app-error.codes';
 import { ListProjectsDto } from './dto/list-projects.dto';
+import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 import { Paginated } from '../paginated-response.dto';
+import { UserWithMemberDto } from './dto/users-with-member.dto';
 
 const PROJECT_RELATIONS = ['members', 'createdBy'];
 
@@ -158,15 +160,21 @@ export class ProjectsService {
   async getAssignableUsers(
     projectId: string,
     requestingUser: JwtUser,
-  ): Promise<
-    (Pick<User, 'id' | 'fullName' | 'email' | 'role'> & { isMember: boolean })[]
-  > {
+    query: ListAssignableUsersDto,
+  ): Promise<UserWithMemberDto[]> {
     const project = await this.findProjectWithAccess(projectId, requestingUser);
     const memberIds = new Set(project.members.map((m) => m.id));
 
+    const { name, role } = query;
+
+    const where: FindOptionsWhere<User> = { isActive: true };
+    if (name !== undefined) where.fullName = ILike(`%${name}%`);
+    if (role !== undefined) where.role = role;
+
     const users = await this.userRepo.find({
-      where: { isActive: true, role: Not(Role.ADMIN) },
+      where,
       select: ['id', 'fullName', 'email', 'role'],
+      order: { fullName: 'ASC' },
     });
 
     return users.map((u) => ({ ...u, isMember: memberIds.has(u.id) }));

@@ -32,6 +32,7 @@ import { Role } from '../users/user.entity';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { UserWithMemberDto } from './dto/users-with-member.dto';
 import { ListProjectsDto } from './dto/list-projects.dto';
+import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
 
 class PaginatedProjectsResponse extends PaginatedResponseDto(Project) {}
@@ -129,9 +130,14 @@ export class ProjectsController {
   @ApiForbiddenResponse({ description: 'Not a member of this project' })
   getAssignableUsers(
     @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ListAssignableUsersDto,
     @Req() req: Request,
-  ) {
-    return this.projectsService.getAssignableUsers(id, req.user as JwtUser);
+  ): Promise<UserWithMemberDto[]> {
+    return this.projectsService.getAssignableUsers(
+      id,
+      req.user as JwtUser,
+      query,
+    );
   }
 
   @Patch(':id/deactivate')

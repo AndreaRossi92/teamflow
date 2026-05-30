@@ -10,6 +10,7 @@ import { Project } from './project.entity';
 import { User, Role } from '../users/user.entity';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { ListProjectsDto } from './dto/list-projects.dto';
+import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -561,16 +562,19 @@ describe('ProjectsService', () => {
   // ── getAssignableUsers ─────────────────────────────────────────────────────
 
   describe('getAssignableUsers', () => {
+    const emptyQuery: ListAssignableUsersDto = {};
+
     beforeEach(() => {
       mockProjectRepo.findOne.mockResolvedValue(mockProject); // members: [managerEntity]
     });
 
-    it('should return active non-admin users with isMember flag', async () => {
+    it('should return active users with isMember flag', async () => {
       mockUserRepo.find.mockResolvedValue([managerEntity, devEntity]);
 
       const result = await service.getAssignableUsers(
         mockProject.id,
         adminUser,
+        emptyQuery,
       );
 
       expect(result.every((u) => 'isMember' in u)).toBe(true);
@@ -582,6 +586,7 @@ describe('ProjectsService', () => {
       const result = await service.getAssignableUsers(
         mockProject.id,
         adminUser,
+        emptyQuery,
       );
 
       const manager = result.find((u) => u.id === managerUser.id);
@@ -594,16 +599,46 @@ describe('ProjectsService', () => {
       const result = await service.getAssignableUsers(
         mockProject.id,
         adminUser,
+        emptyQuery,
       );
 
       const dev = result.find((u) => u.id === devUser.id);
       expect(dev?.isMember).toBe(false);
     });
 
+    it('should pass the name filter as ILIKE to the user repo', async () => {
+      mockUserRepo.find.mockResolvedValue([managerEntity]);
+
+      await service.getAssignableUsers(mockProject.id, adminUser, {
+        name: 'man',
+      });
+
+      const calls = mockUserRepo.find.mock.calls as {
+        where: { fullName?: unknown };
+      }[][];
+      expect(calls[0][0].where.fullName).toMatchObject({
+        _type: 'ilike',
+        _value: '%man%',
+      });
+    });
+
+    it('should pass the role filter to the user repo', async () => {
+      mockUserRepo.find.mockResolvedValue([devEntity]);
+
+      await service.getAssignableUsers(mockProject.id, adminUser, {
+        role: Role.DEV,
+      });
+
+      const calls = mockUserRepo.find.mock.calls as {
+        where: { role?: unknown };
+      }[][];
+      expect(calls[0][0].where.role).toBe(Role.DEV);
+    });
+
     it('should throw ForbiddenException for a non-member non-admin', async () => {
       // devUser is not in mockProject.members
       await expect(
-        service.getAssignableUsers(mockProject.id, devUser),
+        service.getAssignableUsers(mockProject.id, devUser, emptyQuery),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -611,7 +646,7 @@ describe('ProjectsService', () => {
       mockProjectRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.getAssignableUsers('missing-id', adminUser),
+        service.getAssignableUsers('missing-id', adminUser, emptyQuery),
       ).rejects.toThrow(NotFoundException);
     });
   });

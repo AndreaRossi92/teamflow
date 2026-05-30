@@ -41,6 +41,9 @@ const ResetPasswordPage = lazyWithLoader(
 const ProjectsListPage = lazyWithLoader(
   () => import("../pages/projects/ProjectsListPage"),
 );
+const ProjectDetailPage = lazyWithLoader(
+  () => import("../pages/projects/ProjectDetailPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -63,8 +66,9 @@ export default function AppRoutes() {
         />
       </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+      <Route element={<ProtectedRoute allowedRoles={["admin", "manager"]} />}>
         <Route path="/projects" element={<ProjectsListPage />} />
+        <Route path="/project/:id" element={<ProjectDetailPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

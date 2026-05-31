@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Button, Container, Paper } from "@mui/material";
+import { Container, IconButton, Paper } from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import {
   userCreateFormSchema,
@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import PageHeader from "../../components/PageHeader";
 import { omit } from "lodash";
 import { useSnackbar } from "../../providers/useSnackbar";
+import { Save } from "@mui/icons-material";
 
 export default function UserCreatePage() {
   const { t } = useTranslation("user");
@@ -47,7 +48,23 @@ export default function UserCreatePage() {
 
   return (
     <>
-      <PageHeader title={t("users")} subtitle={t("create")} />
+      <PageHeader
+        title={t("users")}
+        subtitle={t("create")}
+        actions={
+          <IconButton
+            size="small"
+            title={t("save")}
+            onClick={handleSubmit}
+            loading={userCreateMutation.isPending}
+            disabled={
+              !userCreateForm.formState.isValid || userCreateMutation.isPending
+            }
+          >
+            <Save fontSize="small" />
+          </IconButton>
+        }
+      />
       <Container maxWidth="sm">
         <Paper elevation={3} sx={{ p: 4 }}>
           <FormProvider {...userCreateForm}>
@@ -57,20 +74,6 @@ export default function UserCreatePage() {
               }}
             />
           </FormProvider>
-
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={
-              !userCreateForm.formState.isValid || userCreateMutation.isPending
-            }
-            onClick={handleSubmit}
-            loading={userCreateMutation.isPending}
-            sx={{ mt: 2 }}
-          >
-            {t("submit", { ns: "common" })}
-          </Button>
         </Paper>
       </Container>
     </>

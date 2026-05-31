@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Button, Container, Paper } from "@mui/material";
+import { Container, IconButton, Paper, Stack } from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import {
   userEditFormSchema,
@@ -12,6 +12,7 @@ import PageHeader from "../../components/PageHeader";
 import useUserEditMutation from "../../hooks/users/useUserEditMutation";
 import useUserDetailQuery from "../../hooks/users/useUserDetailQuery";
 import { UserEditForm } from "../../forms/users/UserEditForm";
+import { Save } from "@mui/icons-material";
 
 export default function UserEditPage() {
   const { t } = useTranslation("user");
@@ -51,13 +52,27 @@ export default function UserEditPage() {
         title={t("users")}
         subtitle={t("edit")}
         actions={
-          <Button
-            onClick={() => {
-              navigate(`/user/${id}/reset-password`);
-            }}
-          >
-            {t("resetPassword")}
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <IconButton
+              size="small"
+              title={t("resetPassword")}
+              onClick={() => {
+                navigate(`/user/${id}/reset-password`);
+              }}
+              loading={userEditMutation.isPending}
+            ></IconButton>
+            <IconButton
+              size="small"
+              title={t("save")}
+              onClick={handleSubmit}
+              loading={userEditMutation.isPending}
+              disabled={
+                !userEditForm.formState.isValid || userEditMutation.isPending
+              }
+            >
+              <Save fontSize="small" />
+            </IconButton>
+          </Stack>
         }
       />
       <Container maxWidth="sm">
@@ -69,20 +84,6 @@ export default function UserEditPage() {
               }}
             />
           </FormProvider>
-
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={
-              !userEditForm.formState.isValid || userEditMutation.isPending
-            }
-            onClick={handleSubmit}
-            loading={userEditMutation.isPending}
-            sx={{ mt: 2 }}
-          >
-            {t("submit", { ns: "common" })}
-          </Button>
         </Paper>
       </Container>
     </>

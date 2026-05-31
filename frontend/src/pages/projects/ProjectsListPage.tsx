@@ -106,10 +106,11 @@ export default function ProjectsListPage() {
         actions={
           user?.role === "admin" || user?.role === "manager" ? (
             <IconButton
+              size="small"
+              title={t("add", { ns: "common" })}
               onClick={() => {
                 navigate("/project/create");
               }}
-              title={t("add", { ns: "common" })}
             >
               <Add />
             </IconButton>

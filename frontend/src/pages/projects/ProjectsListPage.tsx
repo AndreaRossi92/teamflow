@@ -56,18 +56,18 @@ export default function ProjectsListPage() {
   });
   const deactivateProjectMutation = useDeactivateProjectMutation({
     onSuccess: () => {
-      showMessage("deactivated", "success");
+      showMessage(t("deactivated"), "success");
     },
     onError: () => {
-      showMessage("somethingWentWrong", "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
   const reactivateProjectMutation = useReactivateProjectMutation({
     onSuccess: () => {
-      showMessage("reactivated", "success");
+      showMessage(t("reactivated"), "success");
     },
     onError: () => {
-      showMessage("somethingWentWrong", "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
 
@@ -200,7 +200,9 @@ export default function ProjectsListPage() {
       )}
 
       {!isLoading && isError && (
-        <Alert severity="error">{t("somethingWentWrong")}</Alert>
+        <Alert severity="error">
+          {t("somethingWentWrong", { ns: "errors" })}
+        </Alert>
       )}
 
       {!isLoading && !isError && projects.length !== 0 && (

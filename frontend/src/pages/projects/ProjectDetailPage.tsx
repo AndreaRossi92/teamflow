@@ -21,18 +21,18 @@ export default function ProjectDetailPage() {
   const project = useProjectDetailQuery(id ?? "");
   const deactivateProjectMutation = useDeactivateProjectMutation({
     onSuccess: () => {
-      showMessage("deactivated", "success");
+      showMessage(t("deactivated"), "success");
     },
     onError: () => {
-      showMessage("somethingWentWrong", "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
   const reactivateProjectMutation = useReactivateProjectMutation({
     onSuccess: () => {
-      showMessage("reactivated", "success");
+      showMessage(t("reactivated"), "success");
     },
     onError: () => {
-      showMessage("somethingWentWrong", "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
 
@@ -101,7 +101,9 @@ export default function ProjectDetailPage() {
       />
       {project.isFetching && <PageLoader />}
       {!project.isFetching && project.isError && (
-        <Alert severity="error">{t("somethingWentWrong")}</Alert>
+        <Alert severity="error">
+          {t("somethingWentWrong", { ns: "errors" })}
+        </Alert>
       )}
       {!project.isFetching && !project.isError && !!project.data && (
         <ProjectDetail project={project.data} />

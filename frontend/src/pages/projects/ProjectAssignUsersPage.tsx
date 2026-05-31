@@ -194,7 +194,9 @@ export default function ProjectAssignUsersPage() {
         )}
 
       {!assignableUsers.isFetching && assignableUsers.isError && (
-        <Alert severity="error">{t("somethingWentWrong")}</Alert>
+        <Alert severity="error">
+          {t("somethingWentWrong", { ns: "errors" })}
+        </Alert>
       )}
 
       {!assignableUsers.isLoading &&

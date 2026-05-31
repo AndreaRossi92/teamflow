@@ -34,7 +34,7 @@ export default function ProjectCreatePage() {
       navigate(`/project/${project.id}`, { replace: true });
     },
     onError: () => {
-      showMessage("somethingWentWrong", "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
 

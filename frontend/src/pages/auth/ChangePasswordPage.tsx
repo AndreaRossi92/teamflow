@@ -30,7 +30,7 @@ export default function ChangePasswordPage() {
       showMessage(t("passwordChanged"), "success");
     },
     onError: () => {
-      showMessage(t("somethingWentWrong"), "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
 

@@ -21,18 +21,18 @@ export default function UserDetailPage() {
   const user = useUserDetailQuery(id ?? "");
   const deactivateUserMutation = useDeactivateUserMutation({
     onSuccess: () => {
-      showMessage("deactivated", "success");
+      showMessage(t("deactivated"), "success");
     },
     onError: () => {
-      showMessage("somethingWentWrong", "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
   const reactivateUserMutation = useReactivateUserMutation({
     onSuccess: () => {
-      showMessage("reactivated", "success");
+      showMessage(t("reactivated"), "success");
     },
     onError: () => {
-      showMessage("somethingWentWrong", "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
 
@@ -88,7 +88,9 @@ export default function UserDetailPage() {
       />
       {user.isFetching && <PageLoader />}
       {!user.isFetching && user.isError && (
-        <Alert severity="error">{t("somethingWentWrong")}</Alert>
+        <Alert severity="error">
+          {t("somethingWentWrong", { ns: "errors" })}
+        </Alert>
       )}
       {!user.isFetching && !user.isError && !!user.data && (
         <UserDetail user={user.data} />

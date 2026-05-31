@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
       navigate(`/user/${id}`, { replace: true });
     },
     onError: () => {
-      showMessage("somethingWentWrong", "error");
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
 

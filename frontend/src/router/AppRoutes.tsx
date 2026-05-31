@@ -38,6 +38,21 @@ const ChangePasswordPage = lazyWithLoader(
 const ResetPasswordPage = lazyWithLoader(
   () => import("../pages/users/ResetPasswordPage"),
 );
+const ProjectsListPage = lazyWithLoader(
+  () => import("../pages/projects/ProjectsListPage"),
+);
+const ProjectDetailPage = lazyWithLoader(
+  () => import("../pages/projects/ProjectDetailPage"),
+);
+const ProjectEditPage = lazyWithLoader(
+  () => import("../pages/projects/ProjectEditPage"),
+);
+const ProjectCreatePage = lazyWithLoader(
+  () => import("../pages/projects/ProjectCreatePage"),
+);
+const ProjectAssignUsersPage = lazyWithLoader(
+  () => import("../pages/projects/ProjectAssignUsersPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -45,6 +60,9 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route index element={<DashboardPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/projects" element={<ProjectsListPage />} />
+        <Route path="/project/:id" element={<ProjectDetailPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
@@ -57,7 +75,15 @@ export default function AppRoutes() {
           path="/user/:id/reset-password"
           element={<ResetPasswordPage />}
         />
-        <Route path="/change-password" element={<ChangePasswordPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={["admin", "manager"]} />}>
+        <Route path="/project/create" element={<ProjectCreatePage />} />
+        <Route path="/project/:id/edit" element={<ProjectEditPage />} />
+        <Route
+          path="/project/:id/assign-users"
+          element={<ProjectAssignUsersPage />}
+        />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

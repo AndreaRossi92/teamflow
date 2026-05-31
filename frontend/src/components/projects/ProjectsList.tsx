@@ -1,5 +1,4 @@
 import {
-  Chip,
   List,
   ListItem,
   ListItemButton,
@@ -9,30 +8,27 @@ import {
   Typography,
   type ListItemProps,
 } from "@mui/material";
-import type { User } from "../../types/user";
 import ActiveDot from "../ActiveDot";
 import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import type { Project } from "../../types/project";
 
-type UsersListProps = {
-  users: User[];
-  actions?: (user: User) => ReactNode;
-  onClick?: (user: User) => void;
+type ProjectsListProps = {
+  projects: Project[];
+  actions?: (project: Project) => ReactNode;
+  onClick?: (project: Project) => void;
   listItemProps?: ListItemProps;
 };
 
-export default function UsersList({
-  users,
+export default function ProjectsList({
+  projects,
   actions,
   onClick,
   listItemProps,
-}: UsersListProps) {
-  const { t } = useTranslation("user");
-
+}: ProjectsListProps) {
   return (
     <List disablePadding dense>
-      {users.map((user) => (
-        <ListItem key={user.id} {...listItemProps}>
+      {projects.map((project) => (
+        <ListItem key={project.id} {...listItemProps}>
           <ListItemButton
             sx={{
               flexDirection: { xs: "column", sm: "row" },
@@ -44,7 +40,7 @@ export default function UsersList({
             }}
             disableRipple={!onClick}
             onClick={() => {
-              onClick?.(user);
+              onClick?.(project);
             }}
           >
             <ListItemText
@@ -54,16 +50,16 @@ export default function UsersList({
                   spacing={1}
                   sx={{ alignItems: "center" }}
                 >
-                  <ActiveDot active={user.isActive} />
-                  <Typography>{user.fullName}</Typography>
+                  <ActiveDot active={project.isActive} />
+                  <Typography>{project.name}</Typography>
                 </Stack>
               }
-              secondary={user.email}
             />
-            <Chip label={t(user.role)} color={user.role} size="small" />
           </ListItemButton>
           {!!actions && (
-            <ListItemSecondaryAction>{actions(user)}</ListItemSecondaryAction>
+            <ListItemSecondaryAction>
+              {actions(project)}
+            </ListItemSecondaryAction>
           )}
         </ListItem>
       ))}

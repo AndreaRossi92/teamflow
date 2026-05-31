@@ -1,94 +1,110 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
-import UsersList from "./UsersList";
-import type { User } from "../../types/user";
+import ProjectAssignUsers from "./ProjectAssignUser";
+import type { AssignableUser } from "../../types/project";
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
-const activeUser: User = {
+const memberUser: AssignableUser = {
   id: "1",
   email: "alice@example.com",
   fullName: "Alice Smith",
   role: "dev",
-  isActive: true,
-  createdAt: "2024-01-01T00:00:00.000Z",
-  updatedAt: "2024-06-01T00:00:00.000Z",
+  isMember: true,
 };
 
-const inactiveUser: User = {
+const nonMemberUser: AssignableUser = {
   id: "2",
   email: "bob@example.com",
   fullName: "Bob Jones",
   role: "admin",
-  isActive: false,
-  createdAt: "2024-01-01T00:00:00.000Z",
-  updatedAt: "2024-06-01T00:00:00.000Z",
+  isMember: false,
 };
 
 // ── Render helper ──────────────────────────────────────────────────────────────
-function renderUsersList(
-  users: User[],
-  onClick?: (user: User) => void,
-  actions?: (user: User) => React.ReactNode,
+function renderProjectAssignUsers(
+  assignableUsers: AssignableUser[],
+  onClick?: (user: AssignableUser) => void,
+  actions?: (user: AssignableUser) => React.ReactNode,
 ) {
   return render(
-    <UsersList users={users} onClick={onClick} actions={actions} />,
+    <ProjectAssignUsers
+      assignableUsers={assignableUsers}
+      onClick={onClick}
+      actions={actions}
+    />,
   );
 }
 
 // ── Tests ──────────────────────────────────────────────────────────────────────
-describe("UsersList", () => {
+describe("ProjectAssignUsers", () => {
   describe("rendering", () => {
     it("renders each user's full name", () => {
-      renderUsersList([activeUser, inactiveUser]);
+      renderProjectAssignUsers([memberUser, nonMemberUser]);
 
       expect(screen.getByText("Alice Smith")).toBeInTheDocument();
       expect(screen.getByText("Bob Jones")).toBeInTheDocument();
     });
 
     it("renders each user's email", () => {
-      renderUsersList([activeUser, inactiveUser]);
+      renderProjectAssignUsers([memberUser, nonMemberUser]);
 
       expect(screen.getByText("alice@example.com")).toBeInTheDocument();
       expect(screen.getByText("bob@example.com")).toBeInTheDocument();
     });
 
     it("renders each user's role as a chip", () => {
-      renderUsersList([activeUser, inactiveUser]);
+      renderProjectAssignUsers([memberUser, nonMemberUser]);
 
       expect(screen.getByText("dev")).toBeInTheDocument();
       expect(screen.getByText("admin")).toBeInTheDocument();
     });
 
     it("renders nothing when the list is empty", () => {
-      const { container } = renderUsersList([]);
+      const { container } = renderProjectAssignUsers([]);
       expect(container.querySelector("li")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("checkbox", () => {
+    it("renders a checked checkbox for a member user", () => {
+      renderProjectAssignUsers([memberUser]);
+
+      const checkbox = screen.getByRole("checkbox");
+      expect(checkbox).toBeChecked();
+    });
+
+    it("renders an unchecked checkbox for a non-member user", () => {
+      renderProjectAssignUsers([nonMemberUser]);
+
+      const checkbox = screen.getByRole("checkbox");
+      expect(checkbox).not.toBeChecked();
     });
   });
 
   describe("onClick", () => {
     it("calls onClick with the correct user when a row is clicked", async () => {
       const handleClick = vi.fn();
-      renderUsersList([activeUser], handleClick);
+      renderProjectAssignUsers([memberUser], handleClick);
       const user = userEvent.setup();
 
       await user.click(screen.getByText("Alice Smith"));
 
-      expect(handleClick).toHaveBeenCalledWith(activeUser);
+      expect(handleClick).toHaveBeenCalledWith(memberUser);
     });
 
     it("calls onClick with the correct user when multiple rows are present", async () => {
       const handleClick = vi.fn();
-      renderUsersList([activeUser, inactiveUser], handleClick);
+      renderProjectAssignUsers([memberUser, nonMemberUser], handleClick);
       const user = userEvent.setup();
 
       await user.click(screen.getByText("Bob Jones"));
 
-      expect(handleClick).toHaveBeenCalledWith(inactiveUser);
+      expect(handleClick).toHaveBeenCalledWith(nonMemberUser);
     });
 
     it("does not throw when onClick is not provided and a row is clicked", async () => {
-      renderUsersList([activeUser]);
+      renderProjectAssignUsers([memberUser]);
       const user = userEvent.setup();
 
       await expect(
@@ -99,9 +115,11 @@ describe("UsersList", () => {
 
   describe("actions slot", () => {
     it("renders the actions for each user when provided", () => {
-      renderUsersList([activeUser, inactiveUser], undefined, (user) => (
-        <button>{`action-${user.id}`}</button>
-      ));
+      renderProjectAssignUsers(
+        [memberUser, nonMemberUser],
+        undefined,
+        (user) => <button>{`action-${user.id}`}</button>,
+      );
 
       expect(screen.getByText("action-1")).toBeInTheDocument();
       expect(screen.getByText("action-2")).toBeInTheDocument();
@@ -109,9 +127,9 @@ describe("UsersList", () => {
 
     it("passes the correct user object to the actions callback", () => {
       const actions = vi.fn(() => null);
-      renderUsersList([activeUser], undefined, actions);
+      renderProjectAssignUsers([memberUser], undefined, actions);
 
-      expect(actions).toHaveBeenCalledWith(activeUser);
+      expect(actions).toHaveBeenCalledWith(memberUser);
     });
   });
 });

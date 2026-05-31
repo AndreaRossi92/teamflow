@@ -1,37 +1,39 @@
 import {
+  Checkbox,
   Chip,
   List,
   ListItem,
   ListItemButton,
+  ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
   Stack,
   Typography,
   type ListItemProps,
 } from "@mui/material";
-import type { User } from "../../types/user";
 import ActiveDot from "../ActiveDot";
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import type { AssignableUser } from "../../types/project";
 
-type UsersListProps = {
-  users: User[];
-  actions?: (user: User) => ReactNode;
-  onClick?: (user: User) => void;
+type ProjectAssignUsersProps = {
+  assignableUsers: AssignableUser[];
+  actions?: (user: AssignableUser) => ReactNode;
+  onClick?: (user: AssignableUser) => void;
   listItemProps?: ListItemProps;
 };
 
-export default function UsersList({
-  users,
+export default function ProjectAssignUsers({
+  assignableUsers,
   actions,
   onClick,
   listItemProps,
-}: UsersListProps) {
+}: ProjectAssignUsersProps) {
   const { t } = useTranslation("user");
 
   return (
     <List disablePadding dense>
-      {users.map((user) => (
+      {assignableUsers.map((user) => (
         <ListItem key={user.id} {...listItemProps}>
           <ListItemButton
             sx={{
@@ -47,6 +49,14 @@ export default function UsersList({
               onClick?.(user);
             }}
           >
+            <ListItemIcon>
+              <Checkbox
+                edge="start"
+                checked={user.isMember}
+                tabIndex={-1}
+                disableRipple
+              />
+            </ListItemIcon>
             <ListItemText
               primary={
                 <Stack
@@ -54,7 +64,7 @@ export default function UsersList({
                   spacing={1}
                   sx={{ alignItems: "center" }}
                 >
-                  <ActiveDot active={user.isActive} />
+                  <ActiveDot active />
                   <Typography>{user.fullName}</Typography>
                 </Stack>
               }

@@ -7,6 +7,8 @@ import { User } from './users/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { SeedModule } from './seed/seed.module';
 import { RefreshToken } from './auth/refresh-token.entity';
+import { ProjectsModule } from './projects/project.module';
+import { Project } from './projects/project.entity';
 
 @Module({
   imports: [
@@ -22,7 +24,7 @@ import { RefreshToken } from './auth/refresh-token.entity';
         username: config.get<string>('DB_USERNAME', 'teamflow'),
         password: config.get<string>('DB_PASSWORD', 'teamflow'),
         database: config.get<string>('DB_NAME', 'teamflow'),
-        entities: [User, RefreshToken],
+        entities: [User, RefreshToken, Project],
         synchronize: true,
       }),
     }),
@@ -30,6 +32,7 @@ import { RefreshToken } from './auth/refresh-token.entity';
     UsersModule,
     AuthModule,
     SeedModule,
+    ProjectsModule,
   ],
 })
 export class AppModule {}

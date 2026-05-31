@@ -13,50 +13,50 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { Add, Edit, SettingsBackupRestore } from "@mui/icons-material";
+import { Add, Edit, Group, SettingsBackupRestore } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import UsersList from "../../components/users/UsersList";
-import useUsersListQuery from "../../hooks/users/useUsersListQuery";
 import PageHeader from "../../components/PageHeader";
-import { ROLES, type Role } from "../../types/user";
 import SearchIcon from "@mui/icons-material/Search";
 import { useDebounce } from "use-debounce";
 import DeleteIconButton from "../../components/DeleteIconButton";
-import useDeactivateUserMutation from "../../hooks/users/useDeactivateUserMutation";
 import { useNavigate } from "react-router-dom";
-import useReactivateUserMutation from "../../hooks/users/useReactivateUserMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../providers/useSnackbar";
+import useProjectsListQuery from "../../hooks/projects/useProjectsListQuery";
+import useDeactivateProjectMutation from "../../hooks/projects/useDeactivateProjectMutation";
+import useReactivateProjectMutation from "../../hooks/projects/useReactivateProjectMutation";
+import ProjectsList from "../../components/projects/ProjectsList";
+import type { Project } from "../../types/project";
+import { useAuth } from "../../providers/useAuth";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
-export default function UserListPage() {
-  const { t } = useTranslation("user");
+export default function ProjectsListPage() {
+  const { t } = useTranslation("project");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showMessage } = useSnackbar();
+  const { user } = useAuth();
 
-  const [fullName, setFullName] = useState("");
-  const [debouncedFullName] = useDebounce(fullName, 400);
-  const [role, setRole] = useState<Role | null>(null);
+  const [name, setName] = useState("");
+  const [debouncedName] = useDebounce(name, 400);
   const [isActive, setIsActive] = useState<"active" | "inactive" | null>(
     "active",
   );
 
   const {
     data,
-    isFetching,
+    isLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
     isError,
-  } = useUsersListQuery({
-    role,
-    fullName: debouncedFullName,
+  } = useProjectsListQuery({
+    name: debouncedName,
     isActive:
       isActive === "active" ? true : isActive === "inactive" ? false : null,
   });
-  const deactivateUserMutation = useDeactivateUserMutation({
+  const deactivateProjectMutation = useDeactivateProjectMutation({
     onSuccess: () => {
       showMessage(t("deactivated"), "success");
     },
@@ -64,7 +64,7 @@ export default function UserListPage() {
       showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
     },
   });
-  const reactivateUserMutation = useReactivateUserMutation({
+  const reactivateProjectMutation = useReactivateProjectMutation({
     onSuccess: () => {
       showMessage(t("reactivated"), "success");
     },
@@ -73,7 +73,11 @@ export default function UserListPage() {
     },
   });
 
-  const users = data?.pages.flat() ?? [];
+  const projects =
+    data?.pages.reduce(
+      (acc, page) => [...acc, ...page.data],
+      [] as Project[],
+    ) ?? [];
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -97,17 +101,19 @@ export default function UserListPage() {
   return (
     <>
       <PageHeader
-        title={t("users")}
+        title={t("projects")}
         subtitle={t("list")}
         actions={
-          <IconButton
-            onClick={() => {
-              navigate("/user/create");
-            }}
-            title={t("add", { ns: "common" })}
-          >
-            <Add />
-          </IconButton>
+          user?.role === "admin" || user?.role === "manager" ? (
+            <IconButton
+              onClick={() => {
+                navigate("/project/create");
+              }}
+              title={t("add", { ns: "common" })}
+            >
+              <Add />
+            </IconButton>
+          ) : undefined
         }
         BackButtonProps={{ path: "/", replace: true }}
       />
@@ -123,8 +129,8 @@ export default function UserListPage() {
         size="small"
         placeholder={t("searchByName")}
         label={t("name")}
-        value={fullName}
-        onChange={(e) => setFullName(e.target.value)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
         sx={{ mb: 2 }}
         slotProps={{
           input: {
@@ -144,40 +150,6 @@ export default function UserListPage() {
         sx={{ mb: 2 }}
         divider={<Divider orientation="vertical" flexItem />}
       >
-        <Box>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 0.5, display: "block" }}
-          >
-            {t("role")}
-          </Typography>
-          <ToggleButtonGroup
-            value={role}
-            exclusive
-            onChange={(_, v) => setRole(v === "ALL" ? null : v)}
-            size="small"
-          >
-            <ToggleButton value="ALL">{t("all")}</ToggleButton>
-            {ROLES.map((role) => (
-              <ToggleButton
-                key={role}
-                value={role}
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: `${role}.main`,
-                    color: `${role}.contrastText`,
-                    "&:hover": {
-                      backgroundColor: `${role}.dark`,
-                    },
-                  },
-                }}
-              >
-                {role}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </Box>
         <Box>
           <Typography
             variant="caption"
@@ -225,67 +197,84 @@ export default function UserListPage() {
         </Box>
       </Stack>
 
-      {isFetching && !isFetchingNextPage && <LinearProgress />}
+      {(isLoading || isFetchingNextPage) && <LinearProgress />}
 
-      {!isFetching && !isError && users.length === 0 && (
-        <Alert severity="info">{t("noUsersFound")}</Alert>
+      {!isLoading && !isError && projects.length === 0 && (
+        <Alert severity="info">{t("noProjectFound")}</Alert>
       )}
 
-      {!isFetching && isError && (
-        <Alert severity="error">{t("somethingWentWrong")}</Alert>
+      {!isLoading && isError && (
+        <Alert severity="error">
+          {t("somethingWentWrong", { ns: "errors" })}
+        </Alert>
       )}
 
-      {!isFetching && !isError && users.length !== 0 && (
-        <UsersList
-          users={users}
-          onClick={(user) => {
-            navigate(`/user/${user.id}`);
+      {!isLoading && !isError && projects.length !== 0 && (
+        <ProjectsList
+          projects={projects}
+          onClick={(project) => {
+            navigate(`/project/${project.id}`);
           }}
           listItemProps={{
-            sx: { pr: 12 },
+            sx: { pr: 18 },
             disablePadding: true,
           }}
-          actions={(user) => (
-            <Stack direction="row" spacing={1}>
-              <IconButton
-                size="small"
-                title={t("edit")}
-                onClick={() => {
-                  navigate(`/user/${user.id}/edit`);
-                }}
-              >
-                <Edit fontSize="small" />
-              </IconButton>
-              {user.isActive && (
-                <DeleteIconButton
-                  dialogTitle={user.fullName}
-                  dialogText={t("deactivateConfirm")}
-                  onDelete={() =>
-                    deactivateUserMutation
-                      .mutateAsync(user.id)
-                      .then(() =>
-                        queryClient.invalidateQueries({ queryKey: ["users"] }),
-                      )
-                  }
-                />
-              )}
-              {!user.isActive && (
+          actions={(project) =>
+            user?.role === "admin" || user?.role === "manager" ? (
+              <Stack direction="row" spacing={1}>
                 <IconButton
                   size="small"
-                  title={t("restore")}
+                  title={t("edit")}
                   onClick={() => {
-                    reactivateUserMutation
-                      .mutateAsync(user.id)
-                      .then(() =>
-                        queryClient.invalidateQueries({ queryKey: ["users"] }),
-                      );
+                    navigate(`/project/${project.id}/edit`);
                   }}
                 >
-                  <SettingsBackupRestore fontSize="small" />
+                  <Edit fontSize="small" />
                 </IconButton>
-              )}
-            </Stack>
-          )}
+                <IconButton
+                  size="small"
+                  title={t("members")}
+                  onClick={() => {
+                    navigate(`/project/${project.id}/assign-users`);
+                  }}
+                >
+                  <Group fontSize="small" />
+                </IconButton>
+                {project.isActive && (
+                  <DeleteIconButton
+                    dialogTitle={project.name}
+                    dialogText={t("deactivateConfirm")}
+                    onDelete={() =>
+                      deactivateProjectMutation
+                        .mutateAsync(project.id)
+                        .then(() =>
+                          queryClient.invalidateQueries({
+                            queryKey: ["projects"],
+                          }),
+                        )
+                    }
+                  />
+                )}
+                {!project.isActive && (
+                  <IconButton
+                    size="small"
+                    title={t("restore")}
+                    onClick={() => {
+                      reactivateProjectMutation
+                        .mutateAsync(project.id)
+                        .then(() =>
+                          queryClient.invalidateQueries({
+                            queryKey: ["projects"],
+                          }),
+                        );
+                    }}
+                  >
+                    <SettingsBackupRestore fontSize="small" />
+                  </IconButton>
+                )}
+              </Stack>
+            ) : undefined
+          }
         />
       )}
 

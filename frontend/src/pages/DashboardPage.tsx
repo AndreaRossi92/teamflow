@@ -50,11 +50,17 @@ export default function DashboardPage() {
         </Grid>
       )}
       <Grid size={{ xs: 12, md: 6 }}>
-        <Card sx={{ opacity: 0.5 }}>
-          <CardHeader title={t("projects")} />
-          <CardContent>
-            <Alert severity="warning">{t("underDevelopment")}</Alert>
-          </CardContent>
+        <Card>
+          <CardActionArea
+            onClick={() => {
+              navigate("/projects");
+            }}
+          >
+            <CardHeader title={t("projects")} />
+            <CardContent>
+              <Alert severity="success">{t("openSection")}</Alert>
+            </CardContent>
+          </CardActionArea>
         </Card>
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>

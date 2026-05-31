@@ -12,6 +12,8 @@ import enErrors from "./locales/en/errors.json";
 import itErrors from "./locales/it/errors.json";
 import itUser from "./locales/it/user.json";
 import enUser from "./locales/en/user.json";
+import itProject from "./locales/it/project.json";
+import enProject from "./locales/en/project.json";
 
 i18n
   .use(LanguageDetector)
@@ -24,6 +26,7 @@ i18n
         generateTicket: enGenerateTicket,
         errors: enErrors,
         user: enUser,
+        project: enProject,
       },
       it: {
         auth: itAuth,
@@ -31,6 +34,7 @@ i18n
         generateTicket: itGenerateTicket,
         errors: itErrors,
         user: itUser,
+        project: itProject,
       },
     },
     fallbackLng: "en",

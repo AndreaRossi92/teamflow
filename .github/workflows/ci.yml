@@ -35,7 +35,7 @@ jobs:
         run: yarn workspace backend build
 
   frontend:
-    name: Frontend — Lint, Build
+    name: Frontend — Lint, Test, Build
     runs-on: ubuntu-latest
 
     steps:
@@ -56,6 +56,9 @@ jobs:
 
       - name: Lint
         run: yarn workspace frontend lint
+
+      - name: Test
+        run: yarn workspace frontend test
 
       - name: Build
         run: yarn workspace frontend build

@@ -16,7 +16,7 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtGuard } from './guards/jwt.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtUser } from './strategies/jwt.strategy';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 const COOKIE_BASE = {
   httpOnly: true,

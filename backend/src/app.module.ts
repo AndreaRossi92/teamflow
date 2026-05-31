@@ -9,6 +9,7 @@ import { SeedModule } from './seed/seed.module';
 import { RefreshToken } from './auth/refresh-token.entity';
 import { ProjectsModule } from './projects/project.module';
 import { Project } from './projects/project.entity';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -28,6 +29,23 @@ import { Project } from './projects/project.entity';
         synchronize: true,
       }),
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 10_000,
+        limit: 3,
+      },
+      {
+        name: 'medium',
+        ttl: 60_000,
+        limit: 5,
+      },
+      {
+        name: 'long',
+        ttl: 3_600_000,
+        limit: 15,
+      },
+    ]),
     AiModule,
     UsersModule,
     AuthModule,

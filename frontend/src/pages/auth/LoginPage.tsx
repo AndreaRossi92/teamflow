@@ -60,11 +60,25 @@ export default function LoginPage() {
             />
           </FormProvider>
 
-          {loginMutation.isError && (
+          {loginMutation.isError && loginMutation.error.status === 401 && (
             <Alert severity="error" sx={{ my: 2 }}>
               {t("login.error")}
             </Alert>
           )}
+
+          {loginMutation.isError && loginMutation.error.status === 429 && (
+            <Alert severity="error" sx={{ my: 2 }}>
+              {t("login.tooManyAttempts")}
+            </Alert>
+          )}
+
+          {loginMutation.isError &&
+            loginMutation.error.status !== 401 &&
+            loginMutation.error.status !== 429 && (
+              <Alert severity="error" sx={{ my: 2 }}>
+                {t("somethingWentWrong", { ns: "errors" })}
+              </Alert>
+            )}
 
           <Button
             fullWidth

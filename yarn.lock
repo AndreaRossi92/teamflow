@@ -633,21 +633,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dataui/crud@npm:^5.3.4":
-  version: 5.3.4
-  resolution: "@dataui/crud@npm:5.3.4"
-  dependencies:
-    "@dataui/crud-request": "npm:^5.3.4"
-    "@dataui/crud-util": "npm:^5.3.4"
-    deepmerge: "npm:^3.2.0"
-    pluralize: "npm:^8.0.0"
-  peerDependencies:
-    class-transformer: "*"
-    class-validator: "*"
-  checksum: 10c0/7d52db9612b678829b28423c9e049bcd7655ee042ff294f5e654f2bfd62cfd0c932d33a9a764503938213365a9c97094b226a6a7582c636e610b11c545a29b41
-  languageName: node
-  linkType: hard
-
 "@emotion/babel-plugin@npm:^11.13.5":
   version: 11.13.5
   resolution: "@emotion/babel-plugin@npm:11.13.5"
@@ -4385,7 +4370,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:backend"
   dependencies:
-    "@dataui/crud": "npm:^5.3.4"
     "@dataui/crud-request": "npm:^5.3.4"
     "@dataui/crud-typeorm": "npm:^5.3.4"
     "@eslint/eslintrc": "npm:^3.2.0"
@@ -5384,13 +5368,6 @@ __metadata:
   version: 0.1.4
   resolution: "deep-is@npm:0.1.4"
   checksum: 10c0/7f0ee496e0dff14a573dc6127f14c95061b448b87b995fc96c017ce0a1e66af1675e73f1d6064407975bc4ea6ab679497a29fff7b5b9c4e99cb10797c1ad0b4c
-  languageName: node
-  linkType: hard
-
-"deepmerge@npm:^3.2.0":
-  version: 3.3.0
-  resolution: "deepmerge@npm:3.3.0"
-  checksum: 10c0/143bc6b6cd8a1216565c61c0fe38bf43fe691fb6876fb3f5727c6e323defe4e947c68fbab9957e17e837c5594a56af885c5834d23dc6cf2c41bef97090005104
   languageName: node
   linkType: hard
 
@@ -9266,7 +9243,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pluralize@npm:8.0.0, pluralize@npm:^8.0.0":
+"pluralize@npm:8.0.0":
   version: 8.0.0
   resolution: "pluralize@npm:8.0.0"
   checksum: 10c0/2044cfc34b2e8c88b73379ea4a36fc577db04f651c2909041b054c981cd863dd5373ebd030123ab058d194ae615d3a97cfdac653991e499d10caf592e8b3dc33

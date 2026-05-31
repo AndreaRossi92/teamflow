@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -40,7 +40,7 @@ const mockStoredToken: RefreshToken = {
 
 const mockUsersService = {
   findByEmail: jest.fn(),
-  findOneBy: jest.fn(),
+  findOne: jest.fn(),
   updatePassword: jest.fn(),
 };
 
@@ -200,8 +200,6 @@ describe('AuthService', () => {
       .update(rawToken)
       .digest('hex');
 
-    // Helper: configure the atomic DELETE queryBuilder to simulate a
-    // successful token consumption (affected = 1, raw returns the userId row).
     function mockAtomicDeleteSuccess() {
       mockQbExecute.mockResolvedValue({
         affected: 1,
@@ -209,8 +207,6 @@ describe('AuthService', () => {
       });
     }
 
-    // Helper: simulate the token not being found / already consumed / expired
-    // (the WHERE clause matched nothing → affected = 0).
     function mockAtomicDeleteMiss() {
       mockQbExecute.mockResolvedValue({ affected: 0, raw: [] });
     }
@@ -224,7 +220,7 @@ describe('AuthService', () => {
 
     it('should issue new tokens on a valid refresh token', async () => {
       mockAtomicDeleteSuccess();
-      mockUsersService.findOneBy.mockResolvedValue(mockUser);
+      mockUsersService.findOne.mockResolvedValue(mockUser);
 
       const result = await service.refresh(rawToken);
 
@@ -239,11 +235,10 @@ describe('AuthService', () => {
 
     it('should atomically delete the old token during rotation', async () => {
       mockAtomicDeleteSuccess();
-      mockUsersService.findOneBy.mockResolvedValue(mockUser);
+      mockUsersService.findOne.mockResolvedValue(mockUser);
 
       await service.refresh(rawToken);
 
-      // The WHERE clause must include the hashed token and the expiry guard
       expect(mockQueryBuilder.where).toHaveBeenCalledWith(
         'tokenHash = :hash AND expiresAt > :now',
         expect.objectContaining({ hash: expectedHash }),
@@ -260,9 +255,16 @@ describe('AuthService', () => {
     });
 
     it('should throw when token is expired (filtered out by the WHERE clause)', async () => {
-      // An expired token is excluded by the `expiresAt > :now` predicate,
-      // so the DELETE reports affected = 0 — same path as "not found".
       mockAtomicDeleteMiss();
+
+      await expect(service.refresh(rawToken)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should throw UnauthorizedException when the associated user does not exist', async () => {
+      mockAtomicDeleteSuccess();
+      mockUsersService.findOne.mockRejectedValue(new NotFoundException());
 
       await expect(service.refresh(rawToken)).rejects.toThrow(
         UnauthorizedException,
@@ -271,7 +273,7 @@ describe('AuthService', () => {
 
     it('should throw when the associated user is not active', async () => {
       mockAtomicDeleteSuccess();
-      mockUsersService.findOneBy.mockResolvedValue({
+      mockUsersService.findOne.mockResolvedValue({
         ...mockUser,
         isActive: false,
       });
@@ -281,12 +283,12 @@ describe('AuthService', () => {
       );
     });
 
-    it('should not call findOneBy when the atomic delete reports no affected rows', async () => {
+    it('should not call findOne when the atomic delete reports no affected rows', async () => {
       mockAtomicDeleteMiss();
 
       await service.refresh(rawToken).catch(() => {});
 
-      expect(mockUsersService.findOneBy).not.toHaveBeenCalled();
+      expect(mockUsersService.findOne).not.toHaveBeenCalled();
     });
   });
 
@@ -331,7 +333,7 @@ describe('AuthService', () => {
     });
 
     it('should return new tokens when credentials are valid', async () => {
-      mockUsersService.findOneBy
+      mockUsersService.findOne
         .mockResolvedValueOnce(mockUser)
         .mockResolvedValueOnce(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
@@ -348,7 +350,7 @@ describe('AuthService', () => {
     });
 
     it('should return a new refreshToken after a successful password change', async () => {
-      mockUsersService.findOneBy
+      mockUsersService.findOne
         .mockResolvedValueOnce(mockUser)
         .mockResolvedValueOnce(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
@@ -360,7 +362,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when user is not found', async () => {
-      mockUsersService.findOneBy.mockResolvedValue(null);
+      mockUsersService.findOne.mockRejectedValue(new NotFoundException());
 
       await expect(service.changePassword(mockUser.id, dto)).rejects.toThrow(
         UnauthorizedException,
@@ -368,7 +370,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when user is not active', async () => {
-      mockUsersService.findOneBy.mockResolvedValue({
+      mockUsersService.findOne.mockResolvedValue({
         ...mockUser,
         isActive: false,
       });
@@ -379,7 +381,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when the current password is wrong', async () => {
-      mockUsersService.findOneBy.mockResolvedValue(mockUser);
+      mockUsersService.findOne.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(service.changePassword(mockUser.id, dto)).rejects.toThrow(
@@ -387,19 +389,8 @@ describe('AuthService', () => {
       );
     });
 
-    it('should throw UnauthorizedException when updatedUser is not found after password update', async () => {
-      mockUsersService.findOneBy
-        .mockResolvedValueOnce(mockUser)
-        .mockResolvedValueOnce(null);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-
-      await expect(service.changePassword(mockUser.id, dto)).rejects.toThrow(
-        UnauthorizedException,
-      );
-    });
-
     it('should delete all tokens for the user on password change', async () => {
-      mockUsersService.findOneBy
+      mockUsersService.findOne
         .mockResolvedValueOnce(mockUser)
         .mockResolvedValueOnce(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
@@ -413,7 +404,7 @@ describe('AuthService', () => {
     });
 
     it('should call updatePassword with the correct userId and new password', async () => {
-      mockUsersService.findOneBy
+      mockUsersService.findOne
         .mockResolvedValueOnce(mockUser)
         .mockResolvedValueOnce(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);

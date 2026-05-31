@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { Crud, CrudController } from '@dataui/crud';
 import { UsersService } from './users.service';
 import { Role, User } from './user.entity';
 import { Roles } from '../auth/decorators/auth.decorators';
@@ -25,56 +27,70 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthService } from '../auth/auth.service';
+import { ListUsersDto } from './dto/list-users.dto';
+import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
 
-@Crud({
-  model: { type: User },
-  routes: {
-    only: ['createOneBase', 'getManyBase', 'getOneBase', 'updateOneBase'],
-  },
-  dto: {
-    create: CreateUserDto,
-    update: UpdateUserDto,
-  },
-  params: {
-    id: {
-      field: 'id',
-      type: 'uuid',
-      primary: true,
-    },
-  },
-  query: {
-    exclude: ['passwordHash'],
-  },
-})
+class PaginatedUsersResponse extends PaginatedResponseDto(User) {}
+
 @ApiTags('Users')
 @ApiCookieAuth()
 @Controller('users')
 @UseGuards(JwtGuard, RolesGuard)
 @Roles(Role.ADMIN)
-export class UsersController implements CrudController<User> {
+export class UsersController {
   constructor(
-    public service: UsersService,
+    private readonly usersService: UsersService,
     private readonly authService: AuthService,
   ) {}
 
+  @Get()
+  @ApiOperation({ summary: 'List all users' })
+  @ApiOkResponse({ type: PaginatedUsersResponse })
+  findAll(@Query() query: ListUsersDto): Promise<Paginated<User>> {
+    return this.usersService.findAll(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a single user by ID' })
+  @ApiOkResponse({ type: User })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
+    return this.usersService.findOne(id);
+  }
+
   @Post()
+  @ApiOperation({ summary: 'Create a new user' })
   @ApiBody({ type: CreateUserDto })
-  create(@Body() dto: CreateUserDto) {
-    return this.service.createUser(dto);
+  @ApiOkResponse({ type: User })
+  create(@Body() dto: CreateUserDto): Promise<User> {
+    return this.usersService.createUser(dto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a user' })
+  @ApiOkResponse({ type: User })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserDto,
+  ): Promise<User> {
+    return this.usersService.updateUser(id, dto);
   }
 
   @Patch(':id/deactivate')
   @ApiOperation({ summary: 'Deactivate an active user' })
   @ApiOkResponse({ type: User })
-  deactivate(@Param('id') id: string) {
-    return this.service.deactivateUser(id);
+  @ApiNotFoundResponse({ description: 'User not found' })
+  deactivate(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
+    return this.usersService.deactivateUser(id);
   }
 
   @Patch(':id/reactivate')
-  @ApiOperation({ summary: 'Reactivates an inactive user' })
+  @ApiOperation({ summary: 'Reactivate an inactive user' })
   @ApiOkResponse({ type: User })
-  reactivate(@Param('id') id: string) {
-    return this.service.reactivateUser(id);
+  @ApiNotFoundResponse({ description: 'User not found' })
+  reactivate(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
+    return this.usersService.reactivateUser(id);
   }
 
   @Patch(':id/reset-password')
@@ -85,10 +101,10 @@ export class UsersController implements CrudController<User> {
   @ApiNoContentResponse({ description: 'Password reset successfully' })
   @ApiNotFoundResponse({ description: 'User not found' })
   async resetPassword(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ResetPasswordDto,
   ): Promise<void> {
-    await this.service.resetUserPassword(id, dto.newPassword);
+    await this.usersService.resetUserPassword(id, dto.newPassword);
     await this.authService.revokeAllUserSessions(id);
   }
 }

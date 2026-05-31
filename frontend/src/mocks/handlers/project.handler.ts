@@ -1,16 +1,17 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockProjects } from "../data/project.data";
 import type { Project } from "../../types/project";
+import { mockUsers } from "../data/user.data";
 
 export const projectHandlers = [
   http.get("/api/projects", async () => {
     await delay(500);
     return HttpResponse.json({
-      count: mockProjects.length,
+      data: mockProjects,
       total: mockProjects.length,
       page: 1,
-      pageCount: 1,
-      data: mockProjects,
+      limit: 20,
+      hasNexPage: false,
     });
   }),
 
@@ -92,6 +93,55 @@ export const projectHandlers = [
           { status: 404 },
         );
       return HttpResponse.json({ ...project, isActive: true });
+    },
+  ),
+
+  http.get<{ id: string }>(
+    "/api/projects/:id/assignable-users",
+    async ({ params }) => {
+      await delay(500);
+      const project = mockProjects.find((u) => u.id === params.id);
+      if (!project)
+        return HttpResponse.json(
+          {
+            message: "Project not found",
+            error: "Not Found",
+            statusCode: 404,
+          },
+          { status: 404 },
+        );
+
+      return HttpResponse.json(
+        mockUsers.map((user) => ({
+          id: user.id,
+          fullName: user.fullName,
+          role: user.role,
+          isMember: project.members.map((u) => u.id).includes(user.id),
+        })),
+      );
+    },
+  ),
+
+  http.patch<{ id: string }, { userIds: string[] }>(
+    "/api/projects/:id/assign",
+    async ({ params, request }) => {
+      await delay(500);
+      const project = mockProjects.find((u) => u.id === params.id);
+      if (!project)
+        return HttpResponse.json(
+          {
+            message: "Project not found",
+            error: "Not Found",
+            statusCode: 404,
+          },
+          { status: 404 },
+        );
+      const body = await request.json();
+      return HttpResponse.json({
+        ...project,
+        members: mockUsers.filter((user) => body.userIds.includes(user.id)),
+        updatedAt: new Date(),
+      });
     },
   ),
 ];

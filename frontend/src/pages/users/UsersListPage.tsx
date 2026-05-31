@@ -103,10 +103,11 @@ export default function UserListPage() {
         subtitle={t("list")}
         actions={
           <IconButton
+            size="small"
+            title={t("add", { ns: "common" })}
             onClick={() => {
               navigate("/user/create");
             }}
-            title={t("add", { ns: "common" })}
           >
             <Add />
           </IconButton>

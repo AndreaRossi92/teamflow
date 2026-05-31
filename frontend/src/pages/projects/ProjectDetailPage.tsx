@@ -11,12 +11,15 @@ import useProjectDetailQuery from "../../hooks/projects/useProjectDetailQuery";
 import useDeactivateProjectMutation from "../../hooks/projects/useDeactivateProjectMutation";
 import useReactivateProjectMutation from "../../hooks/projects/useReactivateProjectMutation";
 import ProjectDetail from "../../components/projects/ProjectDetail";
+import { useAuth } from "../../providers/useAuth";
 
 export default function ProjectDetailPage() {
   const { t } = useTranslation("project");
   const { showMessage } = useSnackbar();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const { id } = useParams();
   const project = useProjectDetailQuery(id ?? "");
   const deactivateProjectMutation = useDeactivateProjectMutation({
@@ -42,7 +45,8 @@ export default function ProjectDetailPage() {
         title={t("project")}
         subtitle={t("detail")}
         actions={
-          project.isSuccess && (
+          (user?.role === "admin" || user?.role === "manager") &&
+          project.isSuccess ? (
             <Stack direction="row" spacing={1}>
               <IconButton
                 size="small"
@@ -95,7 +99,7 @@ export default function ProjectDetailPage() {
                 </IconButton>
               )}
             </Stack>
-          )
+          ) : undefined
         }
         BackButtonProps={{ path: "/projects", replace: true }}
       />

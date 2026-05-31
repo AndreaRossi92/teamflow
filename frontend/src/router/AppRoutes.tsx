@@ -61,6 +61,8 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route index element={<DashboardPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/projects" element={<ProjectsListPage />} />
+        <Route path="/project/:id" element={<ProjectDetailPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
@@ -76,9 +78,7 @@ export default function AppRoutes() {
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["admin", "manager"]} />}>
-        <Route path="/projects" element={<ProjectsListPage />} />
         <Route path="/project/create" element={<ProjectCreatePage />} />
-        <Route path="/project/:id" element={<ProjectDetailPage />} />
         <Route path="/project/:id/edit" element={<ProjectEditPage />} />
         <Route
           path="/project/:id/assign-users"

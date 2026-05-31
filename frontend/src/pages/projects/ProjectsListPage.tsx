@@ -27,6 +27,7 @@ import useDeactivateProjectMutation from "../../hooks/projects/useDeactivateProj
 import useReactivateProjectMutation from "../../hooks/projects/useReactivateProjectMutation";
 import ProjectsList from "../../components/projects/ProjectsList";
 import type { Project } from "../../types/project";
+import { useAuth } from "../../providers/useAuth";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -35,6 +36,7 @@ export default function ProjectsListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showMessage } = useSnackbar();
+  const { user } = useAuth();
 
   const [name, setName] = useState("");
   const [debouncedName] = useDebounce(name, 400);
@@ -102,14 +104,16 @@ export default function ProjectsListPage() {
         title={t("projects")}
         subtitle={t("list")}
         actions={
-          <IconButton
-            onClick={() => {
-              navigate("/project/create");
-            }}
-            title={t("add", { ns: "common" })}
-          >
-            <Add />
-          </IconButton>
+          user?.role === "admin" || user?.role === "manager" ? (
+            <IconButton
+              onClick={() => {
+                navigate("/project/create");
+              }}
+              title={t("add", { ns: "common" })}
+            >
+              <Add />
+            </IconButton>
+          ) : undefined
         }
         BackButtonProps={{ path: "/", replace: true }}
       />
@@ -215,56 +219,62 @@ export default function ProjectsListPage() {
             sx: { pr: 18 },
             disablePadding: true,
           }}
-          actions={(project) => (
-            <Stack direction="row" spacing={1}>
-              <IconButton
-                size="small"
-                title={t("edit")}
-                onClick={() => {
-                  navigate(`/project/${project.id}/edit`);
-                }}
-              >
-                <Edit fontSize="small" />
-              </IconButton>
-              <IconButton
-                size="small"
-                title={t("members")}
-                onClick={() => {
-                  navigate(`/project/${project.id}/assign-users`);
-                }}
-              >
-                <Group fontSize="small" />
-              </IconButton>
-              {project.isActive && (
-                <DeleteIconButton
-                  dialogTitle={project.name}
-                  dialogText={t("deactivateConfirm")}
-                  onDelete={() =>
-                    deactivateProjectMutation.mutateAsync(project.id).then(() =>
-                      queryClient.invalidateQueries({
-                        queryKey: ["projects"],
-                      }),
-                    )
-                  }
-                />
-              )}
-              {!project.isActive && (
+          actions={(project) =>
+            user?.role === "admin" || user?.role === "manager" ? (
+              <Stack direction="row" spacing={1}>
                 <IconButton
                   size="small"
-                  title={t("restore")}
+                  title={t("edit")}
                   onClick={() => {
-                    reactivateProjectMutation.mutateAsync(project.id).then(() =>
-                      queryClient.invalidateQueries({
-                        queryKey: ["projects"],
-                      }),
-                    );
+                    navigate(`/project/${project.id}/edit`);
                   }}
                 >
-                  <SettingsBackupRestore fontSize="small" />
+                  <Edit fontSize="small" />
                 </IconButton>
-              )}
-            </Stack>
-          )}
+                <IconButton
+                  size="small"
+                  title={t("members")}
+                  onClick={() => {
+                    navigate(`/project/${project.id}/assign-users`);
+                  }}
+                >
+                  <Group fontSize="small" />
+                </IconButton>
+                {project.isActive && (
+                  <DeleteIconButton
+                    dialogTitle={project.name}
+                    dialogText={t("deactivateConfirm")}
+                    onDelete={() =>
+                      deactivateProjectMutation
+                        .mutateAsync(project.id)
+                        .then(() =>
+                          queryClient.invalidateQueries({
+                            queryKey: ["projects"],
+                          }),
+                        )
+                    }
+                  />
+                )}
+                {!project.isActive && (
+                  <IconButton
+                    size="small"
+                    title={t("restore")}
+                    onClick={() => {
+                      reactivateProjectMutation
+                        .mutateAsync(project.id)
+                        .then(() =>
+                          queryClient.invalidateQueries({
+                            queryKey: ["projects"],
+                          }),
+                        );
+                    }}
+                  >
+                    <SettingsBackupRestore fontSize="small" />
+                  </IconButton>
+                )}
+              </Stack>
+            ) : undefined
+          }
         />
       )}
 

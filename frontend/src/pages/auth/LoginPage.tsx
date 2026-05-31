@@ -61,7 +61,7 @@ export default function LoginPage() {
           </FormProvider>
 
           {loginMutation.isError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ my: 2 }}>
               {t("login.error")}
             </Alert>
           )}

@@ -1,21 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User, Role } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ListUsersDto } from './dto/list-users.dto';
 import * as bcrypt from 'bcrypt';
-
-// Mock the base class so its constructor never runs and never touches
-// repo.connection — the only reason unit tests for UsersService would crash.
-jest.mock('@dataui/crud-typeorm', () => ({
-  TypeOrmCrudService: class {
-    protected repo: unknown;
-    constructor(repo: unknown) {
-      this.repo = repo;
-    }
-  },
-}));
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn(),
@@ -38,6 +33,7 @@ const mockUser: User = {
 
 const mockUserRepo = {
   findOne: jest.fn(),
+  findAndCount: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   update: jest.fn(),
@@ -68,6 +64,78 @@ describe('UsersService', () => {
 
   afterEach(async () => {
     await module.close();
+  });
+
+  // ── findAll ────────────────────────────────────────────────────────────────
+
+  describe('findAll', () => {
+    it('should return a paginated result with defaults', async () => {
+      mockUserRepo.findAndCount.mockResolvedValue([[mockUser], 1]);
+
+      const result = await service.findAll({} as ListUsersDto);
+
+      expect(result).toEqual({
+        data: [mockUser],
+        total: 1,
+        page: 1,
+        limit: 20,
+        hasNextPage: false,
+      });
+    });
+
+    it('should apply page and limit to the query', async () => {
+      mockUserRepo.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ page: 3, limit: 10 } as ListUsersDto);
+
+      const [options] = mockUserRepo.findAndCount.mock.calls[0] as [
+        { skip: number; take: number },
+      ];
+      expect(options.skip).toBe(20);
+      expect(options.take).toBe(10);
+    });
+
+    it('should set hasNextPage to true when more records exist', async () => {
+      mockUserRepo.findAndCount.mockResolvedValue([[mockUser], 25]);
+
+      const result = await service.findAll({
+        page: 1,
+        limit: 20,
+      } as ListUsersDto);
+
+      expect(result.hasNextPage).toBe(true);
+    });
+
+    it('should exclude passwordHash from the select fields', async () => {
+      mockUserRepo.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({} as ListUsersDto);
+
+      const [options] = mockUserRepo.findAndCount.mock.calls[0] as [
+        { select: string[] },
+      ];
+      expect(options.select).not.toContain('passwordHash');
+    });
+  });
+
+  // ── findOne ────────────────────────────────────────────────────────────────
+
+  describe('findOne', () => {
+    it('should return the user when found', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+
+      const result = await service.findOne(mockUser.id);
+
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should throw NotFoundException when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.findOne('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
   });
 
   // ── findByEmail ────────────────────────────────────────────────────────────
@@ -131,8 +199,6 @@ describe('UsersService', () => {
     });
 
     it('should never persist the plain-text password', async () => {
-      // Simulate what TypeORM does: create() maps only @Column fields,
-      // so the returned entity has passwordHash but not the raw password field.
       mockUserRepo.create.mockImplementation(
         ({ passwordHash }: Partial<User>) => ({ passwordHash }),
       );
@@ -197,6 +263,88 @@ describe('UsersService', () => {
       );
 
       await expect(service.createUser(dto)).rejects.toThrow(ConflictException);
+    });
+  });
+
+  // ── updateUser ─────────────────────────────────────────────────────────────
+
+  describe('updateUser', () => {
+    const dto: UpdateUserDto = { fullName: 'Updated Name' };
+
+    it('should apply the DTO fields and save', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser });
+      mockUserRepo.save.mockImplementation((u: User) => Promise.resolve(u));
+
+      const result = await service.updateUser(mockUser.id, dto);
+
+      expect(result.fullName).toBe('Updated Name');
+      expect(mockUserRepo.save).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.updateUser('bad-id', dto)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  // ── deactivateUser ─────────────────────────────────────────────────────────
+
+  describe('deactivateUser', () => {
+    it('should set isActive to false and save', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser, isActive: true });
+      mockUserRepo.save.mockImplementation((u: User) => Promise.resolve(u));
+
+      const result = await service.deactivateUser(mockUser.id);
+
+      expect(result.isActive).toBe(false);
+    });
+
+    it('should throw BadRequestException when user is already inactive', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser, isActive: false });
+
+      await expect(service.deactivateUser(mockUser.id)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw NotFoundException when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.deactivateUser('bad-id')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  // ── reactivateUser ─────────────────────────────────────────────────────────
+
+  describe('reactivateUser', () => {
+    it('should set isActive to true and save', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser, isActive: false });
+      mockUserRepo.save.mockImplementation((u: User) => Promise.resolve(u));
+
+      const result = await service.reactivateUser(mockUser.id);
+
+      expect(result.isActive).toBe(true);
+    });
+
+    it('should throw BadRequestException when user is already active', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser, isActive: true });
+
+      await expect(service.reactivateUser(mockUser.id)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw NotFoundException when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.reactivateUser('bad-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

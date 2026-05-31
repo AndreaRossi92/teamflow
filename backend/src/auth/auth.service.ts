@@ -82,9 +82,14 @@ export class AuthService {
     // Safe to cast: RETURNING guarantees the row existed
     const { userId } = (deleteResult.raw as { userId: string }[])[0];
 
-    const user = await this.usersService.findOneBy({ id: userId });
+    let user: User;
+    try {
+      user = await this.usersService.findOne(userId);
+    } catch {
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
+    }
 
-    if (!user || !user.isActive) {
+    if (!user.isActive) {
       throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
@@ -100,9 +105,14 @@ export class AuthService {
     userId: string,
     dto: ChangePasswordDto,
   ): Promise<AuthTokens> {
-    const user = await this.usersService.findOneBy({ id: userId });
+    let user: User;
+    try {
+      user = await this.usersService.findOne(userId);
+    } catch {
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
+    }
 
-    if (!user || !user.isActive) {
+    if (!user.isActive) {
       throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
@@ -117,11 +127,8 @@ export class AuthService {
     await this.usersService.updatePassword(userId, dto.newPassword);
     await this.refreshTokenRepo.delete({ userId });
 
-    const updatedUser = await this.usersService.findOneBy({ id: userId });
-    if (!updatedUser) {
-      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
-    }
-
+    // Re-fetch to get the updated passwordHash reflected in the token
+    const updatedUser = await this.usersService.findOne(userId);
     return this.issueTokens(updatedUser);
   }
 

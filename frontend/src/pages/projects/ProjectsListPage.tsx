@@ -197,7 +197,7 @@ export default function ProjectsListPage() {
         </Box>
       </Stack>
 
-      {(isLoading || isFetchingNextPage) && <LinearProgress />}
+      {isLoading && <LinearProgress />}
 
       {!isLoading && !isError && projects.length === 0 && (
         <Alert severity="info">{t("noProjectFound")}</Alert>

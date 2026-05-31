@@ -1,3 +1,4 @@
+import type { PaginatedResponse } from "../types/paginatedResponse";
 import { type User, type UserFilters } from "../types/user";
 import type {
   UserCreateFormValues,
@@ -15,21 +16,20 @@ export async function usersList({
   page?: number;
   limit?: number;
   filters?: UserFilters;
-} = {}): Promise<User[]> {
+} = {}): Promise<PaginatedResponse<User>> {
   const params = new URLSearchParams();
 
-  if (filters?.role) params.append("filter", `role||$eq||${filters.role}`);
-  if (filters?.fullName)
-    params.append("filter", `fullName||$contL||${filters.fullName}`);
+  if (filters?.role) params.append("role", filters.role);
+  if (filters?.fullName) params.append("fullName", filters.fullName);
   if (typeof filters?.isActive === "boolean")
-    params.append("filter", `isActive||$eq||${filters.isActive}`);
+    params.append("isActive", String(filters.isActive));
 
   params.set("page", String(page));
   params.set("limit", String(limit));
 
   const response = await api.get(`/users?${params.toString()}`);
 
-  return response.data.data;
+  return response.data;
 }
 
 export async function userById(id: string): Promise<User> {

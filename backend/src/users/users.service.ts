@@ -5,17 +5,65 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TypeOrmCrudService } from '@dataui/crud-typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ListUsersDto } from './dto/list-users.dto';
 import { ErrorCode } from '../app-error.codes';
+import { Paginated } from '../paginated-response.dto';
 
 @Injectable()
-export class UsersService extends TypeOrmCrudService<User> {
-  constructor(@InjectRepository(User) repo: Repository<User>) {
-    super(repo);
+export class UsersService {
+  constructor(
+    @InjectRepository(User)
+    private readonly repo: Repository<User>,
+  ) {}
+
+  async findAll(query: ListUsersDto): Promise<Paginated<User>> {
+    const { fullName, role, isActive, page = 1, limit = 20 } = query;
+    const skip = (page - 1) * limit;
+
+    const where: FindOptionsWhere<User> = {};
+    if (fullName !== undefined) where.fullName = ILike(`%${fullName}%`);
+    if (role !== undefined) where.role = role;
+    if (isActive !== undefined) where.isActive = isActive;
+
+    const [data, total] = await this.repo.findAndCount({
+      where,
+      select: [
+        'id',
+        'email',
+        'fullName',
+        'role',
+        'isActive',
+        'createdAt',
+        'updatedAt',
+      ],
+      order: { fullName: 'ASC' },
+      take: limit,
+      skip,
+    });
+
+    return { data, total, page, limit, hasNextPage: page * limit < total };
+  }
+
+  async findOne(id: string): Promise<User> {
+    const user = await this.repo.findOne({
+      where: { id },
+      select: [
+        'id',
+        'email',
+        'fullName',
+        'role',
+        'isActive',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
+    if (!user) throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+    return user;
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -39,22 +87,24 @@ export class UsersService extends TypeOrmCrudService<User> {
     return this.repo.save(user);
   }
 
+  async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+    Object.assign(user, dto);
+    return this.repo.save(user);
+  }
+
   async deactivateUser(id: string): Promise<User> {
-    const user = await this.repo.findOne({ where: { id } });
-    if (!user) throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+    const user = await this.findOne(id);
     if (!user.isActive)
       throw new BadRequestException(ErrorCode.USER_ALREADY_INACTIVE);
-
     user.isActive = false;
     return this.repo.save(user);
   }
 
   async reactivateUser(id: string): Promise<User> {
-    const user = await this.repo.findOne({ where: { id } });
-    if (!user) throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+    const user = await this.findOne(id);
     if (user.isActive)
       throw new BadRequestException(ErrorCode.USER_ALREADY_ACTIVE);
-
     user.isActive = true;
     return this.repo.save(user);
   }
@@ -65,9 +115,7 @@ export class UsersService extends TypeOrmCrudService<User> {
   }
 
   async resetUserPassword(id: string, newPassword: string): Promise<void> {
-    const user = await this.repo.findOne({ where: { id } });
-    if (!user) throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
-
-    await this.updatePassword(id, newPassword);
+    const user = await this.findOne(id);
+    if (user) await this.updatePassword(id, newPassword);
   }
 }

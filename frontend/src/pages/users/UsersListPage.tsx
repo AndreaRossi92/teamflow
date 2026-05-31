@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import UsersList from "../../components/users/UsersList";
 import useUsersListQuery from "../../hooks/users/useUsersListQuery";
 import PageHeader from "../../components/PageHeader";
-import { ROLES, type Role } from "../../types/user";
+import { ROLES, type Role, type User } from "../../types/user";
 import SearchIcon from "@mui/icons-material/Search";
 import { useDebounce } from "use-debounce";
 import DeleteIconButton from "../../components/DeleteIconButton";
@@ -45,7 +45,7 @@ export default function UserListPage() {
 
   const {
     data,
-    isFetching,
+    isLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -73,7 +73,9 @@ export default function UserListPage() {
     },
   });
 
-  const users = data?.pages.flat() ?? [];
+  const users =
+    data?.pages.reduce((acc, page) => [...acc, ...page.data], [] as User[]) ??
+    [];
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -225,17 +227,17 @@ export default function UserListPage() {
         </Box>
       </Stack>
 
-      {isFetching && !isFetchingNextPage && <LinearProgress />}
+      {isLoading && <LinearProgress />}
 
-      {!isFetching && !isError && users.length === 0 && (
+      {!isLoading && !isError && users.length === 0 && (
         <Alert severity="info">{t("noUsersFound")}</Alert>
       )}
 
-      {!isFetching && isError && (
+      {!isLoading && isError && (
         <Alert severity="error">{t("somethingWentWrong")}</Alert>
       )}
 
-      {!isFetching && !isError && users.length !== 0 && (
+      {!isLoading && !isError && users.length !== 0 && (
         <UsersList
           users={users}
           onClick={(user) => {

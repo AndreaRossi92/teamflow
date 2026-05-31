@@ -1,3 +1,4 @@
+import type { PaginatedResponse } from "../types/paginatedResponse";
 import type { AssignableUser, Project, ProjectFilters } from "../types/project";
 import type {
   ProjectCreateFormValues,
@@ -16,7 +17,7 @@ export async function projectsList({
   page?: number;
   limit?: number;
   filters?: ProjectFilters;
-} = {}) {
+} = {}): Promise<PaginatedResponse<Project>> {
   const params = new URLSearchParams();
 
   if (filters?.name) params.append("name", filters.name);

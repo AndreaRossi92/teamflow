@@ -53,6 +53,9 @@ const ProjectCreatePage = lazyWithLoader(
 const ProjectAssignUsersPage = lazyWithLoader(
   () => import("../pages/projects/ProjectAssignUsersPage"),
 );
+const TicketsListPage = lazyWithLoader(
+  () => import("../pages/tickets/TicketsListPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -63,6 +66,7 @@ export default function AppRoutes() {
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/projects" element={<ProjectsListPage />} />
         <Route path="/project/:id" element={<ProjectDetailPage />} />
+        <Route path="/tickets" element={<TicketsListPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

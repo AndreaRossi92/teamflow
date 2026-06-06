@@ -94,4 +94,19 @@ export const userHandlers = [
       return HttpResponse.json({ ...user, isActive: true });
     },
   ),
+
+  http.delete<{ id: string }>("/api/users/:id", async ({ params }) => {
+    await delay(300);
+    const user = mockUsers.find((u) => u.id === params.id);
+    if (!user)
+      return HttpResponse.json(
+        {
+          message: "User not found",
+          error: "Not Found",
+          statusCode: 404,
+        },
+        { status: 404 },
+      );
+    return HttpResponse.json();
+  }),
 ];

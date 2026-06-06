@@ -11,6 +11,8 @@ import useDeactivateUserMutation from "../../hooks/users/useDeactivateUserMutati
 import { useQueryClient } from "@tanstack/react-query";
 import useReactivateUserMutation from "../../hooks/users/useReactivateUserMutation";
 import { useSnackbar } from "../../providers/useSnackbar";
+import DeleteButton from "../../components/DeleteButton";
+import useDeleteUserMutation from "../../hooks/users/useDeleteUserMutation";
 
 export default function UserDetailPage() {
   const { t } = useTranslation("user");
@@ -30,6 +32,14 @@ export default function UserDetailPage() {
   const reactivateUserMutation = useReactivateUserMutation({
     onSuccess: () => {
       showMessage(t("reactivated"), "success");
+    },
+    onError: () => {
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
+    },
+  });
+  const deleteUserMutation = useDeleteUserMutation({
+    onSuccess: () => {
+      showMessage(t("deleted"), "success");
     },
     onError: () => {
       showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
@@ -57,6 +67,8 @@ export default function UserDetailPage() {
                 <DeleteIconButton
                   dialogTitle={user.data.fullName}
                   dialogText={t("deactivateConfirm")}
+                  title={t("deactivate")}
+                  deleteLabel={t("deactivate")}
                   onDelete={() =>
                     deactivateUserMutation
                       .mutateAsync(user.data.id)
@@ -93,7 +105,21 @@ export default function UserDetailPage() {
         </Alert>
       )}
       {!user.isFetching && !user.isError && !!user.data && (
-        <UserDetail user={user.data} />
+        <>
+          <UserDetail user={user.data} />
+          {!user.data.isActive && (
+            <Stack direction="row" sx={{ justifyContent: "center" }}>
+              <DeleteButton
+                onDelete={() =>
+                  deleteUserMutation.mutateAsync(user.data.id).then(() => {
+                    queryClient.invalidateQueries({ queryKey: ["users"] });
+                    navigate("/users");
+                  })
+                }
+              />
+            </Stack>
+          )}
+        </>
       )}
     </>
   );

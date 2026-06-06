@@ -76,3 +76,9 @@ export async function resetPassword(
   });
   return response.data;
 }
+
+export async function deleteUser(id: string): Promise<void> {
+  const response = await api.delete<void>(`/users/${id}`);
+
+  return response.data;
+}

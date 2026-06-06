@@ -1,35 +1,33 @@
 import { useState } from "react";
 import {
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
   Button,
-  type IconButtonProps,
+  type ButtonProps,
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 
-type DeleteIconButtonProps = Omit<IconButtonProps, "title" | "onClick"> & {
+type DeleteButtonProps = Omit<ButtonProps, "onClick"> & {
   onDelete: () => Promise<unknown>;
   dialogTitle?: string;
   dialogText?: string;
-  title?: string;
   deleteLabel?: string;
   cancelLabel?: string;
 };
 
-export default function DeleteIconButton({
+export default function DeleteButton({
   onDelete,
   dialogTitle,
   dialogText,
-  title,
   deleteLabel,
   cancelLabel,
+  children,
   ...props
-}: DeleteIconButtonProps) {
+}: DeleteButtonProps) {
   const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
 
@@ -42,14 +40,15 @@ export default function DeleteIconButton({
 
   return (
     <>
-      <IconButton
-        size="small"
-        title={title ?? t("delete")}
+      <Button
         onClick={handleOpen}
+        startIcon={<Delete />}
+        variant="contained"
+        color="error"
         {...props}
       >
-        <Delete fontSize="small" />
-      </IconButton>
+        {children ?? t("delete")}
+      </Button>
 
       <Dialog open={open} onClose={handleClose}>
         {dialogTitle && <DialogTitle>{dialogTitle}</DialogTitle>}

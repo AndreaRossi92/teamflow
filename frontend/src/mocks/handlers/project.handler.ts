@@ -144,4 +144,19 @@ export const projectHandlers = [
       });
     },
   ),
+
+  http.delete<{ id: string }>("/api/projects/:id", async ({ params }) => {
+    await delay(300);
+    const project = mockProjects.find((u) => u.id === params.id);
+    if (!project)
+      return HttpResponse.json(
+        {
+          message: "Project not found",
+          error: "Not Found",
+          statusCode: 404,
+        },
+        { status: 404 },
+      );
+    return HttpResponse.json();
+  }),
 ];

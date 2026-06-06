@@ -118,4 +118,12 @@ export class UsersService {
     const user = await this.findOne(id);
     if (user) await this.updatePassword(id, newPassword);
   }
+
+  async deleteUser(id: string): Promise<void> {
+    const user = await this.findOne(id);
+    if (user.isActive) {
+      throw new BadRequestException(ErrorCode.USER_MUST_BE_INACTIVE_TO_DELETE);
+    }
+    await this.repo.delete(id);
+  }
 }

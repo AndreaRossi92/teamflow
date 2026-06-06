@@ -96,3 +96,9 @@ export async function projectAssignUsers(
 
   return response.data;
 }
+
+export async function deleteProject(id: string): Promise<void> {
+  const response = await api.delete<void>(`/projects/${id}`);
+
+  return response.data;
+}

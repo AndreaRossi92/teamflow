@@ -12,6 +12,8 @@ import useDeactivateProjectMutation from "../../hooks/projects/useDeactivateProj
 import useReactivateProjectMutation from "../../hooks/projects/useReactivateProjectMutation";
 import ProjectDetail from "../../components/projects/ProjectDetail";
 import { useAuth } from "../../providers/useAuth";
+import useDeleteProjectMutation from "../../hooks/projects/useDeleteProjectMutation";
+import DeleteButton from "../../components/DeleteButton";
 
 export default function ProjectDetailPage() {
   const { t } = useTranslation("project");
@@ -33,6 +35,14 @@ export default function ProjectDetailPage() {
   const reactivateProjectMutation = useReactivateProjectMutation({
     onSuccess: () => {
       showMessage(t("reactivated"), "success");
+    },
+    onError: () => {
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
+    },
+  });
+  const deleteProjectMutation = useDeleteProjectMutation({
+    onSuccess: () => {
+      showMessage(t("deleted"), "success");
     },
     onError: () => {
       showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
@@ -70,6 +80,8 @@ export default function ProjectDetailPage() {
                 <DeleteIconButton
                   dialogTitle={project.data.name}
                   dialogText={t("deactivateConfirm")}
+                  title={t("deactivate")}
+                  deleteLabel={t("deactivate")}
                   onDelete={() =>
                     deactivateProjectMutation
                       .mutateAsync(project.data.id)
@@ -110,7 +122,23 @@ export default function ProjectDetailPage() {
         </Alert>
       )}
       {!project.isFetching && !project.isError && !!project.data && (
-        <ProjectDetail project={project.data} />
+        <>
+          <ProjectDetail project={project.data} />
+          {!project.data.isActive && (
+            <Stack direction="row" sx={{ justifyContent: "center" }}>
+              <DeleteButton
+                onDelete={() =>
+                  deleteProjectMutation
+                    .mutateAsync(project.data.id)
+                    .then(() => {
+                      queryClient.invalidateQueries({ queryKey: ["projects"] });
+                      navigate("/projects");
+                    })
+                }
+              />
+            </Stack>
+          )}
+        </>
       )}
     </>
   );

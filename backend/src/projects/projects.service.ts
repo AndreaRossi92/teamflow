@@ -180,6 +180,16 @@ export class ProjectsService {
     return users.map((u) => ({ ...u, isMember: memberIds.has(u.id) }));
   }
 
+  async deleteProject(id: string, requestingUser: JwtUser): Promise<void> {
+    const project = await this.findProjectWithAccess(id, requestingUser);
+    if (project.isActive) {
+      throw new BadRequestException(
+        ErrorCode.PROJECT_MUST_BE_INACTIVE_TO_DELETE,
+      );
+    }
+    await this.projectRepo.delete(id);
+  }
+
   private async findProjectWithAccess(
     id: string,
     requestingUser: JwtUser,

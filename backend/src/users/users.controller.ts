@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -106,5 +109,17 @@ export class UsersController {
   ): Promise<void> {
     await this.usersService.resetUserPassword(id, dto.newPassword);
     await this.authService.revokeAllUserSessions(id);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Hard-delete an inactive user (admin only) — irreversible. Deactivate the user first.',
+  })
+  @ApiNoContentResponse({ description: 'User deleted successfully' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  async deleteUser(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    await this.usersService.deleteUser(id);
   }
 }

@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -15,6 +18,7 @@ import {
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -170,5 +174,23 @@ export class ProjectsController {
     @Req() req: Request,
   ): Promise<Project> {
     return this.projectsService.reactivateProject(id, req.user as JwtUser);
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Hard-delete an inactive project (admin only) — irreversible. Deactivate the project first.',
+  })
+  @ApiNoContentResponse({ description: 'Project deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Project not found' })
+  @ApiForbiddenResponse({ description: 'Not a member of this project' })
+  async deleteProject(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.projectsService.deleteProject(id, req.user as JwtUser);
   }
 }

@@ -113,7 +113,7 @@ export default function UserDetailPage() {
                 onDelete={() =>
                   deleteUserMutation.mutateAsync(user.data.id).then(() => {
                     queryClient.invalidateQueries({ queryKey: ["users"] });
-                    navigate("/users");
+                    navigate("/users", { replace: true });
                   })
                 }
               />

@@ -99,6 +99,7 @@ const mockProjectRepo = {
   findAndCount: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  delete: jest.fn(),
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
 
@@ -648,6 +649,101 @@ describe('ProjectsService', () => {
       await expect(
         service.getAssignableUsers('missing-id', adminUser, emptyQuery),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ── deleteProject ──────────────────────────────────────────────────────────
+
+  describe('deleteProject', () => {
+    it('should call repo.delete with the project id when the project is inactive', async () => {
+      mockProjectRepo.findOne.mockResolvedValue({
+        ...mockProject,
+        isActive: false,
+      });
+      mockProjectRepo.delete.mockResolvedValue({ affected: 1 });
+
+      await service.deleteProject(mockProject.id, adminUser);
+
+      expect(mockProjectRepo.delete).toHaveBeenCalledWith(mockProject.id);
+    });
+
+    it('should resolve without returning a value on success', async () => {
+      mockProjectRepo.findOne.mockResolvedValue({
+        ...mockProject,
+        isActive: false,
+      });
+      mockProjectRepo.delete.mockResolvedValue({ affected: 1 });
+
+      const result = await service.deleteProject(mockProject.id, adminUser);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should throw BadRequestException when the project is still active', async () => {
+      mockProjectRepo.findOne.mockResolvedValue({
+        ...mockProject,
+        isActive: true,
+      });
+
+      await expect(
+        service.deleteProject(mockProject.id, adminUser),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should not call repo.delete when the project is still active', async () => {
+      mockProjectRepo.findOne.mockResolvedValue({
+        ...mockProject,
+        isActive: true,
+      });
+
+      await expect(
+        service.deleteProject(mockProject.id, adminUser),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(mockProjectRepo.delete).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when the project does not exist', async () => {
+      mockProjectRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.deleteProject('nonexistent-id', adminUser),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should not call repo.delete when the project does not exist', async () => {
+      mockProjectRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.deleteProject('nonexistent-id', adminUser),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockProjectRepo.delete).not.toHaveBeenCalled();
+    });
+
+    it('should throw ForbiddenException when a non-member non-admin tries to delete', async () => {
+      // devUser is not in mockProject.members
+      mockProjectRepo.findOne.mockResolvedValue({
+        ...mockProject,
+        isActive: false,
+      });
+
+      await expect(
+        service.deleteProject(mockProject.id, devUser),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should not call repo.delete when access is denied', async () => {
+      mockProjectRepo.findOne.mockResolvedValue({
+        ...mockProject,
+        isActive: false,
+      });
+
+      await expect(
+        service.deleteProject(mockProject.id, devUser),
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(mockProjectRepo.delete).not.toHaveBeenCalled();
     });
   });
 });

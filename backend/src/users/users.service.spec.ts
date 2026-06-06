@@ -37,6 +37,7 @@ const mockUserRepo = {
   create: jest.fn(),
   save: jest.fn(),
   update: jest.fn(),
+  delete: jest.fn(),
 };
 
 // ─── Module factory ──────────────────────────────────────────────────────────
@@ -402,6 +403,64 @@ describe('UsersService', () => {
       const result = await service.resetUserPassword(mockUser.id, newPassword);
 
       expect(result).toBeUndefined();
+    });
+  });
+
+  // ── deleteUser ─────────────────────────────────────────────────────────────
+
+  describe('deleteUser', () => {
+    it('should call repo.delete with the user id when the user is inactive', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser, isActive: false });
+      mockUserRepo.delete.mockResolvedValue({ affected: 1 });
+
+      await service.deleteUser(mockUser.id);
+
+      expect(mockUserRepo.delete).toHaveBeenCalledWith(mockUser.id);
+    });
+
+    it('should resolve without returning a value on success', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser, isActive: false });
+      mockUserRepo.delete.mockResolvedValue({ affected: 1 });
+
+      const result = await service.deleteUser(mockUser.id);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should throw BadRequestException when the user is still active', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser, isActive: true });
+
+      await expect(service.deleteUser(mockUser.id)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should not call repo.delete when the user is active', async () => {
+      mockUserRepo.findOne.mockResolvedValue({ ...mockUser, isActive: true });
+
+      await expect(service.deleteUser(mockUser.id)).rejects.toThrow(
+        BadRequestException,
+      );
+
+      expect(mockUserRepo.delete).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.deleteUser('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should not call repo.delete when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.deleteUser('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(mockUserRepo.delete).not.toHaveBeenCalled();
     });
   });
 });

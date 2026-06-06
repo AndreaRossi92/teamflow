@@ -54,6 +54,7 @@ export default function TicketsList({
                   <Typography>{ticket.title}</Typography>
                 </Stack>
               }
+              secondary={ticket.project.name}
             />
             <TicketPriorityBadge priority={ticket.priority} />
           </ListItemButton>

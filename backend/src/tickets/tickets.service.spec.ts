@@ -75,9 +75,7 @@ const mockTicket: Ticket = {
   description: 'Users cannot log in',
   status: TicketStatus.OPEN,
   priority: TicketPriority.HIGH,
-  projectId: mockProject.id,
   project: mockProject,
-  createdById: managerUser.id,
   createdBy: managerEntity,
   assignees: [devEntity],
   createdAt: new Date(),
@@ -315,14 +313,6 @@ describe('TicketsService', () => {
         status: TicketStatus;
       }[][];
       expect(calls[0][0].status).toBe(TicketStatus.OPEN);
-    });
-
-    it('should set createdById to the requesting user', async () => {
-      await service.createTicket(dto, managerUser);
-      const calls = mockTicketRepo.create.mock.calls as {
-        createdById: string;
-      }[][];
-      expect(calls[0][0].createdById).toBe(managerUser.id);
     });
 
     it('should call create before save', async () => {

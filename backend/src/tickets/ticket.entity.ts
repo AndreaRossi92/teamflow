@@ -48,20 +48,12 @@ export class Ticket {
   @Column({ type: 'enum', enum: TicketPriority })
   priority!: TicketPriority;
 
-  @ApiProperty({ example: 'uuid...' })
-  @Column()
-  projectId!: string;
-
   @ManyToOne(() => Project, { nullable: false, eager: false })
-  @JoinColumn({ name: 'projectId' })
+  @JoinColumn({ name: 'project' })
   project!: Project;
 
-  @ApiProperty({ example: 'uuid...' })
-  @Column()
-  createdById!: string;
-
   @ManyToOne(() => User, { nullable: false, eager: false })
-  @JoinColumn({ name: 'createdById' })
+  @JoinColumn({ name: 'createdBy' })
   createdBy!: User;
 
   @ApiProperty({ type: () => [User] })

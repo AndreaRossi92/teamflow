@@ -125,9 +125,7 @@ export class TicketsService {
       description: dto.description ?? null,
       priority: dto.priority,
       status: TicketStatus.OPEN,
-      projectId: dto.projectId,
       project,
-      createdById: creator.id,
       createdBy: creator,
       assignees,
     });
@@ -146,7 +144,7 @@ export class TicketsService {
 
     if (dto.assigneeIds !== undefined) {
       const project = await this.projectRepo.findOne({
-        where: { id: ticket.projectId },
+        where: { id: ticket.project.id },
         relations: ['members'],
       });
       if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
@@ -156,6 +154,7 @@ export class TicketsService {
       );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { assigneeIds: _ignored, projectId: _ignoredProject, ...rest } = dto;
     Object.assign(ticket, rest);
 
@@ -191,7 +190,7 @@ export class TicketsService {
     });
 
     const project = await this.projectRepo.findOne({
-      where: { id: ticket.projectId },
+      where: { id: ticket.project.id },
       relations: ['members'],
     });
     if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
@@ -229,7 +228,7 @@ export class TicketsService {
 
     // Verify the requesting user is a member of the ticket's project
     const project = await this.projectRepo.findOne({
-      where: { id: ticket.projectId },
+      where: { id: ticket.project.id },
       relations: ['members'],
     });
     if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);

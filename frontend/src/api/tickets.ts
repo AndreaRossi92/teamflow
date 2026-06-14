@@ -39,7 +39,11 @@ export async function ticketById(id: string): Promise<Ticket> {
 export async function createTicket(
   data: TicketCreateFormValues,
 ): Promise<Ticket> {
-  const response = await api.post<Ticket>("/tickets", data);
+  const { project, ...rest } = data;
+  const response = await api.post<Ticket>("/tickets", {
+    projectId: project?.id,
+    ...rest,
+  });
   return response.data;
 }
 

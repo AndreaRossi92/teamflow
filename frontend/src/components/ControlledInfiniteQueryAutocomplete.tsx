@@ -331,6 +331,7 @@ export default function ControlledInfiniteQueryAutocomplete<T>({
           onClose={() => setOpen(false)}
           options={options}
           value={field.value ?? (autocompleteProps.multiple ? [] : null)}
+          onBlur={field.onBlur}
           onChange={(_event, newValue) => field.onChange(newValue)}
           inputValue={inputValue}
           onInputChange={handleInputChange}

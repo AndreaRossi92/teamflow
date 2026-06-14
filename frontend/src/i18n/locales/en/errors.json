@@ -2,5 +2,8 @@
   "invalidEmail": "Invalid email",
   "minLength": "Minimum {{count}} characters",
   "passwordsDontMatch": "Passwords do not match",
-  "somethingWentWrong": "Something went wrong"
+  "somethingWentWrong": "Something went wrong",
+  "required": "Required",
+  "invalidType": "Invalid type",
+  "invalidValue": "Invalid value"
 }

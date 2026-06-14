@@ -24,6 +24,14 @@ export function useZodLocale() {
               };
             }
             break;
+          case "invalid_type":
+            return {
+              message: t("invalidType"),
+            };
+          case "invalid_value":
+            return {
+              message: t("invalidValue"),
+            };
         }
       },
     });

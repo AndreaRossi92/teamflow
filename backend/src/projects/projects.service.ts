@@ -199,8 +199,6 @@ export class ProjectsService {
     });
 
     if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
-    if (!project.isActive)
-      throw new NotFoundException(ErrorCode.PROJECT_INACTIVE);
 
     if (requestingUser.role !== Role.ADMIN) {
       const isMember = project.members.some((m) => m.id === requestingUser.id);

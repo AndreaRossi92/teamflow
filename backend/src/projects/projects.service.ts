@@ -98,7 +98,6 @@ export class ProjectsService {
     const project = this.projectRepo.create({
       name: dto.name,
       description: dto.description ?? null,
-      createdById: creator.id,
       createdBy: creator,
       members: [creator], // creator is always the first member
     });

@@ -30,10 +30,6 @@ export class Project {
   @Column({ default: true })
   isActive!: boolean;
 
-  @ApiProperty({ example: 'uuid...' })
-  @Column()
-  createdById!: string;
-
   @ManyToOne(() => User, { nullable: false, eager: false })
   @JoinColumn({ name: 'createdById' })
   createdBy!: User;

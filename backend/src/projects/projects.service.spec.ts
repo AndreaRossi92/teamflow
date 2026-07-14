@@ -62,7 +62,6 @@ const mockProject: Project = {
   name: 'TeamFlow v2',
   description: 'Main rewrite',
   isActive: true,
-  createdById: managerUser.id,
   createdBy: managerEntity,
   members: [managerEntity],
   createdAt: new Date(),
@@ -288,15 +287,6 @@ describe('ProjectsService', () => {
       mockProjectRepo.save.mockImplementation((p) =>
         Promise.resolve({ ...mockProject, ...p }),
       );
-    });
-
-    it('should set createdById to the requesting user', async () => {
-      await service.createProject(dto, managerUser);
-
-      const calls = mockProjectRepo.create.mock.calls as {
-        createdById: string;
-      }[][];
-      expect(calls[0][0].createdById).toBe(managerUser.id);
     });
 
     it('should auto-assign the creator as the first member', async () => {

@@ -14,15 +14,15 @@ type DeleteDialogProps = Omit<DialogProps, "onClose"> & {
   handleClose: () => void;
   dialogTitle?: string;
   dialogText?: string;
-  deleteLabel?: string;
+  confirmLabel?: string;
   cancelLabel?: string;
 };
 
-export default function DeleteDialog({
+export default function ConfirmDialog({
   handleConfirm,
   dialogTitle,
   dialogText,
-  deleteLabel,
+  confirmLabel,
   cancelLabel,
   handleClose,
   open,
@@ -44,7 +44,7 @@ export default function DeleteDialog({
           {cancelLabel ?? t("cancel")}
         </Button>
         <Button onClick={handleConfirm} color="error" variant="contained">
-          {deleteLabel ?? t("delete")}
+          {confirmLabel ?? t("confirm")}
         </Button>
       </DialogActions>
     </Dialog>

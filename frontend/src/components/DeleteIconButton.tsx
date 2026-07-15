@@ -2,7 +2,7 @@ import { useState } from "react";
 import { IconButton, type IconButtonProps } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import DeleteDialog from "./DeleteDialog";
+import ConfirmDialog from "./ConfirmDialog";
 
 type DeleteIconButtonProps = Omit<IconButtonProps, "title" | "onClick"> & {
   onDelete: () => Promise<unknown>;
@@ -43,13 +43,13 @@ export default function DeleteIconButton({
         <Delete fontSize="small" />
       </IconButton>
 
-      <DeleteDialog
+      <ConfirmDialog
         open={open}
         handleClose={handleClose}
         handleConfirm={handleConfirm}
         dialogTitle={dialogTitle}
         dialogText={dialogText}
-        deleteLabel={deleteLabel}
+        confirmLabel={deleteLabel ?? t("delete")}
         cancelLabel={cancelLabel}
       />
     </>

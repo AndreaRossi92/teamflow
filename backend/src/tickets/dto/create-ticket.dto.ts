@@ -1,13 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsArray,
   IsEnum,
   IsOptional,
   IsString,
   IsUUID,
   MinLength,
 } from 'class-validator';
-import { TicketPriority } from '../ticket.entity';
+import { TicketPriority, TicketStatus } from '../ticket.entity';
 
 export class CreateTicketDto {
   @ApiProperty({ example: 'Fix login bug' })
@@ -24,13 +23,12 @@ export class CreateTicketDto {
   @IsEnum(TicketPriority)
   priority!: TicketPriority;
 
+  @ApiProperty({ enum: TicketStatus, example: TicketStatus.OPEN })
+  @IsEnum(TicketStatus)
+  @IsOptional()
+  status?: TicketStatus;
+
   @ApiProperty({ example: 'uuid-project' })
   @IsUUID('4')
   projectId!: string;
-
-  @ApiPropertyOptional({ example: ['uuid-1', 'uuid-2'], type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsUUID('4', { each: true })
-  assigneeIds?: string[];
 }

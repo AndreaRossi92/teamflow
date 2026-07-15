@@ -12,13 +12,16 @@ import { User, Role } from '../users/user.entity';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
-import { AssignTicketUsersDto } from './dto/assign-ticket-users.dto';
+import { AssignUsersDto } from './dto/assign-ticket-users.dto';
 import { ListTicketsDto } from './dto/list-tickets.dto';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { ErrorCode } from '../app-error.codes';
 import { Paginated } from '../paginated-response.dto';
+import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
+import { UserWithMemberDto } from './dto/users-with-member.dto';
 
 const TICKET_RELATIONS = ['assignees', 'createdBy', 'project'];
+const PROJECT_RELATIONS = ['members'];
 
 @Injectable()
 export class TicketsService {
@@ -97,11 +100,10 @@ export class TicketsService {
     dto: CreateTicketDto,
     requestingUser: JwtUser,
   ): Promise<Ticket> {
-    const project = await this.projectRepo.findOne({
-      where: { id: dto.projectId },
-      relations: ['members'],
-    });
-    if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
+    const project = await this.findProjectWithAccess(
+      dto.projectId,
+      requestingUser,
+    );
 
     // Manager must be a member of the project
     if (requestingUser.role !== Role.ADMIN) {
@@ -115,11 +117,6 @@ export class TicketsService {
     });
     if (!creator) throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
 
-    let assignees: User[] = [];
-    if (dto.assigneeIds && dto.assigneeIds.length > 0) {
-      assignees = await this.resolveProjectMembers(dto.assigneeIds, project);
-    }
-
     const ticket = this.ticketRepo.create({
       title: dto.title,
       description: dto.description ?? null,
@@ -127,7 +124,7 @@ export class TicketsService {
       status: TicketStatus.OPEN,
       project,
       createdBy: creator,
-      assignees,
+      assignees: [creator],
     });
 
     return this.ticketRepo.save(ticket);
@@ -142,20 +139,22 @@ export class TicketsService {
       requireManagerAccess: true,
     });
 
-    if (dto.assigneeIds !== undefined) {
-      const project = await this.projectRepo.findOne({
-        where: { id: ticket.project.id },
-        relations: ['members'],
-      });
-      if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
-      ticket.assignees = await this.resolveProjectMembers(
-        dto.assigneeIds,
-        project,
+    if (dto.projectId !== undefined && dto.projectId !== ticket.project.id) {
+      const newProject = await this.findProjectWithAccess(
+        dto.projectId,
+        requestingUser,
       );
+
+      const creator = await this.userRepo.findOne({
+        where: { id: requestingUser.id },
+      });
+      if (!creator) throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+
+      ticket.assignees = [creator];
+      ticket.project = newProject;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { assigneeIds: _ignored, projectId: _ignoredProject, ...rest } = dto;
+    const { projectId: _ignored, ...rest } = dto;
     Object.assign(ticket, rest);
 
     return this.ticketRepo.save(ticket);
@@ -182,21 +181,52 @@ export class TicketsService {
 
   async assignUsers(
     id: string,
-    dto: AssignTicketUsersDto,
+    dto: AssignUsersDto,
     requestingUser: JwtUser,
   ): Promise<Ticket> {
     const ticket = await this.findTicketWithAccess(id, requestingUser, {
       requireManagerAccess: true,
     });
 
-    const project = await this.projectRepo.findOne({
-      where: { id: ticket.project.id },
-      relations: ['members'],
-    });
-    if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
+    const project = await this.findProjectWithAccess(
+      ticket.project.id,
+      requestingUser,
+    );
 
     ticket.assignees = await this.resolveProjectMembers(dto.userIds, project);
     return this.ticketRepo.save(ticket);
+  }
+
+  async getAssignableUsers(
+    ticketId: string,
+    requestingUser: JwtUser,
+    query: ListAssignableUsersDto,
+  ): Promise<UserWithMemberDto[]> {
+    const ticket = await this.findTicketWithAccess(ticketId, requestingUser);
+    const project = await this.findProjectWithAccess(
+      ticket.project.id,
+      requestingUser,
+    );
+    const ticketIds = new Set(ticket.assignees.map((m) => m.id));
+
+    const { fullName, role } = query;
+
+    return project.members
+      .filter(
+        (u) =>
+          u.isActive &&
+          (fullName === undefined ||
+            u.fullName.toLowerCase().includes(fullName.toLowerCase())) &&
+          (role === undefined || u.role === role),
+      )
+      .sort((a, b) => a.fullName.localeCompare(b.fullName))
+      .map(({ id, fullName, email, role }) => ({
+        id,
+        fullName,
+        email,
+        role,
+        isMember: ticketIds.has(id),
+      }));
   }
 
   async deleteTicket(id: string, requestingUser: JwtUser): Promise<void> {
@@ -206,12 +236,26 @@ export class TicketsService {
     await this.ticketRepo.delete(id);
   }
 
-  /**
-   * Loads the ticket and enforces visibility rules.
-   *
-   * requireManagerAccess = true → DEVs are never allowed (used for
-   * create/update/assign/delete endpoints restricted to admin/manager).
-   */
+  private async findProjectWithAccess(
+    id: string,
+    requestingUser: JwtUser,
+  ): Promise<Project> {
+    const project = await this.projectRepo.findOne({
+      where: { id },
+      relations: PROJECT_RELATIONS,
+    });
+
+    if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
+
+    if (requestingUser.role !== Role.ADMIN) {
+      const isMember = project.members.some((m) => m.id === requestingUser.id);
+      if (!isMember)
+        throw new ForbiddenException(ErrorCode.PROJECT_ACCESS_DENIED);
+    }
+
+    return project;
+  }
+
   private async findTicketWithAccess(
     id: string,
     requestingUser: JwtUser,

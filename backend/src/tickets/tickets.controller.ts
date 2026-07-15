@@ -29,7 +29,7 @@ import { Ticket } from './ticket.entity';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
-import { AssignTicketUsersDto } from './dto/assign-ticket-users.dto';
+import { AssignUsersDto } from './dto/assign-ticket-users.dto';
 import { ListTicketsDto } from './dto/list-tickets.dto';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -124,7 +124,7 @@ export class TicketsController {
   @ApiForbiddenResponse({ description: 'No access to this ticket' })
   assignUsers(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: AssignTicketUsersDto,
+    @Body() dto: AssignUsersDto,
     @Req() req: Request,
   ): Promise<Ticket> {
     return this.ticketsService.assignUsers(id, dto, req.user as JwtUser);

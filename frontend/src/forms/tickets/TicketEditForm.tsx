@@ -54,7 +54,7 @@ export function TicketEditForm({
         name="priority"
         label={t("priority")}
         options={TICKET_PRIORITIES}
-        getOptionLabel={(option) => option}
+        getOptionLabel={(option) => t(option)}
         disabled={user?.role === "dev"}
       />
 
@@ -71,7 +71,7 @@ export function TicketEditForm({
         name="status"
         label={t("status")}
         options={TICKET_STATUSES}
-        getOptionLabel={(option) => option}
+        getOptionLabel={(option) => t(option)}
       />
     </Stack>
   );

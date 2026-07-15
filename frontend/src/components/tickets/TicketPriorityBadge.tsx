@@ -1,5 +1,6 @@
 import { Chip } from "@mui/material";
 import type { TicketPriority } from "../../types/ticket";
+import { useTranslation } from "react-i18next";
 
 export const PRIORITY_COLOR: Record<
   TicketPriority,
@@ -15,7 +16,8 @@ type TicketPriorityBadgeProps = {
 };
 
 export function TicketPriorityBadge({ priority }: TicketPriorityBadgeProps) {
+  const { t } = useTranslation("ticket");
   return (
-    <Chip size="small" label={priority} color={PRIORITY_COLOR[priority]} />
+    <Chip size="small" label={t(priority)} color={PRIORITY_COLOR[priority]} />
   );
 }

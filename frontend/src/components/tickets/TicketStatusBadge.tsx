@@ -1,5 +1,6 @@
 import { Chip } from "@mui/material";
 import type { TicketStatus } from "../../types/ticket";
+import { useTranslation } from "react-i18next";
 
 export const STATUS_COLOR: Record<
   TicketStatus,
@@ -16,5 +17,6 @@ type TicketStatusBadgeProps = {
 };
 
 export function TicketStatusBadge({ status }: TicketStatusBadgeProps) {
-  return <Chip size="small" label={status} color={STATUS_COLOR[status]} />;
+  const { t } = useTranslation("ticket");
+  return <Chip size="small" label={t(status)} color={STATUS_COLOR[status]} />;
 }

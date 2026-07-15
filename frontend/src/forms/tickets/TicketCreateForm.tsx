@@ -50,7 +50,7 @@ export function TicketCreateForm({
         name="priority"
         label={t("priority")}
         options={TICKET_PRIORITIES}
-        getOptionLabel={(option) => option}
+        getOptionLabel={(option) => t(option)}
       />
 
       <ControlledInfiniteQueryAutocomplete<Project>

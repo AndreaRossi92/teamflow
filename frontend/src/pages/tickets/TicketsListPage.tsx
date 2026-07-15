@@ -204,7 +204,7 @@ export default function TicketsListPage() {
                   },
                 }}
               >
-                {p}
+                {t(p)}
               </ToggleButton>
             ))}
           </ToggleButtonGroup>

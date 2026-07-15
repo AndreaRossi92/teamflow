@@ -13,7 +13,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { Add, Edit } from "@mui/icons-material";
+import { Add, Edit, Group } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
@@ -26,12 +26,18 @@ import type { Ticket, TicketPriority, TicketStatus } from "../../types/ticket";
 import { TICKET_PRIORITIES, TICKET_STATUSES } from "../../types/ticket";
 import { STATUS_COLOR } from "../../components/tickets/TicketStatusBadge";
 import { PRIORITY_COLOR } from "../../components/tickets/TicketPriorityBadge";
+import DeleteIconButton from "../../components/DeleteIconButton";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSnackbar } from "../../providers/useSnackbar";
+import useDeleteTicketMutation from "../../hooks/tickets/useDeleteTicketMutation";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
 export default function TicketsListPage() {
   const { t } = useTranslation("ticket");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { showMessage } = useSnackbar();
   const { user } = useAuth();
 
   const [title, setTitle] = useState("");
@@ -50,6 +56,15 @@ export default function TicketsListPage() {
     title: debouncedTitle || undefined,
     status,
     priority,
+  });
+
+  const deleteTicketMutation = useDeleteTicketMutation({
+    onSuccess: () => {
+      showMessage(t("deleted"), "success");
+    },
+    onError: () => {
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
+    },
   });
 
   const tickets =
@@ -212,16 +227,37 @@ export default function TicketsListPage() {
         <TicketsList
           tickets={tickets}
           onClick={(ticket) => navigate(`/ticket/${ticket.id}`)}
-          listItemProps={{ sx: { pr: 8 }, disablePadding: true }}
+          listItemProps={{ sx: { pr: 18 }, disablePadding: true }}
           actions={(ticket) =>
             user?.role === "admin" || user?.role === "manager" ? (
-              <IconButton
-                size="small"
-                title={t("edit")}
-                onClick={() => navigate(`/ticket/${ticket.id}/edit`)}
-              >
-                <Edit fontSize="small" />
-              </IconButton>
+              <Stack direction="row" spacing={1}>
+                <IconButton
+                  size="small"
+                  title={t("edit")}
+                  onClick={() => navigate(`/ticket/${ticket.id}/edit`)}
+                >
+                  <Edit fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  title={t("members")}
+                  onClick={() => {
+                    navigate(`/ticket/${ticket.id}/assign-users`);
+                  }}
+                >
+                  <Group fontSize="small" />
+                </IconButton>
+                <DeleteIconButton
+                  dialogTitle={ticket.title}
+                  onDelete={() =>
+                    deleteTicketMutation.mutateAsync(ticket.id).then(() =>
+                      queryClient.invalidateQueries({
+                        queryKey: ["tickets"],
+                      }),
+                    )
+                  }
+                />
+              </Stack>
             ) : undefined
           }
         />

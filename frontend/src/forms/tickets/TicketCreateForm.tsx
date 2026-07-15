@@ -51,7 +51,6 @@ export function TicketCreateForm({
         label={t("priority")}
         options={TICKET_PRIORITIES}
         getOptionLabel={(option) => option}
-        // disableClearable
       />
 
       <ControlledInfiniteQueryAutocomplete<Project>

@@ -31,3 +31,10 @@ export type TicketFilters = {
   priority?: TicketPriority | null;
   projectId?: string | null;
 };
+
+export type AssignableUser = Pick<
+  User,
+  "id" | "fullName" | "role" | "email"
+> & {
+  isMember: boolean;
+};

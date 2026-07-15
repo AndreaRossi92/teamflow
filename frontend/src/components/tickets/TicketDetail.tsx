@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import type { Ticket } from "../../types/ticket";
 import { TicketStatusBadge } from "./TicketStatusBadge";
 import { TicketPriorityBadge } from "./TicketPriorityBadge";
+import UsersList from "../users/UsersList";
 
 type TicketDetailProps = { ticket: Ticket };
 
@@ -97,20 +98,20 @@ export default function ProjectDetail({ ticket }: TicketDetailProps) {
               </Typography>
             </Grid>
 
-            {/* <Grid size={{ xs: 12 }}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle2" color="textSecondary">
                 {t("members")}
               </Typography>
-              {project.members.length > 0 && (
+              {ticket.assignees.length > 0 && (
                 <UsersList
-                  users={project.members}
+                  users={ticket.assignees}
                   listItemProps={{ disablePadding: true }}
                 />
               )}
-              {project.members.length === 0 && (
+              {ticket.assignees.length === 0 && (
                 <Alert severity="info">{t("noMembers")}</Alert>
               )}
-            </Grid> */}
+            </Grid>
           </Grid>
         </CardContent>
       </Card>

@@ -28,7 +28,7 @@ export default function TicketCreatePage() {
     defaultValues: {
       title: "",
       description: "",
-      priority: "medium",
+      priority: "",
       project: null,
     },
   });

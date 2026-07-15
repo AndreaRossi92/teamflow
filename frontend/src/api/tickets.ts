@@ -1,9 +1,15 @@
 import type { PaginatedResponse } from "../types/paginatedResponse";
-import type { Ticket, TicketFilters, TicketStatus } from "../types/ticket";
+import type {
+  AssignableUser,
+  Ticket,
+  TicketFilters,
+  TicketStatus,
+} from "../types/ticket";
 import type {
   TicketCreateFormValues,
   TicketEditFormValues,
 } from "../types/ticketForm";
+import type { UserFilters } from "../types/user";
 import { api } from "./axios.instance";
 
 const PAGE_SIZE = 20;
@@ -51,7 +57,11 @@ export async function editTicket(
   id: string,
   data: TicketEditFormValues,
 ): Promise<Ticket> {
-  const response = await api.patch<Ticket>(`/tickets/${id}`, data);
+  const { project, ...rest } = data;
+  const response = await api.patch<Ticket>(`/tickets/${id}`, {
+    projectId: project?.id,
+    ...rest,
+  });
   return response.data;
 }
 
@@ -60,6 +70,25 @@ export async function updateTicketStatus(
   status: TicketStatus,
 ): Promise<Ticket> {
   const response = await api.patch<Ticket>(`/tickets/${id}/status`, { status });
+  return response.data;
+}
+
+export async function ticketAssignableUsersList({
+  id,
+  filters,
+}: {
+  id: string;
+  filters?: Omit<UserFilters, "isActive">;
+}): Promise<AssignableUser[]> {
+  const params = new URLSearchParams();
+
+  if (filters?.fullName) params.append("fullName", filters.fullName);
+  if (filters?.role) params.append("role", filters.role);
+
+  const response = await api.get(
+    `/tickets/${id}/assignable-users?${params.toString()}`,
+  );
+
   return response.data;
 }
 

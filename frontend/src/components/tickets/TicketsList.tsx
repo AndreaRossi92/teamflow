@@ -55,6 +55,7 @@ export default function TicketsList({
                 </Stack>
               }
               secondary={ticket.project.name}
+              slotProps={{ secondary: { sx: { mt: 1 } } }}
             />
             <TicketPriorityBadge priority={ticket.priority} />
           </ListItemButton>

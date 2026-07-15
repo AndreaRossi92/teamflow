@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, IconButton, Stack } from "@mui/material";
-import { Edit } from "@mui/icons-material";
+import { Edit, Group } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
 import PageHeader from "../../components/PageHeader";
 import PageLoader from "../../components/PageLoader";
@@ -11,6 +11,7 @@ import useTicketDetailQuery from "../../hooks/tickets/useTicketDetailQuery";
 import useDeleteTicketMutation from "../../hooks/tickets/useDeleteTicketMutation";
 import TicketDetail from "../../components/tickets/TicketDetail";
 import DeleteButton from "../../components/DeleteButton";
+import DeleteIconButton from "../../components/DeleteIconButton";
 
 export default function TicketDetailPage() {
   const { t } = useTranslation("ticket");
@@ -40,13 +41,34 @@ export default function TicketDetailPage() {
         actions={
           (user?.role === "admin" || user?.role === "manager") &&
           ticket.isSuccess ? (
-            <IconButton
-              size="small"
-              title={t("edit")}
-              onClick={() => navigate(`/ticket/${id}/edit`)}
-            >
-              <Edit fontSize="small" />
-            </IconButton>
+            <Stack direction="row" spacing={1}>
+              <IconButton
+                size="small"
+                title={t("edit")}
+                onClick={() => navigate(`/ticket/${id}/edit`)}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                title={t("members")}
+                onClick={() => {
+                  navigate(`/ticket/${id}/assign-users`);
+                }}
+              >
+                <Group fontSize="small" />
+              </IconButton>
+              <DeleteIconButton
+                dialogTitle={ticket.data.title}
+                onDelete={() =>
+                  deleteTicketMutation.mutateAsync(ticket.data.id).then(() =>
+                    queryClient.invalidateQueries({
+                      queryKey: ["tickets"],
+                    }),
+                  )
+                }
+              />
+            </Stack>
           ) : undefined
         }
         BackButtonProps={{ path: "/tickets", replace: true }}

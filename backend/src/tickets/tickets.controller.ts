@@ -37,6 +37,8 @@ import { Roles } from '../auth/decorators/auth.decorators';
 import { Role } from '../users/user.entity';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
+import { UserWithMemberDto } from './dto/users-with-member.dto';
+import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 
 class PaginatedTicketsResponse extends PaginatedResponseDto(Ticket) {}
 
@@ -128,6 +130,31 @@ export class TicketsController {
     @Req() req: Request,
   ): Promise<Ticket> {
     return this.ticketsService.assignUsers(id, dto, req.user as JwtUser);
+  }
+
+  @Get(':id/assignable-users')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({
+    summary:
+      'List all active non-admin users with isMember flag for a given ticket (project members)',
+  })
+  @ApiOkResponse({
+    type: UserWithMemberDto,
+    isArray: true,
+    description: 'User list with isMember flag',
+  })
+  @ApiForbiddenResponse({ description: 'Not a member of this project' })
+  getAssignableUsers(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ListAssignableUsersDto,
+    @Req() req: Request,
+  ): Promise<UserWithMemberDto[]> {
+    return this.ticketsService.getAssignableUsers(
+      id,
+      req.user as JwtUser,
+      query,
+    );
   }
 
   @Delete(':id')

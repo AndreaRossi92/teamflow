@@ -62,6 +62,9 @@ const TicketDetailtPage = lazyWithLoader(
 const TicketCreatePage = lazyWithLoader(
   () => import("../pages/tickets/TicketCreatePage"),
 );
+const TicketEditPage = lazyWithLoader(
+  () => import("../pages/tickets/TicketEditPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -96,6 +99,7 @@ export default function AppRoutes() {
           element={<ProjectAssignUsersPage />}
         />
         <Route path="/ticket/create" element={<TicketCreatePage />} />
+        <Route path="/ticket/:id/edit" element={<TicketEditPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

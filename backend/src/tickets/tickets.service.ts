@@ -175,7 +175,7 @@ export class TicketsService {
         throw new ForbiddenException(ErrorCode.PROJECT_ACCESS_DENIED);
     }
 
-    ticket.status = dto.status;
+    ticket.status = dto.status ?? TicketStatus.OPEN;
     return this.ticketRepo.save(ticket);
   }
 

@@ -14,8 +14,8 @@ TeamFlow is a web platform for managing software development projects and ticket
 | AI ticket generation | ✅ Available        |
 | Landing page         | 🚧 Work in progress |
 | User management      | ✅ Available        |
-| Projects             | 🔜 Coming soon      |
-| Tickets              | 🔜 Coming soon      |
+| Projects             | ✅ Available        |
+| Tickets              | ✅ Available        |
 
 ---
 

@@ -1,4 +1,4 @@
-import type { GeneratedTicket } from "../../types/generatedTicket";
+import type { GeneratedTicket } from "../../features/ai/types/generatedTicket";
 
 export const mockGeneratedTicket: GeneratedTicket = {
   title: "Add PDF export button to reports page",

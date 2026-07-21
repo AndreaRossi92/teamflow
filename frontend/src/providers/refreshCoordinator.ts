@@ -1,5 +1,5 @@
-import { refreshToken } from "../api/auth";
-import type { AuthUser } from "../types/authUser";
+import { refreshToken } from "../features/auth/api";
+import type { AuthUser } from "../features/auth/types/authUser";
 
 type QueueEntry = {
   resolve: () => void;

@@ -1,5 +1,5 @@
 import { type AxiosInstance } from "axios";
-import type { AuthUser } from "../types/authUser";
+import type { AuthUser } from "../features/auth/types/authUser";
 import { refreshCoordinator } from "./refreshCoordinator";
 
 const SKIP_REFRESH_URLS = ["/auth/refresh", "/auth/login", "/auth/logout"];

@@ -16,7 +16,7 @@ import {
 import { useTranslation } from "react-i18next";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
-import useLogoutMutation from "../hooks/auth/useLogoutMutation";
+import useLogoutMutation from "../features/auth/hooks/useLogoutMutation";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import PasswordIcon from "@mui/icons-material/Password";

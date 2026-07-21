@@ -1,4 +1,4 @@
-import type { Ticket } from "../../types/ticket";
+import type { Ticket } from "../../features/ticket/types/ticket";
 import { mockProject1, mockProject2 } from "./project.data";
 import { mockDevUser, mockManagerUser } from "./user.data";
 

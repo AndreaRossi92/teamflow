@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockProjects } from "../data/project.data";
-import type { Project } from "../../types/project";
+import type { Project } from "../../features/project/types/project";
 import { mockUsers } from "../data/user.data";
 
 export const projectHandlers = [

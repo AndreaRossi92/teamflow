@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockTickets } from "../data/ticket.data";
-import type { Ticket } from "../../types/ticket";
+import type { Ticket } from "../../features/ticket/types/ticket";
 import { mockUsers } from "../data/user.data";
 
 export const ticketHandlers = [

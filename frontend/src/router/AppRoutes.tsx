@@ -15,58 +15,60 @@ const lazyWithLoader = (
 };
 
 const NotFoundPage = lazyWithLoader(() => import("../pages/NotFoundPage"));
-const LoginPage = lazyWithLoader(() => import("../pages/auth/LoginPage"));
+const LoginPage = lazyWithLoader(
+  () => import("../features/auth/pages/LoginPage"),
+);
 const GenerateTicketPage = lazyWithLoader(
-  () => import("../pages/GenerateTicketPage"),
+  () => import("../features/ai/pages/GenerateTicketPage"),
 );
 const DashboardPage = lazyWithLoader(() => import("../pages/DashboardPage"));
 const UsersListPage = lazyWithLoader(
-  () => import("../pages/users/UsersListPage"),
+  () => import("../features/user/pages/UsersListPage"),
 );
 const UserDetailPage = lazyWithLoader(
-  () => import("../pages/users/UserDetailPage"),
+  () => import("../features/user/pages/UserDetailPage"),
 );
 const UserEditPage = lazyWithLoader(
-  () => import("../pages/users/UserEditPage"),
+  () => import("../features/user/pages/UserEditPage"),
 );
 const UserCreatePage = lazyWithLoader(
-  () => import("../pages/users/UserCreatePage"),
+  () => import("../features/user/pages/UserCreatePage"),
 );
 const ChangePasswordPage = lazyWithLoader(
-  () => import("../pages/auth/ChangePasswordPage"),
+  () => import("../features/auth/pages/ChangePasswordPage"),
 );
 const ResetPasswordPage = lazyWithLoader(
-  () => import("../pages/users/ResetPasswordPage"),
+  () => import("../features/user/pages/ResetPasswordPage"),
 );
 const ProjectsListPage = lazyWithLoader(
-  () => import("../pages/projects/ProjectsListPage"),
+  () => import("../features/project/pages/ProjectsListPage"),
 );
 const ProjectDetailPage = lazyWithLoader(
-  () => import("../pages/projects/ProjectDetailPage"),
+  () => import("../features/project/pages/ProjectDetailPage"),
 );
 const ProjectEditPage = lazyWithLoader(
-  () => import("../pages/projects/ProjectEditPage"),
+  () => import("../features/project/pages/ProjectEditPage"),
 );
 const ProjectCreatePage = lazyWithLoader(
-  () => import("../pages/projects/ProjectCreatePage"),
+  () => import("../features/project/pages/ProjectCreatePage"),
 );
 const ProjectAssignUsersPage = lazyWithLoader(
-  () => import("../pages/projects/ProjectAssignUsersPage"),
+  () => import("../features/project/pages/ProjectAssignUsersPage"),
 );
 const TicketsListPage = lazyWithLoader(
-  () => import("../pages/tickets/TicketsListPage"),
+  () => import("../features/ticket/pages/TicketsListPage"),
 );
 const TicketDetailtPage = lazyWithLoader(
-  () => import("../pages/tickets/TicketDetailPage"),
+  () => import("../features/ticket/pages/TicketDetailPage"),
 );
 const TicketCreatePage = lazyWithLoader(
-  () => import("../pages/tickets/TicketCreatePage"),
+  () => import("../features/ticket/pages/TicketCreatePage"),
 );
 const TicketEditPage = lazyWithLoader(
-  () => import("../pages/tickets/TicketEditPage"),
+  () => import("../features/ticket/pages/TicketEditPage"),
 );
 const TicketAssignUsersPage = lazyWithLoader(
-  () => import("../pages/tickets/TicketAssignUsersPage"),
+  () => import("../features/ticket/pages/TicketAssignUsersPage"),
 );
 
 export default function AppRoutes() {

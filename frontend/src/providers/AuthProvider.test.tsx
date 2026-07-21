@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { AxiosError } from "axios";
 import { AuthProvider } from "./AuthProvider";
 import { api } from "../api/axios.instance";
-import { refreshToken, logout as logoutApi } from "../api/auth";
+import { refreshToken, logout as logoutApi } from "../features/auth/api";
 
-vi.mock("../api/auth", () => ({
+vi.mock("../features/auth/api", () => ({
   refreshToken: vi.fn(),
   logout: vi.fn(),
 }));

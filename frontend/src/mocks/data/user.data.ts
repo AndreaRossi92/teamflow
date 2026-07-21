@@ -1,4 +1,4 @@
-import type { User } from "../../types/user";
+import type { User } from "../../features/user/types/user";
 
 export const mockDevUser: User = {
   id: "mock-uuid-dev",

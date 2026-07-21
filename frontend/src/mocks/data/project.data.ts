@@ -1,4 +1,4 @@
-import type { Project } from "../../types/project";
+import type { Project } from "../../features/project/types/project";
 import { mockDevUser, mockManagerUser } from "./user.data";
 
 export const mockProject1: Project = {

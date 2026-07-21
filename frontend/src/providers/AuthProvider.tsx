@@ -4,9 +4,9 @@ import {
   useCallback,
   type PropsWithChildren,
 } from "react";
-import type { AuthUser } from "../types/authUser";
+import type { AuthUser } from "../features/auth/types/authUser";
 import { AuthContext } from "./Auth.Context";
-import { logout as logoutApi } from "../api/auth";
+import { logout as logoutApi } from "../features/auth/api";
 import { api } from "../api/axios.instance";
 import { setupAuthInterceptor } from "./setupAuthInterceptor";
 import { refreshCoordinator } from "./refreshCoordinator";

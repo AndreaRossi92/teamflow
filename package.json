@@ -21,6 +21,6 @@
     "test": "yarn workspaces foreach --all run test"
   },
   "devDependencies": {
-    "concurrently": "^9.2.4"
+    "concurrently": "^10.0.3"
   }
 }

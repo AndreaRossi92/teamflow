@@ -32,15 +32,15 @@ export class UsersService {
 
     const [data, total] = await this.repo.findAndCount({
       where,
-      select: [
-        'id',
-        'email',
-        'fullName',
-        'role',
-        'isActive',
-        'createdAt',
-        'updatedAt',
-      ],
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       order: { fullName: 'ASC' },
       take: limit,
       skip,
@@ -52,15 +52,15 @@ export class UsersService {
   async findOne(id: string): Promise<User> {
     const user = await this.repo.findOne({
       where: { id },
-      select: [
-        'id',
-        'email',
-        'fullName',
-        'role',
-        'isActive',
-        'createdAt',
-        'updatedAt',
-      ],
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
     if (!user) throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     return user;

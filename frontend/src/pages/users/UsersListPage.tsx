@@ -176,7 +176,7 @@ export default function UserListPage() {
                   },
                 }}
               >
-                {role}
+                {t(role)}
               </ToggleButton>
             ))}
           </ToggleButtonGroup>

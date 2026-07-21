@@ -3,7 +3,7 @@ import { projectAssignableUsersList } from "../../api/projects";
 import type { AssignableUser } from "../../types/project";
 import type { UserFilters } from "../../types/user";
 
-export default function useProjectDetailQuery(
+export default function useProjectAssignableUsersQuery(
   id: string,
   filters?: Omit<UserFilters, "isActive">,
 ) {

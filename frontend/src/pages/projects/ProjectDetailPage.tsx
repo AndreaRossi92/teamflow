@@ -132,7 +132,7 @@ export default function ProjectDetailPage() {
                     .mutateAsync(project.data.id)
                     .then(() => {
                       queryClient.invalidateQueries({ queryKey: ["projects"] });
-                      navigate("/projects");
+                      navigate("/projects", { replace: true });
                     })
                 }
               />

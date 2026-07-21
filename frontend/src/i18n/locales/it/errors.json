@@ -2,5 +2,8 @@
   "invalidEmail": "Email non valida",
   "minLength": "Minimo {{count}} caratteri",
   "passwordsDontMatch": "Le password non coincidono",
-  "somethingWentWrong": "Qualcosa è andato storto"
+  "somethingWentWrong": "Qualcosa è andato storto",
+  "required": "Obbligatorio",
+  "invalidType": "Tipo non valido",
+  "invalidValue": "Valore non valido"
 }

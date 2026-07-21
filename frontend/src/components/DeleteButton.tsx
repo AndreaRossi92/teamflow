@@ -1,15 +1,8 @@
 import { useState } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-  type ButtonProps,
-} from "@mui/material";
+import { Button, type ButtonProps } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
+import ConfirmDialog from "./ConfirmDialog";
 
 type DeleteButtonProps = Omit<ButtonProps, "onClick"> & {
   onDelete: () => Promise<unknown>;
@@ -50,24 +43,15 @@ export default function DeleteButton({
         {children ?? t("delete")}
       </Button>
 
-      <Dialog open={open} onClose={handleClose}>
-        {dialogTitle && <DialogTitle>{dialogTitle}</DialogTitle>}
-
-        <DialogContent>
-          <DialogContentText>
-            {dialogText ?? t("dialogDeleteText")}
-          </DialogContentText>
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={handleClose} color="inherit">
-            {cancelLabel ?? t("cancel")}
-          </Button>
-          <Button onClick={handleConfirm} color="error" variant="contained">
-            {deleteLabel ?? t("delete")}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={open}
+        handleClose={handleClose}
+        handleConfirm={handleConfirm}
+        dialogTitle={dialogTitle}
+        dialogText={dialogText}
+        confirmLabel={deleteLabel ?? t("delete")}
+        cancelLabel={cancelLabel}
+      />
     </>
   );
 }

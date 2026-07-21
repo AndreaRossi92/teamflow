@@ -10,6 +10,8 @@ import { RefreshToken } from './auth/refresh-token.entity';
 import { ProjectsModule } from './projects/project.module';
 import { Project } from './projects/project.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { Ticket } from './tickets/ticket.entity';
+import { TicketsModule } from './tickets/tickets.module';
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
         username: config.get<string>('DB_USERNAME', 'teamflow'),
         password: config.get<string>('DB_PASSWORD', 'teamflow'),
         database: config.get<string>('DB_NAME', 'teamflow'),
-        entities: [User, RefreshToken, Project],
+        entities: [User, RefreshToken, Project, Ticket],
         synchronize: true,
       }),
     }),
@@ -51,6 +53,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     AuthModule,
     SeedModule,
     ProjectsModule,
+    TicketsModule,
   ],
 })
 export class AppModule {}

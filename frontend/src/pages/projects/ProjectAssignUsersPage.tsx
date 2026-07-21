@@ -64,7 +64,6 @@ export default function ProjectAssignUsersPage() {
     assignableUsers.isFetched &&
     !assignableUsers.isError
   ) {
-    console.log(assignableUsers.data);
     setHasInitialized(true);
     setAssignedUsers(
       (assignableUsers.data ?? []).filter((user) => user.isMember),

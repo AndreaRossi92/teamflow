@@ -2,6 +2,8 @@ import * as z from "zod";
 import { TICKET_PRIORITIES, TICKET_STATUSES } from "./ticket";
 import i18n from "../i18n";
 
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
+
 export const ticketCreateFormSchema = z.object({
   title: z.string().min(2),
   description: z.string().optional(),
@@ -13,7 +15,7 @@ export const ticketCreateFormSchema = z.object({
     },
   }),
   project: z.object(
-    { id: z.uuid() },
+    { id: isDemoMode ? z.string() : z.uuid() },
     {
       error: (val) => {
         return val.input === null
@@ -43,7 +45,7 @@ export const ticketEditFormSchema = z.object({
     },
   }),
   project: z.object(
-    { id: z.uuid() },
+    { id: isDemoMode ? z.string() : z.uuid() },
     {
       error: (val) => {
         return val.input === null

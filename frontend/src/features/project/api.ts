@@ -4,7 +4,7 @@ import type {
   ProjectCreateFormValues,
   ProjectEditFormValues,
 } from "./types/projectForm";
-import type { UserFilters } from "../types/user";
+import type { UserFilters } from "../user/types/user";
 import { api } from "../../api/axios.instance";
 
 const PAGE_SIZE = 20;

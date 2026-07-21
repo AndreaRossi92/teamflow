@@ -1,4 +1,4 @@
-import type { AuthUser } from "../../types/authUser";
+import type { AuthUser } from "../../features/auth/types/authUser";
 
 export const mockAdminUser: AuthUser = {
   id: "mock-uuid-admin",

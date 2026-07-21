@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockUsers } from "../data/user.data";
-import type { User } from "../../types/user";
+import type { User } from "../../features/user/types/user";
 
 export const userHandlers = [
   http.get("/api/users", async () => {

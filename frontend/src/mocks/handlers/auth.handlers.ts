@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockAdminUser } from "../data/auth.data";
-import type { ChangePasswordFormValues } from "../../types/changePasswordForm";
+import type { ChangePasswordFormValues } from "../../features/auth/types/changePasswordForm";
 
 export const authHandlers = [
   http.post<never, { email: string; password: string }>(

@@ -24,12 +24,11 @@ import useTicketsListQuery from "../../hooks/tickets/useTicketsListQuery";
 import TicketsList from "../../components/tickets/TicketsList";
 import type { Ticket, TicketPriority, TicketStatus } from "../../types/ticket";
 import { TICKET_PRIORITIES, TICKET_STATUSES } from "../../types/ticket";
-import { STATUS_COLOR } from "../../components/tickets/TicketStatusBadge";
-import { PRIORITY_COLOR } from "../../components/tickets/TicketPriorityBadge";
 import DeleteIconButton from "../../components/DeleteIconButton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../providers/useSnackbar";
 import useDeleteTicketMutation from "../../hooks/tickets/useDeleteTicketMutation";
+import { PRIORITY_COLOR, STATUS_COLOR } from "../../const/tickets";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 

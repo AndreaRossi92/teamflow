@@ -77,6 +77,9 @@ const VirtualListbox = forwardRef<HTMLUListElement, VirtualListboxProps>(
     const scrollContainerRef = useRef<HTMLUListElement | null>(null);
     const setScrollContainerRef = useForkRef(scrollContainerRef, forwardedRef);
 
+    // TanStack Virtual returns functions (scrollToIndex, getVirtualItems, ...) that
+    // cannot be memoized safely, so React Compiler always skips this component.
+    // eslint-disable-next-line react-hooks/incompatible-library -- known limitation of @tanstack/react-virtual
     const virtualizer = useVirtualizer({
       count: items.length,
       getScrollElement: () => scrollContainerRef.current,
@@ -190,7 +193,7 @@ type ControlledInfiniteQueryAutocompleteProps<
   label?: string;
   infiniteQuery: UseInfiniteQueryResult<
     InfiniteData<PaginatedResponse<TOption>, number>,
-    AxiosError<unknown, any>
+    AxiosError<unknown, unknown>
   >;
   getOptionKey: (option: TOption) => string;
   getOptionLabel: (option: TOption) => string;
@@ -217,18 +220,18 @@ export default function ControlledInfiniteQueryAutocomplete<T>({
   const [searchInputValue, setSearchInputValue] = useState("");
   const [queryInputValue, setQueryInputValue] = useState("");
   const virtualizerRef = useRef<ListboxVirtualizer | null>(null);
-  const wasOpenRef = useRef(false);
   const queryDebounce = useTimeout();
 
-  useEffect(() => {
-    // Opening the popup should query for whatever text is already visible in the
-    // input, but reopening should not retrigger this sync while it is already open.
-    if (open && !wasOpenRef.current) {
+  // Opening the popup should query for whatever text is already visible in the
+  // input, but reopening should not retrigger this sync while it is already open.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
       setSearchInputValue(inputValue);
       setQueryInputValue(inputValue);
     }
-    wasOpenRef.current = open;
-  }, [inputValue, open]);
+  }
 
   useEffect(() => {
     if (!open || searchInputValue === queryInputValue) {
@@ -261,7 +264,7 @@ export default function ControlledInfiniteQueryAutocomplete<T>({
     });
 
     return indexMap;
-  }, [options]);
+  }, [options, getOptionKey]);
 
   const handleReachEnd = useEventCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -377,14 +380,18 @@ export default function ControlledInfiniteQueryAutocomplete<T>({
             );
           }}
           slotProps={{
-            // The cast is only for the extra props injected into this custom slot.
+            // VirtualListbox needs extra props (onReachEnd, resetScrollKey, ...) that
+            // MUI's listbox slot type doesn't know about, so the object is asserted
+            // through `unknown` into the slot's real type rather than widened to `any`.
             listbox: {
               component: VirtualListbox,
               onReachEnd: handleReachEnd,
               resetScrollKey: listboxResetKey,
               virtualizerRef,
               getOptionLabel,
-            } as any,
+            } as unknown as NonNullable<
+              AutocompleteProps<T, false, false, false>["slotProps"]
+            >["listbox"],
           }}
         />
       )}

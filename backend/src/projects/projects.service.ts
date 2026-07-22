@@ -18,8 +18,6 @@ import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 import { Paginated } from '../paginated-response.dto';
 import { UserWithMemberDto } from './dto/users-with-member.dto';
 
-const PROJECT_RELATIONS = ['members', 'createdBy'];
-
 @Injectable()
 export class ProjectsService {
   constructor(
@@ -43,7 +41,7 @@ export class ProjectsService {
 
       const [data, total] = await this.projectRepo.findAndCount({
         where,
-        relations: PROJECT_RELATIONS,
+        relations: { members: true, createdBy: true },
         order: { createdAt: 'DESC' },
         take: limit,
         skip,
@@ -172,7 +170,7 @@ export class ProjectsService {
 
     const users = await this.userRepo.find({
       where,
-      select: ['id', 'fullName', 'email', 'role'],
+      select: { id: true, fullName: true, email: true, role: true },
       order: { fullName: 'ASC' },
     });
 
@@ -195,7 +193,7 @@ export class ProjectsService {
   ): Promise<Project> {
     const project = await this.projectRepo.findOne({
       where: { id },
-      relations: PROJECT_RELATIONS,
+      relations: { members: true, createdBy: true },
     });
 
     if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);

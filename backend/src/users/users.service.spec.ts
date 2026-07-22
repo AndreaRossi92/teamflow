@@ -87,7 +87,7 @@ describe('UsersService', () => {
     it('should apply page and limit to the query', async () => {
       mockUserRepo.findAndCount.mockResolvedValue([[], 0]);
 
-      await service.findAll({ page: 3, limit: 10 } as ListUsersDto);
+      await service.findAll({ page: 3, limit: 10 });
 
       const [options] = mockUserRepo.findAndCount.mock.calls[0] as [
         { skip: number; take: number },
@@ -102,7 +102,7 @@ describe('UsersService', () => {
       const result = await service.findAll({
         page: 1,
         limit: 20,
-      } as ListUsersDto);
+      });
 
       expect(result.hasNextPage).toBe(true);
     });
@@ -113,9 +113,9 @@ describe('UsersService', () => {
       await service.findAll({} as ListUsersDto);
 
       const [options] = mockUserRepo.findAndCount.mock.calls[0] as [
-        { select: string[] },
+        { select: Record<string, boolean> },
       ];
-      expect(options.select).not.toContain('passwordHash');
+      expect(options.select).not.toHaveProperty('passwordHash');
     });
   });
 

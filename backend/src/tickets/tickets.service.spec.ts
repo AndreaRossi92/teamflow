@@ -109,7 +109,7 @@ const mockTicket: Ticket = {
   assignees: [devEntity],
   createdAt: new Date(),
   updatedAt: new Date(),
-} as Ticket;
+};
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 

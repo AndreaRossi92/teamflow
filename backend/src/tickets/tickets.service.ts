@@ -20,9 +20,6 @@ import { Paginated } from '../paginated-response.dto';
 import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 import { UserWithMemberDto } from './dto/users-with-member.dto';
 
-const TICKET_RELATIONS = ['assignees', 'createdBy', 'project'];
-const PROJECT_RELATIONS = ['members'];
-
 @Injectable()
 export class TicketsService {
   constructor(
@@ -242,7 +239,7 @@ export class TicketsService {
   ): Promise<Project> {
     const project = await this.projectRepo.findOne({
       where: { id },
-      relations: PROJECT_RELATIONS,
+      relations: { members: true },
     });
 
     if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
@@ -263,7 +260,7 @@ export class TicketsService {
   ): Promise<Ticket> {
     const ticket = await this.ticketRepo.findOne({
       where: { id },
-      relations: TICKET_RELATIONS,
+      relations: { assignees: true, createdBy: true, project: true },
     });
 
     if (!ticket) throw new NotFoundException(ErrorCode.TICKET_NOT_FOUND);
@@ -273,7 +270,7 @@ export class TicketsService {
     // Verify the requesting user is a member of the ticket's project
     const project = await this.projectRepo.findOne({
       where: { id: ticket.project.id },
-      relations: ['members'],
+      relations: { members: true },
     });
     if (!project) throw new NotFoundException(ErrorCode.PROJECT_NOT_FOUND);
 

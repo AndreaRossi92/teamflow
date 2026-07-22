@@ -17,23 +17,34 @@ export type GeneratedTicket = z.infer<typeof ticketSchema>;
 
 @Injectable()
 export class AiService {
-  private ai: GoogleGenAI;
+  private ai?: GoogleGenAI;
 
-  constructor(private config: ConfigService) {
+  constructor(private config: ConfigService) {}
+
+  private getAi(): GoogleGenAI {
+    if (this.ai) {
+      return this.ai;
+    }
+
     const apiKey = this.config.get<string>('GEMINI_API_KEY');
+
     if (!apiKey) {
       throw new Error(ErrorCode.GEMINI_API_KEY_NOT_DEFINED);
     }
+
     this.ai = new GoogleGenAI({ apiKey });
+    return this.ai;
   }
 
   async generateTicket(
     customerRequest: string,
     language: string,
   ): Promise<GeneratedTicket> {
+    const ai = this.getAi();
+
     const prompt = buildTicketPrompt(customerRequest, language ?? 'en');
 
-    const response = await this.ai.models.generateContent({
+    const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {

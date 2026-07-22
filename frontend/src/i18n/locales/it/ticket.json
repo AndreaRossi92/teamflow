@@ -35,5 +35,10 @@
   "closed": "Chiuso",
   "low": "Bassa",
   "medium": "Media",
-  "high": "Alta"
+  "high": "Alta",
+  "generateWithAI": "Genera con IA",
+  "generate": "Genera",
+  "generated": "Generato",
+  "demoMode": "Modalità demo — il backend non è attivo. I dati sono simulati, indipendetemente da cosa verrà scritto nell'input di testo",
+  "request": "Richiesta"
 }

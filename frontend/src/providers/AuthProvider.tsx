@@ -15,7 +15,7 @@ const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isDemoMode);
 
   const logout = useCallback(async () => {
     try {
@@ -36,7 +36,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     if (isDemoMode) {
-      setIsLoading(false);
       return;
     }
 

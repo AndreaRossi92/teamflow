@@ -16,7 +16,7 @@ export class JwtRefreshGuard implements CanActivate {
     if (!token)
       throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_MISSING);
 
-    req.user = token as unknown as Express.User;
+    req.user = token;
     return true;
   }
 }

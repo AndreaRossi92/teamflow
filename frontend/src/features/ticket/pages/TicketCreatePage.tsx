@@ -1,9 +1,20 @@
 import { useTranslation } from "react-i18next";
-import { Container, IconButton, Paper } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Paper,
+  Stack,
+} from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Save } from "@mui/icons-material";
+import { AutoAwesome, Save } from "@mui/icons-material";
 import PageHeader from "../../../components/PageHeader";
 import { useSnackbar } from "../../../providers/useSnackbar";
 import useCustomForm from "../../../hooks/useCustomForm";
@@ -14,6 +25,15 @@ import {
   ticketCreateFormSchema,
   type TicketCreateFormValues,
 } from "../types/ticketForm";
+import useGenerateTicketMutation from "../../ai/hooks/useGenerateTicketMutation";
+import {
+  generateTicketFormSchema,
+  type GenerateTicketFormValues,
+} from "../../ai/types/generateTicketForm";
+import { GenerateTicketForm } from "../../ai/form/GenerateTIcketForm";
+import { useState } from "react";
+
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
 export default function TicketCreatePage() {
   const { t } = useTranslation("ticket");
@@ -23,6 +43,8 @@ export default function TicketCreatePage() {
 
   const projectsQuery = useProjectsListQuery();
 
+  const [open, setOpen] = useState(false);
+
   const form = useCustomForm<TicketCreateFormValues>({
     schema: ticketCreateFormSchema,
     defaultValues: {
@@ -30,6 +52,13 @@ export default function TicketCreatePage() {
       description: "",
       priority: "",
       project: null,
+    },
+  });
+
+  const generateTicketForm = useCustomForm<GenerateTicketFormValues>({
+    schema: generateTicketFormSchema,
+    defaultValues: {
+      request: "",
     },
   });
 
@@ -42,7 +71,24 @@ export default function TicketCreatePage() {
       showMessage(t("somethingWentWrong", { ns: "errors" }), "error"),
   });
 
+  const generateTicketMutation = useGenerateTicketMutation({
+    onSuccess: (data) => {
+      form.setValues({
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+      });
+      showMessage(t("generated"), "success");
+      setOpen(false);
+    },
+    onError: () =>
+      showMessage(t("somethingWentWrong", { ns: "errors" }), "error"),
+  });
+
   const handleSubmit = form.handleSubmit((data) => createMutation.mutate(data));
+  const handleGenerate = generateTicketForm.handleSubmit((data) =>
+    generateTicketMutation.mutate(data.request),
+  );
 
   return (
     <>
@@ -50,15 +96,28 @@ export default function TicketCreatePage() {
         title={t("tickets")}
         subtitle={t("create")}
         actions={
-          <IconButton
-            size="small"
-            title={t("save")}
-            onClick={handleSubmit}
-            loading={createMutation.isPending}
-            disabled={!form.formState.isValid || createMutation.isPending}
-          >
-            <Save fontSize="small" />
-          </IconButton>
+          <Stack direction="row" spacing={1}>
+            <IconButton
+              size="small"
+              title={t("generateWithAI")}
+              onClick={() => {
+                setOpen(true);
+              }}
+              loading={generateTicketMutation.isPending}
+              disabled={generateTicketMutation.isPending}
+            >
+              <AutoAwesome fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              title={t("save")}
+              onClick={handleSubmit}
+              loading={createMutation.isPending}
+              disabled={!form.formState.isValid || createMutation.isPending}
+            >
+              <Save fontSize="small" />
+            </IconButton>
+          </Stack>
         }
       />
       <Container maxWidth="sm">
@@ -72,6 +131,38 @@ export default function TicketCreatePage() {
             />
           </FormProvider>
         </Paper>
+        <Dialog
+          open={open}
+          onClose={() => {
+            if (!generateTicketMutation.isPending) setOpen(false);
+          }}
+          fullWidth
+        >
+          <DialogTitle>{t("generateWithAI")}</DialogTitle>
+          <DialogContent style={{ paddingTop: 10 }}>
+            {isDemoMode && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {t("demoMode")}
+              </Alert>
+            )}
+            <FormProvider {...generateTicketForm}>
+              <GenerateTicketForm
+                onEnter={() => {
+                  if (generateTicketForm.formState.isValid) handleGenerate();
+                }}
+              />
+            </FormProvider>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="contained"
+              onClick={handleGenerate}
+              loading={generateTicketMutation.isPending}
+            >
+              {t("generate")}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </>
   );

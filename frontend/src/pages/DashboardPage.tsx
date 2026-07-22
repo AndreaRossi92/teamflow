@@ -22,22 +22,6 @@ export default function DashboardPage() {
           <Card>
             <CardActionArea
               onClick={() => {
-                navigate("/ai");
-              }}
-            >
-              <CardHeader title={t("AI")} />
-              <CardContent>
-                <Alert severity="success">{t("openSection")}</Alert>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        </Grid>
-      )}
-      {user?.role === "admin" && (
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            <CardActionArea
-              onClick={() => {
                 navigate("/users");
               }}
             >

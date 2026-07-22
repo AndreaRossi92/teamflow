@@ -35,5 +35,10 @@
   "closed": "Closed",
   "low": "Low",
   "medium": "Medium",
-  "high": "High"
+  "high": "High",
+  "generateWithAI": "Generate with AI",
+  "generate": "Generate",
+  "generated": "Generated",
+  "demoMode": "Demo mode — running without backend. Ticket data is mocked, regardless of what is written in the input text.",
+  "request": "Request"
 }

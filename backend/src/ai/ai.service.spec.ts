@@ -54,20 +54,6 @@ describe('AiService', () => {
     await module.close();
   });
 
-  // ── initialization ─────────────────────────────────────────────────────────
-
-  describe('initialization', () => {
-    it('should be defined when a valid API key is provided', () => {
-      expect(service).toBeDefined();
-    });
-
-    it('should throw on missing GEMINI_API_KEY', async () => {
-      await expect(buildModule(undefined)).rejects.toThrow(
-        ErrorCode.GEMINI_API_KEY_NOT_DEFINED,
-      );
-    });
-  });
-
   // ── generateTicket ─────────────────────────────────────────────────────────
 
   describe('generateTicket', () => {

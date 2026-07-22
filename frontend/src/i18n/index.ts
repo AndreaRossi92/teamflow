@@ -3,9 +3,7 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
 import enCommon from "./locales/en/common.json";
-import enGenerateTicket from "./locales/en/generateTicket.json";
 import itCommon from "./locales/it/common.json";
-import itGenerateTicket from "./locales/it/generateTicket.json";
 import enAuth from "./locales/en/auth.json";
 import itAuth from "./locales/it/auth.json";
 import enErrors from "./locales/en/errors.json";
@@ -25,7 +23,6 @@ i18n
       en: {
         auth: enAuth,
         common: enCommon,
-        generateTicket: enGenerateTicket,
         errors: enErrors,
         user: enUser,
         project: enProject,
@@ -34,7 +31,6 @@ i18n
       it: {
         auth: itAuth,
         common: itCommon,
-        generateTicket: itGenerateTicket,
         errors: itErrors,
         user: itUser,
         project: itProject,

@@ -18,9 +18,6 @@ const NotFoundPage = lazyWithLoader(() => import("../pages/NotFoundPage"));
 const LoginPage = lazyWithLoader(
   () => import("../features/auth/pages/LoginPage"),
 );
-const GenerateTicketPage = lazyWithLoader(
-  () => import("../features/ai/pages/GenerateTicketPage"),
-);
 const DashboardPage = lazyWithLoader(() => import("../pages/DashboardPage"));
 const UsersListPage = lazyWithLoader(
   () => import("../features/user/pages/UsersListPage"),
@@ -85,7 +82,6 @@ export default function AppRoutes() {
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-        <Route path="/ai" element={<GenerateTicketPage />} />
         <Route path="/users" element={<UsersListPage />} />
         <Route path="/user/create" element={<UserCreatePage />} />
         <Route path="/user/:id" element={<UserDetailPage />} />

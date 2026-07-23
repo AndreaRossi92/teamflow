@@ -116,6 +116,46 @@ On first run, an `ADMIN` account is automatically created:
 
 ---
 
+## Database seeding
+
+### Admin user
+
+On every startup, an `ADMIN` account is automatically created if it doesn't already exist (see [Default credentials](#default-credentials) above). This runs in every environment, including production, and is idempotent — if the admin already exists, it's skipped.
+
+### Demo data (development/testing only)
+
+To populate the database with a realistic set of demo users, projects and tickets — useful for manual testing or exploring the app "at scale" — a dedicated CLI script is available. It is **never** run automatically at startup, and it refuses to run when `NODE_ENV=production`.
+
+```bash
+# Generate demo data (25 users, 5 projects, 150 tickets by default)
+docker-compose exec backend yarn seed:demo
+
+# Customize the amount of data generated
+docker-compose exec backend yarn seed:demo --users 50 --projects 10 --tickets 500
+```
+
+All generated demo users share the password `demo1234` and an email on the `@demo.local` domain.
+
+### Clearing the database
+
+To wipe all data (users, projects, tickets — including the admin account) and start from a clean slate:
+
+```bash
+docker-compose exec backend yarn clear:db
+```
+
+The script asks for interactive confirmation (type `y` or `yes`) before proceeding.
+
+After clearing, restart the backend (or wait for the next boot) to have the `ADMIN` account recreated automatically. To clear and immediately repopulate with demo data:
+
+```bash
+docker-compose exec backend yarn reset:demo
+```
+
+> ⚠️ Both `seed:demo` and `clear:db` refuse to run when `NODE_ENV=production`, regardless of any flag passed to them.
+
+---
+
 ## API documentation
 
 All endpoints are documented via **Swagger UI**, available at `http://localhost:3000/api/docs` when the backend is running.

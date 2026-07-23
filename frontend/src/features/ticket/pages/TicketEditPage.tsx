@@ -101,6 +101,7 @@ export default function TicketEditPage() {
               onEnter={() => {
                 if (ticketEditForm.formState.isValid) handleSubmit();
               }}
+              disabled={ticketEditMutation.isPending}
             />
           </FormProvider>
         </Paper>

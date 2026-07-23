@@ -48,6 +48,7 @@ export default function ChangePasswordPage() {
               onEnter={() => {
                 if (changePasswordForm.formState.isValid) handleSubmit();
               }}
+              disabled={changePasswordMutation.isPending}
             />
           </FormProvider>
 

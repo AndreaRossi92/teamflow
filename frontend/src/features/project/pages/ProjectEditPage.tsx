@@ -71,6 +71,7 @@ export default function ProjectEditPage() {
               onEnter={() => {
                 if (projectEditForm.formState.isValid) handleSubmit();
               }}
+              disabled={projectEditMutation.isPending}
             />
           </FormProvider>
         </Paper>

@@ -56,6 +56,7 @@ export default function ResetPasswordPage() {
               onEnter={() => {
                 if (resetPasswordForm.formState.isValid) handleSubmit();
               }}
+              disabled={resetPasswordMutation.isPending}
             />
           </FormProvider>
 

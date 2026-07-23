@@ -2,9 +2,12 @@ import { Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { ControlledTextField } from "../../../components/ControlledTextField";
 
-type ProjectCreateFormProps = { onEnter?: () => void };
+type ProjectCreateFormProps = { onEnter?: () => void; disabled?: boolean };
 
-export function ProjectCreateForm({ onEnter }: ProjectCreateFormProps) {
+export function ProjectCreateForm({
+  onEnter,
+  disabled,
+}: ProjectCreateFormProps) {
   const { t } = useTranslation("project");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -17,6 +20,7 @@ export function ProjectCreateForm({ onEnter }: ProjectCreateFormProps) {
         name="name"
         label={t("name")}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledTextField
@@ -25,6 +29,7 @@ export function ProjectCreateForm({ onEnter }: ProjectCreateFormProps) {
         multiline
         rows={5}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
     </Stack>
   );

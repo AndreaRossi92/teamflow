@@ -5,9 +5,9 @@ import { ControlledPasswordField } from "../../../components/ControlledPasswordF
 import { ControlledAutocomplete } from "../../../components/ControlledAutocomplete";
 import { ROLES } from "../types/user";
 
-type UserCreateFormProps = { onEnter?: () => void };
+type UserCreateFormProps = { onEnter?: () => void; disabled?: boolean };
 
-export function UserCreateForm({ onEnter }: UserCreateFormProps) {
+export function UserCreateForm({ onEnter, disabled }: UserCreateFormProps) {
   const { t } = useTranslation("user");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -21,24 +21,28 @@ export function UserCreateForm({ onEnter }: UserCreateFormProps) {
         label={t("email")}
         type="email"
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledTextField
         name="fullName"
         label={t("fullName")}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledPasswordField
         name="password"
         label={t("password")}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledPasswordField
         name="confirmPassword"
         label={t("confirmPassword")}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledAutocomplete
@@ -47,6 +51,7 @@ export function UserCreateForm({ onEnter }: UserCreateFormProps) {
         options={ROLES}
         getOptionLabel={(option) => t(option)}
         disableClearable
+        disabled={disabled}
       />
     </Stack>
   );

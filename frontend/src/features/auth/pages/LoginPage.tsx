@@ -57,6 +57,7 @@ export default function LoginPage() {
               onEnter={() => {
                 if (loginForm.formState.isValid) handleLogin();
               }}
+              disabled={loginMutation.isPending}
             />
           </FormProvider>
 

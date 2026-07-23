@@ -4,9 +4,13 @@ import { ControlledTextField } from "../../../components/ControlledTextField";
 
 type GenerateTicketFormProps = {
   onEnter?: () => void;
+  disabled?: boolean;
 };
 
-export function GenerateTicketForm({ onEnter }: GenerateTicketFormProps) {
+export function GenerateTicketForm({
+  onEnter,
+  disabled,
+}: GenerateTicketFormProps) {
   const { t } = useTranslation("ticket");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -21,6 +25,7 @@ export function GenerateTicketForm({ onEnter }: GenerateTicketFormProps) {
         multiline
         rows={6}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
     </Stack>
   );

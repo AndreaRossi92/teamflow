@@ -72,6 +72,7 @@ export default function UserCreatePage() {
               onEnter={() => {
                 if (userCreateForm.formState.isValid) handleSubmit();
               }}
+              disabled={userCreateMutation.isPending}
             />
           </FormProvider>
         </Paper>

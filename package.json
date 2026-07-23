@@ -18,7 +18,10 @@
     "lint": "yarn workspaces foreach --all run lint",
     "test:frontend": "yarn workspace frontend test",
     "test:backend": "yarn workspace backend test",
-    "test": "yarn workspaces foreach --all run test"
+    "test": "yarn workspaces foreach --all run test",
+    "seed:demo": "yarn workspace backend seed:demo",
+    "clear:db": "yarn workspace backend clear:db",
+    "reset:demo": "yarn workspace backend reset:demo"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

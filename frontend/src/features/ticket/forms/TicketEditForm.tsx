@@ -19,11 +19,13 @@ type TicketEditFormProps = {
     InfiniteData<PaginatedResponse<Project>, number>,
     AxiosError
   >;
+  disabled?: boolean;
 };
 
 export function TicketEditForm({
   onEnter,
   projectListQuery,
+  disabled,
 }: TicketEditFormProps) {
   const { user } = useAuth();
   const { t } = useTranslation("ticket");
@@ -38,7 +40,7 @@ export function TicketEditForm({
         name="title"
         label={t("title")}
         onKeyDown={handleKeyDown}
-        disabled={user?.role === "dev"}
+        disabled={user?.role === "dev" || disabled}
       />
 
       <ControlledTextField
@@ -47,7 +49,7 @@ export function TicketEditForm({
         multiline
         rows={4}
         onKeyDown={handleKeyDown}
-        disabled={user?.role === "dev"}
+        disabled={user?.role === "dev" || disabled}
       />
 
       <ControlledAutocomplete
@@ -55,7 +57,7 @@ export function TicketEditForm({
         label={t("priority")}
         options={TICKET_PRIORITIES}
         getOptionLabel={(option) => t(option)}
-        disabled={user?.role === "dev"}
+        disabled={user?.role === "dev" || disabled}
       />
 
       <ControlledInfiniteQueryAutocomplete<Project>
@@ -64,7 +66,7 @@ export function TicketEditForm({
         infiniteQuery={projectListQuery}
         getOptionKey={(option) => option.id}
         getOptionLabel={(option) => option.name ?? ""}
-        disabled={user?.role === "dev"}
+        disabled={user?.role === "dev" || disabled}
       />
 
       <ControlledAutocomplete
@@ -72,6 +74,7 @@ export function TicketEditForm({
         label={t("status")}
         options={TICKET_STATUSES}
         getOptionLabel={(option) => t(option)}
+        disabled={disabled}
       />
     </Stack>
   );

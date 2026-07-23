@@ -4,9 +4,9 @@ import { ControlledTextField } from "../../../components/ControlledTextField";
 import { ControlledAutocomplete } from "../../../components/ControlledAutocomplete";
 import { ROLES } from "../types/user";
 
-type UserEditFormProps = { onEnter?: () => void };
+type UserEditFormProps = { onEnter?: () => void; disabled?: boolean };
 
-export function UserEditForm({ onEnter }: UserEditFormProps) {
+export function UserEditForm({ onEnter, disabled }: UserEditFormProps) {
   const { t } = useTranslation("user");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -20,12 +20,14 @@ export function UserEditForm({ onEnter }: UserEditFormProps) {
         label={t("email")}
         type="email"
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledTextField
         name="fullName"
         label={t("fullName")}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledAutocomplete
@@ -34,6 +36,7 @@ export function UserEditForm({ onEnter }: UserEditFormProps) {
         options={ROLES}
         getOptionLabel={(option) => t(option)}
         disableClearable
+        disabled={disabled}
       />
     </Stack>
   );

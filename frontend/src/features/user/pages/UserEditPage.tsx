@@ -79,6 +79,7 @@ export default function UserEditPage() {
               onEnter={() => {
                 if (userEditForm.formState.isValid) handleSubmit();
               }}
+              disabled={userEditMutation.isPending}
             />
           </FormProvider>
         </Paper>

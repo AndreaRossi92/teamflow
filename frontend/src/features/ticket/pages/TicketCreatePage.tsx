@@ -62,7 +62,7 @@ export default function TicketCreatePage() {
     },
   });
 
-  const createMutation = useTicketCreateMutation({
+  const ticketCreateMutation = useTicketCreateMutation({
     onSuccess: (ticket) => {
       queryClient.setQueryData(["tickets", ticket.id], ticket);
       navigate(`/ticket/${ticket.id}`, { replace: true });
@@ -85,7 +85,9 @@ export default function TicketCreatePage() {
       showMessage(t("somethingWentWrong", { ns: "errors" }), "error"),
   });
 
-  const handleSubmit = form.handleSubmit((data) => createMutation.mutate(data));
+  const handleSubmit = form.handleSubmit((data) =>
+    ticketCreateMutation.mutate(data),
+  );
   const handleGenerate = generateTicketForm.handleSubmit((data) =>
     generateTicketMutation.mutate(data.request),
   );
@@ -112,8 +114,10 @@ export default function TicketCreatePage() {
               size="small"
               title={t("save")}
               onClick={handleSubmit}
-              loading={createMutation.isPending}
-              disabled={!form.formState.isValid || createMutation.isPending}
+              loading={ticketCreateMutation.isPending}
+              disabled={
+                !form.formState.isValid || ticketCreateMutation.isPending
+              }
             >
               <Save fontSize="small" />
             </IconButton>
@@ -128,6 +132,7 @@ export default function TicketCreatePage() {
               onEnter={() => {
                 if (form.formState.isValid) handleSubmit();
               }}
+              disabled={ticketCreateMutation.isPending}
             />
           </FormProvider>
         </Paper>
@@ -150,6 +155,7 @@ export default function TicketCreatePage() {
                 onEnter={() => {
                   if (generateTicketForm.formState.isValid) handleGenerate();
                 }}
+                disabled={generateTicketMutation.isPending}
               />
             </FormProvider>
           </DialogContent>

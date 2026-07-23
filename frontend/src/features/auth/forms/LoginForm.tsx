@@ -3,9 +3,9 @@ import { ControlledTextField } from "../../../components/ControlledTextField";
 import { useTranslation } from "react-i18next";
 import { ControlledPasswordField } from "../../../components/ControlledPasswordField";
 
-type LoginFormProps = { onEnter?: () => void };
+type LoginFormProps = { onEnter?: () => void; disabled?: boolean };
 
-export function LoginForm({ onEnter }: LoginFormProps) {
+export function LoginForm({ onEnter, disabled }: LoginFormProps) {
   const { t } = useTranslation("auth");
 
   return (
@@ -18,6 +18,7 @@ export function LoginForm({ onEnter }: LoginFormProps) {
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter?.();
         }}
+        disabled={disabled}
       />
 
       <ControlledPasswordField
@@ -28,6 +29,7 @@ export function LoginForm({ onEnter }: LoginFormProps) {
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter?.();
         }}
+        disabled={disabled}
       />
     </Stack>
   );

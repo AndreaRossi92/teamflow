@@ -18,11 +18,13 @@ type TicketCreateFormProps = {
     InfiniteData<PaginatedResponse<Project>, number>,
     AxiosError
   >;
+  disabled?: boolean;
 };
 
 export function TicketCreateForm({
   onEnter,
   projectListQuery,
+  disabled,
 }: TicketCreateFormProps) {
   const { t } = useTranslation("ticket");
 
@@ -36,6 +38,7 @@ export function TicketCreateForm({
         name="title"
         label={t("title")}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledTextField
@@ -44,6 +47,7 @@ export function TicketCreateForm({
         multiline
         rows={4}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
 
       <ControlledAutocomplete
@@ -51,6 +55,7 @@ export function TicketCreateForm({
         label={t("priority")}
         options={TICKET_PRIORITIES}
         getOptionLabel={(option) => t(option)}
+        disabled={disabled}
       />
 
       <ControlledInfiniteQueryAutocomplete<Project>
@@ -59,6 +64,7 @@ export function TicketCreateForm({
         infiniteQuery={projectListQuery}
         getOptionKey={(option) => option.id}
         getOptionLabel={(option) => option.name ?? ""}
+        disabled={disabled}
       />
     </Stack>
   );

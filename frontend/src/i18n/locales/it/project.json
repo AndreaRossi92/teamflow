@@ -20,6 +20,7 @@
   "members": "Membri",
   "noMembers": "Nessun membro assegnato",
   "assignUsers": "Assegna utenti",
+  "deactivate": "Disattiva",
   "delete": "Elimina",
   "restore": "Ripristina",
   "deactivateConfirm": "Sei sicuro di voler disattivare questo progetto?",

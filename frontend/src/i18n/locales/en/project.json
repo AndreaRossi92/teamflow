@@ -21,6 +21,7 @@
   "noMembers": "No members assigned",
   "assignUsers": "Assign users",
   "deactivate": "Deactivate",
+  "delete": "Delete",
   "restore": "Restore",
   "deactivateConfirm": "Are you sure you want to deactivate this project?",
   "deactivated": "Project deactivated successfully",

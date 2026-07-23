@@ -30,7 +30,7 @@ import {
   generateTicketFormSchema,
   type GenerateTicketFormValues,
 } from "../../ai/types/generateTicketForm";
-import { GenerateTicketForm } from "../../ai/form/GenerateTIcketForm";
+import { GenerateTicketForm } from "../../ai/forms/GenerateTIcketForm";
 import { useState } from "react";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";

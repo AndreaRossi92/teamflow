@@ -4,6 +4,7 @@ import type {
   Ticket,
   TicketFilters,
   TicketStatus,
+  TicketStatusByProject,
 } from "./types/ticket";
 import type {
   TicketCreateFormValues,
@@ -104,5 +105,12 @@ export async function ticketAssignUsers(
 
 export async function deleteTicket(id: string): Promise<void> {
   const response = await api.delete<void>(`/tickets/${id}`);
+  return response.data;
+}
+
+export async function ticketStatusByProject(): Promise<
+  TicketStatusByProject[]
+> {
+  const response = await api.get("/tickets/status/by-project");
   return response.data;
 }

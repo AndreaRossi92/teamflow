@@ -38,3 +38,9 @@ export type AssignableUser = Pick<
 > & {
   isMember: boolean;
 };
+
+export type TicketStatusByProject = {
+  projectId: Project["id"];
+  projectName: Project["name"];
+  tickets: Record<TicketStatus, number>;
+};

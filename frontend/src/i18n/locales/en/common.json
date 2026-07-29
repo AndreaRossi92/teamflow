@@ -9,7 +9,6 @@
   "projects": "Projects",
   "users": "Users",
   "tickets": "Tickets",
-  "openSection": "Open section",
   "underDevelopment": "Under development",
   "add": "Add",
   "cancel": "Cancel",
@@ -21,5 +20,9 @@
   "submit": "Submit",
   "pageNotFound": "Page not found",
   "home": "Home",
-  "confirm": "Confirm"
+  "confirm": "Confirm",
+  "noData": "No data",
+  "loading": "Loading",
+  "active": "Active",
+  "inactive": "Inactive"
 }

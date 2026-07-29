@@ -1,24 +1,16 @@
-import { Box, Tooltip, type BoxProps } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import Dot from "./Dot";
 
-type ActiveDotProps = BoxProps & {
+type ActiveDotProps = {
   active: boolean;
 };
 
-export default function ActiveDot({ active, sx, ...props }: ActiveDotProps) {
-  const { t } = useTranslation();
+export default function ActiveDot({ active }: ActiveDotProps) {
+  const { t } = useTranslation("common");
   return (
-    <Tooltip title={t(active ? "active" : "inactive")}>
-      <Box
-        sx={{
-          width: 10,
-          height: 10,
-          borderRadius: "50%",
-          bgcolor: active ? "success.main" : "error.main",
-          ...sx,
-        }}
-        {...props}
-      />
-    </Tooltip>
+    <Dot
+      title={t(active ? "active" : "inactive")}
+      color={active ? "success.main" : "error.main"}
+    />
   );
 }

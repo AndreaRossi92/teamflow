@@ -39,6 +39,7 @@ import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
 import { UserWithMemberDto } from './dto/users-with-member.dto';
 import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
+import { ProjectTicketStatusDto } from './dto/project-tickets-count.dto';
 
 class PaginatedTicketsResponse extends PaginatedResponseDto(Ticket) {}
 
@@ -60,6 +61,16 @@ export class TicketsController {
     @Query() query: ListTicketsDto,
   ): Promise<Paginated<Ticket>> {
     return this.ticketsService.findAllForUser(req.user as JwtUser, query);
+  }
+  @Get('status/by-project')
+  @ApiOperation({
+    summary: 'Tickets status grouped by project (acces-guarded)',
+  })
+  @ApiOkResponse({ type: ProjectTicketStatusDto, isArray: true })
+  getTicketCountsByProject(
+    @Req() req: Request,
+  ): Promise<ProjectTicketStatusDto[]> {
+    return this.ticketsService.getTicketStatusByProject(req.user as JwtUser);
   }
 
   @Get(':id')

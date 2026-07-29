@@ -113,21 +113,27 @@ const mockTicket: Ticket = {
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
-// QueryBuilder mock for findAllForUser
+// QueryBuilder mock for findAllForUser / getTicketCountsByProject
 const mockGetManyAndCount = jest.fn();
+const mockGetRawMany = jest.fn();
 const mockQueryBuilder = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
+  innerJoin: jest.fn().mockReturnThis(),
+  select: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   setParameter: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  addGroupBy: jest.fn().mockReturnThis(),
   take: jest.fn().mockReturnThis(),
   skip: jest.fn().mockReturnThis(),
   subQuery: jest.fn().mockReturnThis(),
-  select: jest.fn().mockReturnThis(),
   from: jest.fn().mockReturnThis(),
   getQuery: jest.fn().mockReturnValue('(SELECT 1)'),
   getManyAndCount: mockGetManyAndCount,
+  getRawMany: mockGetRawMany,
 };
 
 const mockTicketRepo = {
@@ -706,6 +712,137 @@ describe('TicketsService', () => {
       await expect(
         service.getAssignableUsers('missing-id', adminUser, emptyQuery),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ── getTicketStatusByProject ───────────────────────────────────────────────
+
+  describe('getTicketCountsByProject', () => {
+    it('should not scope the query for admins', async () => {
+      mockGetRawMany.mockResolvedValue([]);
+
+      await service.getTicketStatusByProject(adminUser);
+
+      expect(mockQueryBuilder.where).not.toHaveBeenCalled();
+    });
+
+    it('should scope the query by project membership for managers', async () => {
+      mockGetRawMany.mockResolvedValue([]);
+
+      await service.getTicketStatusByProject(managerUser);
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledTimes(1);
+      expect(mockQueryBuilder.setParameter).toHaveBeenCalledWith(
+        'userId',
+        managerUser.id,
+      );
+    });
+
+    it('should scope the query by assignee for devs', async () => {
+      mockGetRawMany.mockResolvedValue([]);
+
+      await service.getTicketStatusByProject(devUser);
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledTimes(1);
+      expect(mockQueryBuilder.setParameter).toHaveBeenCalledWith(
+        'userId',
+        devUser.id,
+      );
+    });
+
+    it('should group raw rows into one entry per project', async () => {
+      mockGetRawMany.mockResolvedValue([
+        {
+          projectId: mockProject.id,
+          projectName: mockProject.name,
+          status: TicketStatus.OPEN,
+          count: '3',
+        },
+        {
+          projectId: mockProject.id,
+          projectName: mockProject.name,
+          status: TicketStatus.CLOSED,
+          count: '2',
+        },
+        {
+          projectId: otherProject.id,
+          projectName: otherProject.name,
+          status: TicketStatus.IN_PROGRESS,
+          count: '1',
+        },
+      ]);
+
+      const result = await service.getTicketStatusByProject(adminUser);
+
+      expect(result).toHaveLength(2);
+      expect(result.map((p) => p.projectId).sort()).toEqual(
+        [mockProject.id, otherProject.id].sort(),
+      );
+    });
+
+    it('should convert the raw string count into a number', async () => {
+      mockGetRawMany.mockResolvedValue([
+        {
+          projectId: mockProject.id,
+          projectName: mockProject.name,
+          status: TicketStatus.OPEN,
+          count: '3',
+        },
+      ]);
+
+      const result = await service.getTicketStatusByProject(adminUser);
+
+      const entry = result.find((p) => p.projectId === mockProject.id);
+      expect(entry?.tickets.open).toBe(3);
+      expect(typeof entry?.tickets.open).toBe('number');
+    });
+
+    it('should zero-fill statuses that have no rows for a project', async () => {
+      mockGetRawMany.mockResolvedValue([
+        {
+          projectId: mockProject.id,
+          projectName: mockProject.name,
+          status: TicketStatus.OPEN,
+          count: '3',
+        },
+      ]);
+
+      const result = await service.getTicketStatusByProject(adminUser);
+
+      const entry = result.find((p) => p.projectId === mockProject.id);
+      expect(entry?.tickets).toEqual({
+        open: 3,
+        inProgress: 0,
+        resolved: 0,
+        closed: 0,
+      });
+    });
+
+    it('should include closed tickets in the counts (no status filter applied)', async () => {
+      mockGetRawMany.mockResolvedValue([
+        {
+          projectId: mockProject.id,
+          projectName: mockProject.name,
+          status: TicketStatus.CLOSED,
+          count: '5',
+        },
+      ]);
+
+      const result = await service.getTicketStatusByProject(adminUser);
+
+      expect(result[0]?.tickets.closed).toBe(5);
+      expect(mockQueryBuilder.andWhere).not.toHaveBeenCalledWith(
+        expect.stringContaining('status !='),
+        expect.anything(),
+      );
+    });
+
+    it('should return an empty array when there are no visible tickets', async () => {
+      mockGetRawMany.mockResolvedValue([]);
+
+      const result = await service.getTicketStatusByProject(adminUser);
+
+      expect(result).toEqual([]);
     });
   });
 

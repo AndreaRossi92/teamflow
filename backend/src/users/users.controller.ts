@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -33,6 +34,8 @@ import { AuthService } from '../auth/auth.service';
 import { ListUsersDto } from './dto/list-users.dto';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
 import { UserDashboardDto } from './dto/user-dashboard.dto';
+import { JwtUser } from '../auth/strategies/jwt.strategy';
+import { Request } from 'express';
 
 class PaginatedUsersResponse extends PaginatedResponseDto(User) {}
 
@@ -54,16 +57,12 @@ export class UsersController {
     return this.usersService.findAll(query);
   }
 
-  // NOTE: must stay declared before the `:id` route below, otherwise
-  // Nest/Express would try to match "dashboard" as a project uuid.
-  @Get('dashboard')
-  @ApiOperation({
-    summary:
-      'List every user, enriched with ticket counts per status broken down by priority',
-  })
-  @ApiOkResponse({ type: UserDashboardDto, isArray: true })
-  getDashboard(): Promise<UserDashboardDto[]> {
-    return this.usersService.getTicketBreakdownByUser();
+  @Get('me/workload')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.DEV)
+  @ApiOperation({ summary: 'Logged user workload' })
+  @ApiOkResponse({ type: UserDashboardDto })
+  getMyWorkload(@Req() req: Request): Promise<UserDashboardDto> {
+    return this.usersService.getUserWorkload((req.user as JwtUser).id);
   }
 
   @Get(':id')

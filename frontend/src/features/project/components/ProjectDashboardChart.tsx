@@ -227,9 +227,6 @@ export default function ProjectDashboardChart({
             },
           ]}
           hideLegend
-          localeText={
-            !selectedProject ? { noData: t("selectProject") } : undefined
-          }
           {...props}
         />
         <Box
@@ -244,12 +241,14 @@ export default function ProjectDashboardChart({
             ? mode === "status"
               ? ticketStatusTotalData.map(({ id, value }) => (
                   <TicketStatusBadge
+                    key={id}
                     status={id as TicketStatus}
                     count={value}
                   />
                 ))
               : ticketPriorityTotalData.map(({ id, value }) => (
                   <TicketPriorityBadge
+                    key={id}
                     priority={id as TicketPriority}
                     count={value}
                   />
@@ -260,6 +259,7 @@ export default function ProjectDashboardChart({
                   .map(({ status, value }) => {
                     return (
                       <TicketStatusBadge
+                        key={status}
                         status={status as TicketStatus}
                         count={value}
                       />
@@ -270,6 +270,7 @@ export default function ProjectDashboardChart({
                   .map(({ priority, value }) => {
                     return (
                       <TicketPriorityBadge
+                        key={priority}
                         priority={priority as TicketPriority}
                         count={value}
                       />

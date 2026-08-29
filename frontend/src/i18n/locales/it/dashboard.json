@@ -5,5 +5,8 @@
   "users": "Utenti",
   "others": "Altro",
   "list": "Lista",
-  "allProjects": "Tutti i progetti"
+  "allProjects": "Tutti i progetti",
+  "myTickets": "I miei ticket",
+  "status": "Status",
+  "priority": "Priorità"
 }

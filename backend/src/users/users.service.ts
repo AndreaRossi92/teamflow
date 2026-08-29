@@ -34,7 +34,7 @@ export class UsersService {
     private readonly ticketRepo: Repository<Ticket>,
   ) {}
 
-  async getTicketBreakdownByUser(): Promise<UserDashboardDto[]> {
+  async getUsersWorkload(): Promise<UserDashboardDto[]> {
     const users = await this.repo.find({
       where: { isActive: true },
       select: {
@@ -82,6 +82,28 @@ export class UsersService {
       ...user,
       ticketBreakdown: breakdownByUser.get(user.id) ?? emptyTicketBreakdown(),
     }));
+  }
+
+  async getUserWorkload(id: string): Promise<UserDashboardDto> {
+    const user = await this.findOne(id);
+
+    const rows = await this.ticketRepo
+      .createQueryBuilder('ticket')
+      .innerJoin('ticket.assignees', 'assignee')
+      .select('ticket.status', 'status')
+      .addSelect('ticket.priority', 'priority')
+      .addSelect('COUNT(*)', 'count')
+      .where('assignee.id = :userId', { userId: id })
+      .groupBy('ticket.status')
+      .addGroupBy('ticket.priority')
+      .getRawMany<UserTicketBreakdownRow>();
+
+    const breakdown = emptyTicketBreakdown();
+    for (const row of rows) {
+      breakdown[row.status][row.priority] = Number(row.count);
+    }
+
+    return { ...user, ticketBreakdown: breakdown };
   }
 
   async findAll(query: ListUsersDto): Promise<Paginated<User>> {

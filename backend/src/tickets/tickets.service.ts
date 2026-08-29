@@ -19,20 +19,9 @@ import { ErrorCode } from '../app-error.codes';
 import { Paginated } from '../paginated-response.dto';
 import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 import { UserWithMemberDto } from './dto/users-with-member.dto';
-import {
-  ProjectTicketStatusDto,
-  TicketCountsByStatusDto,
-} from './dto/project-tickets-count.dto';
 
 @Injectable()
 export class TicketsService {
-  private static readonly ALL_STATUSES: TicketStatus[] = [
-    TicketStatus.OPEN,
-    TicketStatus.IN_PROGRESS,
-    TicketStatus.RESOLVED,
-    TicketStatus.CLOSED,
-  ];
-
   constructor(
     @InjectRepository(Ticket)
     private readonly ticketRepo: Repository<Ticket>,
@@ -66,7 +55,7 @@ export class TicketsService {
           .from('project_members', 'pm')
           .where('pm.userId = :userId')
           .getQuery();
-        return `ticket.projectId IN ${sub}`;
+        return `ticket.project IN ${sub}`;
       });
     } else if (requestingUser.role === Role.DEV) {
       // Dev: only tickets assigned to them
@@ -93,8 +82,11 @@ export class TicketsService {
       qb.andWhere('ticket.priority = :priority', { priority });
     }
     if (projectId !== undefined) {
-      qb.andWhere('ticket.projectId = :projectId', { projectId });
+      qb.andWhere('ticket.project = :projectId', { projectId });
     }
+    qb.andWhere('project.isActive = :isActiveProject', {
+      isActiveProject: true,
+    });
 
     const [data, total] = await qb.getManyAndCount();
     return { data, total, page, limit, hasNextPage: page * limit < total };
@@ -235,72 +227,6 @@ export class TicketsService {
         role,
         isMember: ticketIds.has(id),
       }));
-  }
-
-  async getTicketStatusByProject(
-    requestingUser: JwtUser,
-  ): Promise<ProjectTicketStatusDto[]> {
-    const qb = this.ticketRepo
-      .createQueryBuilder('ticket')
-      .innerJoin('ticket.project', 'project')
-      .select('project.id', 'projectId')
-      .addSelect('project.name', 'projectName')
-      .addSelect('ticket.status', 'status')
-      .addSelect('COUNT(*)', 'count')
-      .groupBy('project.id')
-      .addGroupBy('ticket.status');
-
-    if (requestingUser.role === Role.MANAGER) {
-      qb.where((qb) => {
-        const sub = qb
-          .subQuery()
-          .select('pm.projectId')
-          .from('project_members', 'pm')
-          .where('pm.userId = :userId')
-          .getQuery();
-        return `ticket.projectId IN ${sub}`;
-      });
-      qb.setParameter('userId', requestingUser.id);
-    } else if (requestingUser.role === Role.DEV) {
-      qb.where((qb) => {
-        const sub = qb
-          .subQuery()
-          .select('ta.ticketId')
-          .from('ticket_assignees', 'ta')
-          .where('ta.userId = :userId')
-          .getQuery();
-        return `ticket.id IN ${sub}`;
-      });
-      qb.setParameter('userId', requestingUser.id);
-    }
-
-    const rows = await qb.getRawMany<{
-      projectId: string;
-      projectName: string;
-      status: TicketStatus;
-      count: string;
-    }>();
-
-    const emptyCounts = (): TicketCountsByStatusDto =>
-      TicketsService.ALL_STATUSES.reduce(
-        (acc, status) => ({ ...acc, [status]: 0 }),
-        {} as TicketCountsByStatusDto,
-      );
-
-    const byProject = new Map<string, ProjectTicketStatusDto>();
-    for (const row of rows) {
-      if (!byProject.has(row.projectId)) {
-        byProject.set(row.projectId, {
-          projectId: row.projectId,
-          projectName: row.projectName,
-          tickets: emptyCounts(),
-        });
-      }
-      const entry = byProject.get(row.projectId)!;
-      entry.tickets[row.status] = Number(row.count);
-    }
-
-    return Array.from(byProject.values());
   }
 
   async deleteTicket(id: string, requestingUser: JwtUser): Promise<void> {

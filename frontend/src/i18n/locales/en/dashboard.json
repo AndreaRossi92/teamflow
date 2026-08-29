@@ -4,5 +4,8 @@
   "users": "Users",
   "others": "Others",
   "list": "List",
-  "allProjects": "All projects"
+  "allProjects": "All projects",
+  "myTickets": "My tickets",
+  "status": "Status",
+  "priority": "Priority"
 }

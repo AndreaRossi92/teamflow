@@ -39,6 +39,7 @@ import { ListProjectsDto } from './dto/list-projects.dto';
 import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 import { ProjectDashboardDto } from './dto/project-dashboard.dto';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
+import { UserDashboardDto } from '../users/dto/user-dashboard.dto';
 
 class PaginatedProjectsResponse extends PaginatedResponseDto(Project) {}
 
@@ -64,14 +65,26 @@ export class ProjectsController {
 
   // NOTE: must stay declared before the `:id` route below, otherwise
   // Nest/Express would try to match "dashboard" as a project uuid.
-  @Get('dashboard')
+  @Get('workload')
   @ApiOperation({
-    summary:
-      'List every project visible to the current user (same visibility rules as GET /projects, but not paginated), enriched with ticket counts per status broken down by priority',
+    summary: 'List project workload',
   })
   @ApiOkResponse({ type: ProjectDashboardDto, isArray: true })
   getDashboard(@Req() req: Request): Promise<ProjectDashboardDto[]> {
-    return this.projectsService.getTicketBreakdown(req.user as JwtUser);
+    return this.projectsService.getProjectsWorkload(req.user as JwtUser);
+  }
+
+  // NOTE: must stay declared before the `:id` route below, otherwise
+  // Nest/Express would try to match "dashboard" as a project uuid.
+  @Get('members-workload')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({
+    summary: 'List project members workload',
+  })
+  @ApiOkResponse({ type: UserDashboardDto, isArray: true })
+  getTeamWorkload(@Req() req: Request): Promise<UserDashboardDto[]> {
+    return this.projectsService.getMembersWorkload(req.user as JwtUser);
   }
 
   @Get(':id')

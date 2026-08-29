@@ -2,9 +2,9 @@ import type { PaginatedResponse } from "../../types/paginatedResponse";
 import type {
   AssignableUser,
   Ticket,
+  TicketDashboard,
   TicketFilters,
   TicketStatus,
-  TicketStatusByProject,
 } from "./types/ticket";
 import type {
   TicketCreateFormValues,
@@ -108,9 +108,12 @@ export async function deleteTicket(id: string): Promise<void> {
   return response.data;
 }
 
-export async function ticketStatusByProject(): Promise<
-  TicketStatusByProject[]
-> {
-  const response = await api.get("/tickets/status/by-project");
+export async function ticketDashboard(): Promise<TicketDashboard[]> {
+  const response = await api.get("/projects/members-workload");
+  return response.data;
+}
+
+export async function ticketDevDashboard(): Promise<TicketDashboard> {
+  const response = await api.get("/users/me/workload");
   return response.data;
 }

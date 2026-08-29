@@ -203,14 +203,14 @@ describe('UsersService', () => {
     });
   });
 
-  // ── getTicketBreakdownByUser ──────────────────────────────────────────────
+  // ── getUsersWorkload ──────────────────────────────────────────────
 
-  describe('getTicketBreakdownByUser', () => {
+  describe('getUsersWorkload', () => {
     it('should fetch only active users via repo.find', async () => {
       mockUserRepo.find.mockResolvedValue([mockUser]);
       mockTicketGetRawMany.mockResolvedValueOnce([]);
 
-      await service.getTicketBreakdownByUser();
+      await service.getUsersWorkload();
 
       expect(mockUserRepo.find).toHaveBeenCalledTimes(1);
       const calls = mockUserRepo.find.mock.calls as {
@@ -223,7 +223,7 @@ describe('UsersService', () => {
       mockUserRepo.find.mockResolvedValue([mockUser]);
       mockTicketGetRawMany.mockResolvedValueOnce([]);
 
-      await service.getTicketBreakdownByUser();
+      await service.getUsersWorkload();
 
       expect(mockTicketRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
       expect(mockTicketQueryBuilder.innerJoin).toHaveBeenCalledWith(
@@ -245,7 +245,7 @@ describe('UsersService', () => {
       mockUserRepo.find.mockResolvedValue([mockUser]);
       mockTicketGetRawMany.mockResolvedValueOnce([]);
 
-      await service.getTicketBreakdownByUser();
+      await service.getUsersWorkload();
 
       expect(mockTicketQueryBuilder.where).toHaveBeenCalledWith(
         'assignee.id IN (:...userIds)',
@@ -266,7 +266,7 @@ describe('UsersService', () => {
         },
       ]);
 
-      const result = await service.getTicketBreakdownByUser();
+      const result = await service.getUsersWorkload();
 
       expect(result[0].ticketBreakdown).toEqual({
         open: { high: 1, medium: 0, low: 0 },
@@ -280,7 +280,7 @@ describe('UsersService', () => {
       mockUserRepo.find.mockResolvedValue([mockUser]);
       mockTicketGetRawMany.mockResolvedValueOnce([]);
 
-      const result = await service.getTicketBreakdownByUser();
+      const result = await service.getUsersWorkload();
 
       expect(result[0].ticketBreakdown).toEqual({
         open: { high: 0, medium: 0, low: 0 },
@@ -302,7 +302,7 @@ describe('UsersService', () => {
         },
       ]);
 
-      const result = await service.getTicketBreakdownByUser();
+      const result = await service.getUsersWorkload();
 
       const first = result.find((u) => u.id === mockUser.id);
       const second = result.find((u) => u.id === otherUser.id);
@@ -316,7 +316,7 @@ describe('UsersService', () => {
     it('should not query tickets when there are no active users', async () => {
       mockUserRepo.find.mockResolvedValue([]);
 
-      const result = await service.getTicketBreakdownByUser();
+      const result = await service.getUsersWorkload();
 
       expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
       expect(result).toEqual([]);
@@ -341,13 +341,101 @@ describe('UsersService', () => {
         },
       ]);
 
-      const result = await service.getTicketBreakdownByUser();
+      const result = await service.getUsersWorkload();
 
       const first = result.find((u) => u.id === mockUser.id);
       const second = result.find((u) => u.id === otherUser.id);
 
       expect(first?.ticketBreakdown.open.medium).toBe(1);
       expect(second?.ticketBreakdown.open.medium).toBe(1);
+    });
+  });
+
+  // ── getUserWorkload ───────────────────────────────────────────────
+
+  describe('getUserWorkload', () => {
+    it('should throw NotFoundException when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.getUserWorkload('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should not query tickets when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.getUserWorkload('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('should query tickets joined on assignees, scoped to the given user id', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUserWorkload(mockUser.id);
+
+      expect(mockTicketRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockTicketQueryBuilder.innerJoin).toHaveBeenCalledWith(
+        'ticket.assignees',
+        'assignee',
+      );
+      expect(mockTicketQueryBuilder.where).toHaveBeenCalledWith(
+        'assignee.id = :userId',
+        { userId: mockUser.id },
+      );
+      expect(mockTicketQueryBuilder.groupBy).toHaveBeenCalledWith(
+        'ticket.status',
+      );
+      expect(mockTicketQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'ticket.priority',
+      );
+    });
+
+    it('should build ticketBreakdown with per-status priority counts', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        { status: 'open', priority: 'high', count: '2' },
+        { status: 'inProgress', priority: 'medium', count: '4' },
+        { status: 'closed', priority: 'low', count: '9' },
+      ]);
+
+      const result = await service.getUserWorkload(mockUser.id);
+
+      expect(result.ticketBreakdown).toEqual({
+        open: { high: 2, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 4, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 9 },
+      });
+    });
+
+    it('should default the breakdown to zero when the user has no assigned tickets', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getUserWorkload(mockUser.id);
+
+      expect(result.ticketBreakdown).toEqual({
+        open: { high: 0, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 0 },
+      });
+    });
+
+    it('should return the requested user data alongside the breakdown', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getUserWorkload(mockUser.id);
+
+      expect(result.id).toBe(mockUser.id);
+      expect(result.fullName).toBe(mockUser.fullName);
+      expect(result.email).toBe(mockUser.email);
     });
   });
 
@@ -363,6 +451,7 @@ describe('UsersService', () => {
 
     beforeEach(() => {
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
+      mockUserRepo.findOne.mockResolvedValue(null);
     });
 
     it('should hash the password with bcrypt before saving', async () => {

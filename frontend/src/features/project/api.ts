@@ -109,6 +109,6 @@ export async function deleteProject(id: string): Promise<void> {
 }
 
 export async function projectDashboard(): Promise<ProjectDashboard[]> {
-  const response = await api.get("/projects/dashboard");
+  const response = await api.get("/projects/workload");
   return response.data;
 }

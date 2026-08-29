@@ -15,6 +15,9 @@ import { useAuth } from "../providers/useAuth";
 import ProjectDashboardChart from "../features/project/components/ProjectDashboardChart";
 import useProjectDashboardQuery from "../features/project/hooks/useProjectDashboardQuery";
 import { ArrowForward } from "@mui/icons-material";
+import TicketDashboardChart from "../features/ticket/components/TicketDashboardChart";
+import useTicketDashboardQuery from "../features/ticket/hooks/useTicketDashboardQuery";
+import useTicketdevDashboardQuery from "../features/ticket/hooks/useTicketDevDashboardQuery";
 
 export default function DashboardPage() {
   const { t } = useTranslation("dashboard");
@@ -25,6 +28,8 @@ export default function DashboardPage() {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const projectDashboardQuery = useProjectDashboardQuery();
+  const ticketDashboardQuery = useTicketDashboardQuery();
+  const ticketDevDashboardQuery = useTicketdevDashboardQuery();
 
   return (
     <Grid container spacing={2}>
@@ -72,16 +77,37 @@ export default function DashboardPage() {
       </Grid>
       <Grid size={{ xs: 12 }}>
         <Card>
-          <CardActionArea
-            onClick={() => {
-              navigate("/tickets");
-            }}
-          >
-            <CardHeader title={t("tickets")} />
-            <CardContent>
-              <Alert severity="success">{t("openSection")}</Alert>
-            </CardContent>
-          </CardActionArea>
+          <CardHeader
+            title={t("tickets")}
+            action={
+              <Button
+                variant="text"
+                endIcon={<ArrowForward />}
+                onClick={() => {
+                  navigate("/tickets");
+                }}
+              >
+                {t("list")}
+              </Button>
+            }
+          />
+          <CardContent>
+            <TicketDashboardChart
+              ticketDashboard={
+                (user?.role === "dev"
+                  ? ticketDevDashboardQuery.data
+                    ? [ticketDevDashboardQuery.data]
+                    : []
+                  : ticketDashboardQuery.data) ?? []
+              }
+              width={isSmallScreen ? 200 : 300}
+              height={isSmallScreen ? 200 : 300}
+              loading={
+                ticketDashboardQuery.isFetching ||
+                ticketDevDashboardQuery.isFetching
+              }
+            />
+          </CardContent>
         </Card>
       </Grid>
     </Grid>

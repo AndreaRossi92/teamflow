@@ -22,9 +22,17 @@ import {
   emptyTicketBreakdown,
   ProjectDashboardDto,
 } from './dto/project-dashboard.dto';
+import { UserDashboardDto } from '../users/dto/user-dashboard.dto';
 
 interface TicketBreakdownRow {
   projectId: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  count: string;
+}
+
+interface MemberTicketBreakdownRow {
+  userId: string;
   status: TicketStatus;
   priority: TicketPriority;
   count: string;
@@ -97,7 +105,7 @@ export class ProjectsService {
   /**
    * Ticket breakdown by project
    */
-  async getTicketBreakdown(
+  async getProjectsWorkload(
     requestingUser: JwtUser,
   ): Promise<ProjectDashboardDto[]> {
     const projects = await this.findAllProjectsForUser(requestingUser);
@@ -141,10 +149,72 @@ export class ProjectsService {
     });
   }
 
+  async getMembersWorkload(
+    requestingUser: JwtUser,
+  ): Promise<UserDashboardDto[]> {
+    const projects = await this.findAllProjectsForUser(requestingUser);
+
+    const memberMap = new Map<string, User>();
+    for (const project of projects) {
+      for (const member of project.members) {
+        memberMap.set(member.id, member);
+      }
+    }
+    const members = [...memberMap.values()];
+
+    if (members.length === 0) return [];
+
+    const activeProjectIds = projects
+      .filter((p) => p.isActive)
+      .map((p) => p.id);
+
+    const memberIds = members.map((m) => m.id);
+
+    const rows = activeProjectIds.length
+      ? await this.ticketRepo
+          .createQueryBuilder('ticket')
+          .innerJoin('ticket.assignees', 'assignee')
+          .select('assignee.id', 'userId')
+          .addSelect('ticket.status', 'status')
+          .addSelect('ticket.priority', 'priority')
+          .addSelect('COUNT(*)', 'count')
+          .where('ticket.project IN (:...projectIds)', {
+            projectIds: activeProjectIds,
+          })
+          .andWhere('assignee.id IN (:...memberIds)', { memberIds })
+          .groupBy('assignee.id')
+          .addGroupBy('ticket.status')
+          .addGroupBy('ticket.priority')
+          .getRawMany<MemberTicketBreakdownRow>()
+      : [];
+
+    const breakdownByUser = new Map<
+      string,
+      Record<TicketStatus, Record<TicketPriority, number>>
+    >();
+
+    for (const row of rows) {
+      const breakdown =
+        breakdownByUser.get(row.userId) ?? emptyTicketBreakdown();
+      breakdown[row.status][row.priority] = Number(row.count);
+      breakdownByUser.set(row.userId, breakdown);
+    }
+
+    return members.map((member) => {
+      const { passwordHash: _ignored, ...safeMember } = member;
+
+      return {
+        ...safeMember,
+        ticketBreakdown:
+          breakdownByUser.get(member.id) ?? emptyTicketBreakdown(),
+      } as UserDashboardDto;
+    });
+  }
+
   /**
    * Same admin/non-admin visibility + name/isActive filtering as
    * findAllForUser, but returns the full result set with no take/skip —
-   * used by getTicketBreakdown, which needs every visible project at once.
+   * used by getProjectsWorkload, which needs every visible project at once.
    */
   private async findAllProjectsForUser(
     requestingUser: JwtUser,
@@ -169,6 +239,7 @@ export class ProjectsService {
           .getQuery();
         return `project.id IN ${sub}`;
       })
+      .andWhere('project.isActive = :isActive', { isActive: true })
       .setParameter('userId', requestingUser.id)
       .orderBy('project.createdAt', 'DESC');
 

@@ -12,7 +12,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/useAuth";
-import ProjectDashboardChart from "../features/ticket/components/ProjectDashboardChart";
+import ProjectDashboardChart from "../features/project/components/ProjectDashboardChart";
 import useProjectDashboardQuery from "../features/project/hooks/useProjectDashboardQuery";
 import { ArrowForward } from "@mui/icons-material";
 

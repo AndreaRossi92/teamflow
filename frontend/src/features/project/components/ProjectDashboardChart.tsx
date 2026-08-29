@@ -1,5 +1,5 @@
 import { PieChart, type PieChartProps } from "@mui/x-charts";
-import type { TicketPriority, TicketStatus } from "../types/ticket";
+import type { TicketPriority, TicketStatus } from "../../ticket/types/ticket";
 import {
   Box,
   Chip,
@@ -18,14 +18,14 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from "@mui/material";
-import { PRIORITY_COLOR, STATUS_COLOR } from "../const/tickets";
+import { PRIORITY_COLOR, STATUS_COLOR } from "../../ticket/const/tickets";
 import { useTranslation } from "react-i18next";
 import Dot from "../../../components/Dot";
-import type { ProjectDashboard } from "../../project/types/project";
+import type { ProjectDashboard } from "../types/project";
 import { useState } from "react";
 import { ArrowForward } from "@mui/icons-material";
-import { TicketStatusBadge } from "./TicketStatusBadge";
-import { TicketPriorityBadge } from "./TicketPriorityBadge";
+import { TicketStatusBadge } from "../../ticket/components/TicketStatusBadge";
+import { TicketPriorityBadge } from "../../ticket/components/TicketPriorityBadge";
 import { useNavigate } from "react-router-dom";
 
 const PRIORITY_ORDER: TicketPriority[] = ["high", "medium", "low"];

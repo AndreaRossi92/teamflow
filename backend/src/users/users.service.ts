@@ -13,13 +13,76 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ListUsersDto } from './dto/list-users.dto';
 import { ErrorCode } from '../app-error.codes';
 import { Paginated } from '../paginated-response.dto';
+import { Ticket, TicketPriority, TicketStatus } from '../tickets/ticket.entity';
+import {
+  emptyTicketBreakdown,
+  UserDashboardDto,
+} from './dto/user-dashboard.dto';
 
+interface UserTicketBreakdownRow {
+  userId: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  count: string;
+}
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly repo: Repository<User>,
+    @InjectRepository(Ticket)
+    private readonly ticketRepo: Repository<Ticket>,
   ) {}
+
+  async getTicketBreakdownByUser(): Promise<UserDashboardDto[]> {
+    const users = await this.repo.find({
+      where: { isActive: true },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      order: { fullName: 'ASC' },
+    });
+
+    if (users.length === 0) return [];
+
+    const userIds = users.map((u) => u.id);
+
+    const rows = await this.ticketRepo
+      .createQueryBuilder('ticket')
+      .innerJoin('ticket.assignees', 'assignee')
+      .select('assignee.id', 'userId')
+      .addSelect('ticket.status', 'status')
+      .addSelect('ticket.priority', 'priority')
+      .addSelect('COUNT(*)', 'count')
+      .where('assignee.id IN (:...userIds)', { userIds })
+      .groupBy('assignee.id')
+      .addGroupBy('ticket.status')
+      .addGroupBy('ticket.priority')
+      .getRawMany<UserTicketBreakdownRow>();
+
+    const breakdownByUser = new Map<
+      string,
+      Record<TicketStatus, Record<TicketPriority, number>>
+    >();
+
+    for (const row of rows) {
+      const breakdown =
+        breakdownByUser.get(row.userId) ?? emptyTicketBreakdown();
+      breakdown[row.status][row.priority] = Number(row.count);
+      breakdownByUser.set(row.userId, breakdown);
+    }
+
+    return users.map((user) => ({
+      ...user,
+      ticketBreakdown: breakdownByUser.get(user.id) ?? emptyTicketBreakdown(),
+    }));
+  }
 
   async findAll(query: ListUsersDto): Promise<Paginated<User>> {
     const { fullName, role, isActive, page = 1, limit = 20 } = query;

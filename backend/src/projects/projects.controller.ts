@@ -67,7 +67,7 @@ export class ProjectsController {
   @Get('dashboard')
   @ApiOperation({
     summary:
-      'List every project visible to the current user (same visibility rules as GET /projects, but not paginated), enriched with ticket counts per status broken down by priority, plus status and priority totals',
+      'List every project visible to the current user (same visibility rules as GET /projects, but not paginated), enriched with ticket counts per status broken down by priority',
   })
   @ApiOkResponse({ type: ProjectDashboardDto, isArray: true })
   getDashboard(@Req() req: Request): Promise<ProjectDashboardDto[]> {

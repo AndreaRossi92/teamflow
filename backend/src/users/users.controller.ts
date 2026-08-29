@@ -32,6 +32,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthService } from '../auth/auth.service';
 import { ListUsersDto } from './dto/list-users.dto';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
+import { UserDashboardDto } from './dto/user-dashboard.dto';
 
 class PaginatedUsersResponse extends PaginatedResponseDto(User) {}
 
@@ -51,6 +52,18 @@ export class UsersController {
   @ApiOkResponse({ type: PaginatedUsersResponse })
   findAll(@Query() query: ListUsersDto): Promise<Paginated<User>> {
     return this.usersService.findAll(query);
+  }
+
+  // NOTE: must stay declared before the `:id` route below, otherwise
+  // Nest/Express would try to match "dashboard" as a project uuid.
+  @Get('dashboard')
+  @ApiOperation({
+    summary:
+      'List every user, enriched with ticket counts per status broken down by priority',
+  })
+  @ApiOkResponse({ type: UserDashboardDto, isArray: true })
+  getDashboard(): Promise<UserDashboardDto[]> {
+    return this.usersService.getTicketBreakdownByUser();
   }
 
   @Get(':id')

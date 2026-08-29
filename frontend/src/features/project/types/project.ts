@@ -1,3 +1,4 @@
+import type { TicketPriority, TicketStatus } from "../../ticket/types/ticket";
 import type { User } from "../../user/types/user";
 
 export type Project = {
@@ -21,4 +22,8 @@ export type AssignableUser = Pick<
   "id" | "fullName" | "role" | "email"
 > & {
   isMember: boolean;
+};
+
+export type ProjectDashboard = Project & {
+  ticketBreakdown: Record<TicketStatus, Record<TicketPriority, number>>;
 };

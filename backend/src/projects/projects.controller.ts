@@ -37,6 +37,7 @@ import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { UserWithMemberDto } from './dto/users-with-member.dto';
 import { ListProjectsDto } from './dto/list-projects.dto';
 import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
+import { ProjectDashboardDto } from './dto/project-dashboard.dto';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
 
 class PaginatedProjectsResponse extends PaginatedResponseDto(Project) {}
@@ -59,6 +60,18 @@ export class ProjectsController {
     @Query() query: ListProjectsDto,
   ): Promise<Paginated<Project>> {
     return this.projectsService.findAllForUser(req.user as JwtUser, query);
+  }
+
+  // NOTE: must stay declared before the `:id` route below, otherwise
+  // Nest/Express would try to match "dashboard" as a project uuid.
+  @Get('dashboard')
+  @ApiOperation({
+    summary:
+      'List every project visible to the current user (same visibility rules as GET /projects, but not paginated), enriched with ticket counts per status broken down by priority, plus status and priority totals',
+  })
+  @ApiOkResponse({ type: ProjectDashboardDto, isArray: true })
+  getDashboard(@Req() req: Request): Promise<ProjectDashboardDto[]> {
+    return this.projectsService.getTicketBreakdown(req.user as JwtUser);
   }
 
   @Get(':id')

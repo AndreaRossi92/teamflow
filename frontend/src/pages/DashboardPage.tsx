@@ -1,23 +1,30 @@
 import {
   Alert,
+  Button,
   Card,
   CardActionArea,
   CardContent,
   CardHeader,
   Grid,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/useAuth";
-import useTicketStatusByProjectQuery from "../features/ticket/hooks/useTicketStatusByProjectQuery";
-import TicketStatusByProjectChart from "../features/ticket/components/TicketStatusByProjectChart";
+import ProjectDashboardChart from "../features/ticket/components/ProjectDashboardChart";
+import useProjectDashboardQuery from "../features/project/hooks/useProjectDashboardQuery";
+import { ArrowForward } from "@mui/icons-material";
 
 export default function DashboardPage() {
   const { t } = useTranslation("dashboard");
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
 
-  const ticketStatusByProjectQuery = useTicketStatusByProjectQuery();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const projectDashboardQuery = useProjectDashboardQuery();
 
   return (
     <Grid container spacing={2}>
@@ -39,19 +46,26 @@ export default function DashboardPage() {
       )}
       <Grid size={{ xs: 12 }}>
         <Card>
-          <CardActionArea
-            onClick={() => {
-              navigate("/projects");
-            }}
-          >
-            <CardHeader title={t("projects")} />
-          </CardActionArea>
+          <CardHeader
+            title={t("projects")}
+            action={
+              <Button
+                variant="text"
+                endIcon={<ArrowForward />}
+                onClick={() => {
+                  navigate("/projects");
+                }}
+              >
+                {t("list")}
+              </Button>
+            }
+          />
           <CardContent>
-            <TicketStatusByProjectChart
-              ticketStatusByProject={ticketStatusByProjectQuery.data ?? []}
-              width={400}
-              height={400}
-              loading={ticketStatusByProjectQuery.isFetching}
+            <ProjectDashboardChart
+              projectDashboard={projectDashboardQuery.data ?? []}
+              width={isSmallScreen ? 200 : 300}
+              height={isSmallScreen ? 200 : 300}
+              loading={projectDashboardQuery.isFetching}
             />
           </CardContent>
         </Card>

@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 import { Project } from './project.entity';
 import { User, Role } from '../users/user.entity';
+import { Ticket, TicketPriority, TicketStatus } from '../tickets/ticket.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AssignUsersDto } from './dto/assign-users.dto';
@@ -17,6 +18,17 @@ import { ListProjectsDto } from './dto/list-projects.dto';
 import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
 import { Paginated } from '../paginated-response.dto';
 import { UserWithMemberDto } from './dto/users-with-member.dto';
+import {
+  emptyTicketBreakdown,
+  ProjectDashboardDto,
+} from './dto/project-dashboard.dto';
+
+interface TicketBreakdownRow {
+  projectId: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  count: string;
+}
 
 @Injectable()
 export class ProjectsService {
@@ -25,6 +37,8 @@ export class ProjectsService {
     private readonly projectRepo: Repository<Project>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(Ticket)
+    private readonly ticketRepo: Repository<Ticket>,
   ) {}
 
   async findAllForUser(
@@ -78,6 +92,87 @@ export class ProjectsService {
     const [data, total] = await qb.getManyAndCount();
 
     return { data, total, page, limit, hasNextPage: page * limit < total };
+  }
+
+  /**
+   * Ticket breakdown by project
+   */
+  async getTicketBreakdown(
+    requestingUser: JwtUser,
+  ): Promise<ProjectDashboardDto[]> {
+    const projects = await this.findAllProjectsForUser(requestingUser);
+
+    if (projects.length === 0) return [];
+
+    const projectIds = projects.filter((p) => p.isActive).map((p) => p.id);
+
+    const rows = await this.ticketRepo
+      .createQueryBuilder('ticket')
+      .select('ticket.project', 'projectId')
+      .addSelect('ticket.status', 'status')
+      .addSelect('ticket.priority', 'priority')
+      .addSelect('COUNT(*)', 'count')
+      .where('ticket.project IN (:...projectIds)', { projectIds })
+      .groupBy('ticket.project')
+      .addGroupBy('ticket.status')
+      .addGroupBy('ticket.priority')
+      .getRawMany<TicketBreakdownRow>();
+
+    const breakdownByProject = new Map<
+      string,
+      Record<TicketStatus, Record<TicketPriority, number>>
+    >();
+
+    for (const row of rows) {
+      const breakdown =
+        breakdownByProject.get(row.projectId) ?? emptyTicketBreakdown();
+      breakdown[row.status][row.priority] = Number(row.count);
+      breakdownByProject.set(row.projectId, breakdown);
+    }
+
+    return projects.map((project) => {
+      const breakdown =
+        breakdownByProject.get(project.id) ?? emptyTicketBreakdown();
+
+      return {
+        ...project,
+        ticketBreakdown: breakdown,
+      };
+    });
+  }
+
+  /**
+   * Same admin/non-admin visibility + name/isActive filtering as
+   * findAllForUser, but returns the full result set with no take/skip —
+   * used by getTicketBreakdown, which needs every visible project at once.
+   */
+  private async findAllProjectsForUser(
+    requestingUser: JwtUser,
+  ): Promise<Project[]> {
+    if (requestingUser.role === Role.ADMIN) {
+      return this.projectRepo.find({
+        relations: { members: true, createdBy: true },
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    const qb = this.projectRepo
+      .createQueryBuilder('project')
+      .leftJoinAndSelect('project.createdBy', 'createdBy')
+      .leftJoinAndSelect('project.members', 'members')
+      .where((qb) => {
+        const sub = qb
+          .subQuery()
+          .select('pm.projectId')
+          .from('project_members', 'pm')
+          .where('pm.userId = :userId')
+          .getQuery();
+        return `project.id IN ${sub}`;
+      })
+      .setParameter('userId', requestingUser.id)
+      .orderBy('project.createdAt', 'DESC');
+
+    return qb.getMany();
   }
 
   async findOneForUser(id: string, requestingUser: JwtUser): Promise<Project> {

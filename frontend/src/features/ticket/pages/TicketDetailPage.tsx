@@ -11,7 +11,6 @@ import useTicketDetailQuery from "../hooks/useTicketDetailQuery";
 import useDeleteTicketMutation from "../hooks/useDeleteTicketMutation";
 import TicketDetail from "../components/TicketDetail";
 import DeleteButton from "../../../components/DeleteButton";
-import DeleteIconButton from "../../../components/DeleteIconButton";
 
 export default function TicketDetailPage() {
   const { t } = useTranslation("ticket");
@@ -39,7 +38,6 @@ export default function TicketDetailPage() {
         title={t("ticket")}
         subtitle={t("detail")}
         actions={
-          (user?.role === "admin" || user?.role === "manager") &&
           ticket.isSuccess ? (
             <Stack direction="row" spacing={1}>
               <IconButton
@@ -49,25 +47,17 @@ export default function TicketDetailPage() {
               >
                 <Edit fontSize="small" />
               </IconButton>
-              <IconButton
-                size="small"
-                title={t("members")}
-                onClick={() => {
-                  navigate(`/ticket/${id}/assign-users`);
-                }}
-              >
-                <Group fontSize="small" />
-              </IconButton>
-              <DeleteIconButton
-                dialogTitle={ticket.data.title}
-                onDelete={() =>
-                  deleteTicketMutation.mutateAsync(ticket.data.id).then(() =>
-                    queryClient.invalidateQueries({
-                      queryKey: ["tickets"],
-                    }),
-                  )
-                }
-              />
+              {(user?.role === "admin" || user?.role === "manager") && (
+                <IconButton
+                  size="small"
+                  title={t("members")}
+                  onClick={() => {
+                    navigate(`/ticket/${id}/assign-users`);
+                  }}
+                >
+                  <Group fontSize="small" />
+                </IconButton>
+              )}
             </Stack>
           ) : undefined
         }
@@ -85,16 +75,18 @@ export default function TicketDetailPage() {
       {!ticket.isFetching && !ticket.isError && ticket.data && (
         <>
           <TicketDetail ticket={ticket.data} />
-          <Stack direction="row" sx={{ justifyContent: "center" }}>
-            <DeleteButton
-              onDelete={() =>
-                deleteTicketMutation.mutateAsync(ticket.data.id).then(() => {
-                  queryClient.invalidateQueries({ queryKey: ["tickets"] });
-                  navigate("/tickets", { replace: true });
-                })
-              }
-            />
-          </Stack>
+          {(user?.role === "admin" || user?.role === "manager") && (
+            <Stack direction="row" sx={{ justifyContent: "center" }}>
+              <DeleteButton
+                onDelete={() =>
+                  deleteTicketMutation.mutateAsync(ticket.data.id).then(() => {
+                    queryClient.invalidateQueries({ queryKey: ["tickets"] });
+                    navigate("/tickets", { replace: true });
+                  })
+                }
+              />
+            </Stack>
+          )}
         </>
       )}
     </>

@@ -1,5 +1,5 @@
 import type { PaginatedResponse } from "../../types/paginatedResponse";
-import { type User, type UserFilters } from "./types/user";
+import { type User, type UserDashboard, type UserFilters } from "./types/user";
 import type {
   UserCreateFormValues,
   UserEditFormValues,
@@ -80,5 +80,10 @@ export async function resetPassword(
 export async function deleteUser(id: string): Promise<void> {
   const response = await api.delete<void>(`/users/${id}`);
 
+  return response.data;
+}
+
+export async function userDashboard(): Promise<UserDashboard> {
+  const response = await api.get("/users/breakdown");
   return response.data;
 }

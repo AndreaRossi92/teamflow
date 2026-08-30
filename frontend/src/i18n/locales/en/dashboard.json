@@ -7,5 +7,6 @@
   "allProjects": "All projects",
   "myTickets": "My tickets",
   "status": "Status",
-  "priority": "Priority"
+  "priority": "Priority",
+  "role": "Role"
 }

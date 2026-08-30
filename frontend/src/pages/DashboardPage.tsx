@@ -1,8 +1,6 @@
 import {
-  Alert,
   Button,
   Card,
-  CardActionArea,
   CardContent,
   CardHeader,
   Grid,
@@ -18,6 +16,8 @@ import { ArrowForward } from "@mui/icons-material";
 import TicketDashboardChart from "../features/ticket/components/TicketDashboardChart";
 import useTicketDashboardQuery from "../features/ticket/hooks/useTicketDashboardQuery";
 import useTicketdevDashboardQuery from "../features/ticket/hooks/useTicketDevDashboardQuery";
+import useUserDashboardQuery from "../features/user/hooks/useUserDashboardQuery";
+import UserDashboardChart from "../features/user/components/UserDashboardChart";
 
 export default function DashboardPage() {
   const { t } = useTranslation("dashboard");
@@ -30,22 +30,35 @@ export default function DashboardPage() {
   const projectDashboardQuery = useProjectDashboardQuery();
   const ticketDashboardQuery = useTicketDashboardQuery();
   const ticketDevDashboardQuery = useTicketdevDashboardQuery();
+  const userDashboardQuery = useUserDashboardQuery();
 
   return (
     <Grid container spacing={2}>
       {user?.role === "admin" && (
         <Grid size={{ xs: 12 }}>
           <Card>
-            <CardActionArea
-              onClick={() => {
-                navigate("/users");
-              }}
-            >
-              <CardHeader title={t("users")} />
-              <CardContent>
-                <Alert severity="success">{t("openSection")}</Alert>
-              </CardContent>
-            </CardActionArea>
+            <CardHeader
+              title={t("users")}
+              action={
+                <Button
+                  variant="text"
+                  endIcon={<ArrowForward />}
+                  onClick={() => {
+                    navigate("/users");
+                  }}
+                >
+                  {t("list")}
+                </Button>
+              }
+            />
+            <CardContent>
+              <UserDashboardChart
+                userDashboard={userDashboardQuery.data ?? []}
+                width={isSmallScreen ? 200 : 300}
+                height={isSmallScreen ? 200 : 300}
+                loading={userDashboardQuery.isFetching}
+              />
+            </CardContent>
           </Card>
         </Grid>
       )}

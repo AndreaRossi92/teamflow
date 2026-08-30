@@ -42,6 +42,14 @@ const otherUser: User = {
 };
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
+const mockUserGetRawMany = jest.fn();
+const mockUserQueryBuilder = {
+  select: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  addGroupBy: jest.fn().mockReturnThis(),
+  getRawMany: mockUserGetRawMany,
+};
 
 const mockUserRepo = {
   findOne: jest.fn(),
@@ -51,6 +59,7 @@ const mockUserRepo = {
   save: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+  createQueryBuilder: jest.fn(() => mockUserQueryBuilder),
 };
 
 // QueryBuilder mock per l'aggregato ticket-breakdown per utente
@@ -436,6 +445,99 @@ describe('UsersService', () => {
       expect(result.id).toBe(mockUser.id);
       expect(result.fullName).toBe(mockUser.fullName);
       expect(result.email).toBe(mockUser.email);
+    });
+  });
+
+  // ── getUsersBreakdown ─────────────────────────────────────────────────────
+
+  describe('getUsersBreakdown', () => {
+    it('should run a single grouped query by role and isActive', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUsersBreakdown();
+
+      expect(mockUserRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockUserQueryBuilder.groupBy).toHaveBeenCalledWith('user.role');
+      expect(mockUserQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'user.isActive',
+      );
+    });
+
+    it('should return an entry for every role, even with no users', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getUsersBreakdown();
+
+      expect(result.map((r) => r.role).sort()).toEqual(
+        Object.values(Role).sort(),
+      );
+      expect(result.every((r) => r.active === 0 && r.inactive === 0)).toBe(
+        true,
+      );
+    });
+
+    it('should count active users per role', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([
+        { role: Role.DEV, isActive: true, count: '5' },
+        { role: Role.MANAGER, isActive: true, count: '2' },
+      ]);
+
+      const result = await service.getUsersBreakdown();
+
+      const dev = result.find((r) => r.role === Role.DEV);
+      const manager = result.find((r) => r.role === Role.MANAGER);
+      expect(dev?.active).toBe(5);
+      expect(manager?.active).toBe(2);
+    });
+
+    it('should count inactive users per role', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([
+        { role: Role.DEV, isActive: false, count: '3' },
+      ]);
+
+      const result = await service.getUsersBreakdown();
+
+      const dev = result.find((r) => r.role === Role.DEV);
+      expect(dev?.inactive).toBe(3);
+      expect(dev?.active).toBe(0);
+    });
+
+    it('should keep active and inactive counts isolated per role', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([
+        { role: Role.DEV, isActive: true, count: '4' },
+        { role: Role.DEV, isActive: false, count: '1' },
+        { role: Role.ADMIN, isActive: true, count: '1' },
+      ]);
+
+      const result = await service.getUsersBreakdown();
+
+      const dev = result.find((r) => r.role === Role.DEV);
+      const admin = result.find((r) => r.role === Role.ADMIN);
+      expect(dev).toMatchObject({ active: 4, inactive: 1 });
+      expect(admin).toMatchObject({ active: 1, inactive: 0 });
+    });
+
+    it('should handle isActive coming back as a string or numeric flag from the driver', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([
+        { role: Role.DEV, isActive: 'true', count: '2' },
+        { role: Role.DEV, isActive: '1', count: '1' },
+        { role: Role.DEV, isActive: 'false', count: '5' },
+      ]);
+
+      const result = await service.getUsersBreakdown();
+
+      const dev = result.find((r) => r.role === Role.DEV);
+      expect(dev?.active).toBe(3);
+      expect(dev?.inactive).toBe(5);
+    });
+
+    it('should not call findAndCount or find (uses the query builder only)', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUsersBreakdown();
+
+      expect(mockUserRepo.findAndCount).not.toHaveBeenCalled();
+      expect(mockUserRepo.find).not.toHaveBeenCalled();
     });
   });
 

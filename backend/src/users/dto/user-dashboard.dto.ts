@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../user.entity';
+import { Role, User } from '../user.entity';
 import { TicketPriority, TicketStatus } from '../../tickets/ticket.entity';
 
 export class TicketPriorityCountsDto {
@@ -35,7 +35,6 @@ export class UserDashboardDto extends User {
   ticketBreakdown!: TicketBreakdownDto;
 }
 
-/** All statuses × priorities defaulted to 0 — used so every user reports a complete shape even with zero tickets. */
 export function emptyTicketBreakdown(): Record<
   TicketStatus,
   Record<TicketPriority, number>
@@ -48,11 +47,34 @@ export function emptyTicketBreakdown(): Record<
   };
 }
 
-/** All priorities defaulted to 0 — used so every user reports a complete shape even with zero tickets. */
 export function emptyTicketPriorityCounts(): Record<TicketPriority, number> {
   return {
     [TicketPriority.LOW]: 0,
     [TicketPriority.MEDIUM]: 0,
     [TicketPriority.HIGH]: 0,
   };
+}
+
+export class RoleBreakdownDto {
+  @ApiProperty({ enum: Role })
+  role!: Role;
+
+  @ApiProperty({ example: 12, description: 'Active users with this role' })
+  active!: number;
+
+  @ApiProperty({ example: 3, description: 'Inactive users with this role' })
+  inactive!: number;
+}
+
+export function emptyRoleBreakdown(): Record<
+  Role,
+  { active: number; inactive: number }
+> {
+  return Object.values(Role).reduce(
+    (acc, role) => {
+      acc[role] = { active: 0, inactive: 0 };
+      return acc;
+    },
+    {} as Record<Role, { active: number; inactive: number }>,
+  );
 }

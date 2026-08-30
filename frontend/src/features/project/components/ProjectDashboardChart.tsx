@@ -232,8 +232,10 @@ export default function ProjectDashboardChart({
         <Box
           sx={{
             display: "flex",
+            flexWrap: "wrap",
             height: 100,
-            justifyContent: "space-around",
+            justifyContent: "center",
+            gap: 5,
             alignItems: "center",
           }}
         >

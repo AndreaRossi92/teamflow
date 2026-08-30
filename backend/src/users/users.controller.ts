@@ -33,7 +33,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthService } from '../auth/auth.service';
 import { ListUsersDto } from './dto/list-users.dto';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
-import { UserDashboardDto } from './dto/user-dashboard.dto';
+import { RoleBreakdownDto, UserDashboardDto } from './dto/user-dashboard.dto';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { Request } from 'express';
 
@@ -63,6 +63,13 @@ export class UsersController {
   @ApiOkResponse({ type: UserDashboardDto })
   getMyWorkload(@Req() req: Request): Promise<UserDashboardDto> {
     return this.usersService.getUserWorkload((req.user as JwtUser).id);
+  }
+
+  @Get('breakdown')
+  @ApiOperation({ summary: 'Users breakdown by role and active state' })
+  @ApiOkResponse({ type: RoleBreakdownDto, isArray: true })
+  getBreakdown(): Promise<RoleBreakdownDto[]> {
+    return this.usersService.getUsersBreakdown();
   }
 
   @Get(':id')

@@ -8,5 +8,6 @@
   "allProjects": "Tutti i progetti",
   "myTickets": "I miei ticket",
   "status": "Status",
-  "priority": "Priorità"
+  "priority": "Priorità",
+  "role": "Ruolo"
 }

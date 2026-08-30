@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from './user.entity';
+import { Role, User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ListUsersDto } from './dto/list-users.dto';
@@ -15,7 +15,9 @@ import { ErrorCode } from '../app-error.codes';
 import { Paginated } from '../paginated-response.dto';
 import { Ticket, TicketPriority, TicketStatus } from '../tickets/ticket.entity';
 import {
+  emptyRoleBreakdown,
   emptyTicketBreakdown,
+  RoleBreakdownDto,
   UserDashboardDto,
 } from './dto/user-dashboard.dto';
 
@@ -23,6 +25,12 @@ interface UserTicketBreakdownRow {
   userId: string;
   status: TicketStatus;
   priority: TicketPriority;
+  count: string;
+}
+
+interface RoleCountRow {
+  role: Role;
+  isActive: boolean | string; // driver-dependent: postgres boolean, sqlite 0/1, ecc.
   count: string;
 }
 @Injectable()
@@ -104,6 +112,35 @@ export class UsersService {
     }
 
     return { ...user, ticketBreakdown: breakdown };
+  }
+
+  async getUsersBreakdown(): Promise<RoleBreakdownDto[]> {
+    const rows = await this.repo
+      .createQueryBuilder('user')
+      .select('user.role', 'role')
+      .addSelect('user.isActive', 'isActive')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('user.role')
+      .addGroupBy('user.isActive')
+      .getRawMany<RoleCountRow>();
+
+    const breakdown = emptyRoleBreakdown();
+
+    for (const row of rows) {
+      const isActive =
+        row.isActive === true ||
+        row.isActive === 'true' ||
+        row.isActive === '1';
+      const count = Number(row.count);
+      if (isActive) breakdown[row.role].active += count;
+      else breakdown[row.role].inactive += count;
+    }
+
+    return Object.entries(breakdown).map(([role, { active, inactive }]) => ({
+      role: role as Role,
+      active,
+      inactive,
+    }));
   }
 
   async findAll(query: ListUsersDto): Promise<Paginated<User>> {

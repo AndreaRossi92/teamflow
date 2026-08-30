@@ -24,10 +24,6 @@ import useTicketsListQuery from "../hooks/useTicketsListQuery";
 import TicketsList from "../components/TicketsList";
 import type { Ticket, TicketPriority, TicketStatus } from "../types/ticket";
 import { TICKET_PRIORITIES, TICKET_STATUSES } from "../types/ticket";
-import DeleteIconButton from "../../../components/DeleteIconButton";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSnackbar } from "../../../providers/useSnackbar";
-import useDeleteTicketMutation from "../hooks/useDeleteTicketMutation";
 import { PRIORITY_COLOR, STATUS_COLOR } from "../const/tickets";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
@@ -35,8 +31,6 @@ const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 export default function TicketsListPage() {
   const { t } = useTranslation("ticket");
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { showMessage } = useSnackbar();
   const { user } = useAuth();
 
   const [title, setTitle] = useState("");
@@ -55,15 +49,6 @@ export default function TicketsListPage() {
     title: debouncedTitle || undefined,
     status,
     priority,
-  });
-
-  const deleteTicketMutation = useDeleteTicketMutation({
-    onSuccess: () => {
-      showMessage(t("deleted"), "success");
-    },
-    onError: () => {
-      showMessage(t("somethingWentWrong", { ns: "errors" }), "error");
-    },
   });
 
   const tickets =
@@ -226,17 +211,17 @@ export default function TicketsListPage() {
         <TicketsList
           tickets={tickets}
           onClick={(ticket) => navigate(`/ticket/${ticket.id}`)}
-          listItemProps={{ sx: { pr: 18 }, disablePadding: true }}
-          actions={(ticket) =>
-            user?.role === "admin" || user?.role === "manager" ? (
-              <Stack direction="row" spacing={1}>
-                <IconButton
-                  size="small"
-                  title={t("edit")}
-                  onClick={() => navigate(`/ticket/${ticket.id}/edit`)}
-                >
-                  <Edit fontSize="small" />
-                </IconButton>
+          listItemProps={{ sx: { pr: 12 }, disablePadding: true }}
+          actions={(ticket) => (
+            <Stack direction="row" spacing={1}>
+              <IconButton
+                size="small"
+                title={t("edit")}
+                onClick={() => navigate(`/ticket/${ticket.id}/edit`)}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+              {(user?.role === "admin" || user?.role === "manager") && (
                 <IconButton
                   size="small"
                   title={t("members")}
@@ -246,19 +231,9 @@ export default function TicketsListPage() {
                 >
                   <Group fontSize="small" />
                 </IconButton>
-                <DeleteIconButton
-                  dialogTitle={ticket.title}
-                  onDelete={() =>
-                    deleteTicketMutation.mutateAsync(ticket.id).then(() =>
-                      queryClient.invalidateQueries({
-                        queryKey: ["tickets"],
-                      }),
-                    )
-                  }
-                />
-              </Stack>
-            ) : undefined
-          }
+              )}
+            </Stack>
+          )}
         />
       )}
 

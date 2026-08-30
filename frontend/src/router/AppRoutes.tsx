@@ -79,6 +79,7 @@ export default function AppRoutes() {
         <Route path="/project/:id" element={<ProjectDetailPage />} />
         <Route path="/tickets" element={<TicketsListPage />} />
         <Route path="/ticket/:id" element={<TicketDetailtPage />} />
+        <Route path="/ticket/:id/edit" element={<TicketEditPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
@@ -100,7 +101,6 @@ export default function AppRoutes() {
           element={<ProjectAssignUsersPage />}
         />
         <Route path="/ticket/create" element={<TicketCreatePage />} />
-        <Route path="/ticket/:id/edit" element={<TicketEditPage />} />
         <Route
           path="/ticket/:id/assign-users"
           element={<TicketAssignUsersPage />}

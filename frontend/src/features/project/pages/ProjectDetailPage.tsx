@@ -124,20 +124,23 @@ export default function ProjectDetailPage() {
       {!project.isFetching && !project.isError && !!project.data && (
         <>
           <ProjectDetail project={project.data} />
-          {!project.data.isActive && (
-            <Stack direction="row" sx={{ justifyContent: "center" }}>
-              <DeleteButton
-                onDelete={() =>
-                  deleteProjectMutation
-                    .mutateAsync(project.data.id)
-                    .then(() => {
-                      queryClient.invalidateQueries({ queryKey: ["projects"] });
-                      navigate("/projects", { replace: true });
-                    })
-                }
-              />
-            </Stack>
-          )}
+          {!project.data.isActive &&
+            (user?.role === "admin" || user?.role === "manager") && (
+              <Stack direction="row" sx={{ justifyContent: "center" }}>
+                <DeleteButton
+                  onDelete={() =>
+                    deleteProjectMutation
+                      .mutateAsync(project.data.id)
+                      .then(() => {
+                        queryClient.invalidateQueries({
+                          queryKey: ["projects"],
+                        });
+                        navigate("/projects", { replace: true });
+                      })
+                  }
+                />
+              </Stack>
+            )}
         </>
       )}
     </>

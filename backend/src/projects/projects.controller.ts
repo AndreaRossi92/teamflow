@@ -204,11 +204,11 @@ export class ProjectsController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary:
-      'Hard-delete an inactive project (admin only) — irreversible. Deactivate the project first.',
+      'Hard-delete an inactive project — irreversible. Deactivate the project first.',
   })
   @ApiNoContentResponse({ description: 'Project deleted successfully' })
   @ApiNotFoundResponse({ description: 'Project not found' })

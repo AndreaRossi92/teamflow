@@ -55,7 +55,7 @@ export class TicketsService {
           .from('project_members', 'pm')
           .where('pm.userId = :userId')
           .getQuery();
-        return `ticket.projectId IN ${sub}`;
+        return `ticket.project IN ${sub}`;
       });
     } else if (requestingUser.role === Role.DEV) {
       // Dev: only tickets assigned to them
@@ -82,8 +82,11 @@ export class TicketsService {
       qb.andWhere('ticket.priority = :priority', { priority });
     }
     if (projectId !== undefined) {
-      qb.andWhere('ticket.projectId = :projectId', { projectId });
+      qb.andWhere('ticket.project = :projectId', { projectId });
     }
+    qb.andWhere('project.isActive = :isActiveProject', {
+      isActiveProject: true,
+    });
 
     const [data, total] = await qb.getManyAndCount();
     return { data, total, page, limit, hasNextPage: page * limit < total };

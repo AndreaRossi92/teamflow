@@ -5,11 +5,19 @@ import { PRIORITY_COLOR } from "../const/tickets";
 
 type TicketPriorityBadgeProps = {
   priority: TicketPriority;
+  count?: number;
 };
 
-export function TicketPriorityBadge({ priority }: TicketPriorityBadgeProps) {
+export function TicketPriorityBadge({
+  priority,
+  count,
+}: TicketPriorityBadgeProps) {
   const { t } = useTranslation("ticket");
   return (
-    <Chip size="small" label={t(priority)} color={PRIORITY_COLOR[priority]} />
+    <Chip
+      size="small"
+      label={count ? `${count} ${t(priority)}` : t(priority)}
+      color={PRIORITY_COLOR[priority]}
+    />
   );
 }

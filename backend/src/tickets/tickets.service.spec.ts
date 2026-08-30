@@ -113,21 +113,27 @@ const mockTicket: Ticket = {
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
-// QueryBuilder mock for findAllForUser
+// QueryBuilder mock for findAllForUser / getTicketCountsByProject
 const mockGetManyAndCount = jest.fn();
+const mockGetRawMany = jest.fn();
 const mockQueryBuilder = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
+  innerJoin: jest.fn().mockReturnThis(),
+  select: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   setParameter: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  addGroupBy: jest.fn().mockReturnThis(),
   take: jest.fn().mockReturnThis(),
   skip: jest.fn().mockReturnThis(),
   subQuery: jest.fn().mockReturnThis(),
-  select: jest.fn().mockReturnThis(),
   from: jest.fn().mockReturnThis(),
   getQuery: jest.fn().mockReturnValue('(SELECT 1)'),
   getManyAndCount: mockGetManyAndCount,
+  getRawMany: mockGetRawMany,
 };
 
 const mockTicketRepo = {
@@ -269,7 +275,7 @@ describe('TicketsService', () => {
       });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'ticket.projectId = :projectId',
+        'ticket.project = :projectId',
         { projectId: mockProject.id },
       );
     });

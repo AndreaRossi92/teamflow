@@ -5,9 +5,16 @@ import { STATUS_COLOR } from "../const/tickets";
 
 type TicketStatusBadgeProps = {
   status: TicketStatus;
+  count?: number;
 };
 
-export function TicketStatusBadge({ status }: TicketStatusBadgeProps) {
+export function TicketStatusBadge({ status, count }: TicketStatusBadgeProps) {
   const { t } = useTranslation("ticket");
-  return <Chip size="small" label={t(status)} color={STATUS_COLOR[status]} />;
+  return (
+    <Chip
+      size="small"
+      label={count !== undefined ? `${count} ${t(status)}` : t(status)}
+      color={STATUS_COLOR[status]}
+    />
+  );
 }

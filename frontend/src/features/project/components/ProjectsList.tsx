@@ -54,6 +54,7 @@ export default function ProjectsList({
                   <Typography>{project.name}</Typography>
                 </Stack>
               }
+              secondary={project.description}
             />
           </ListItemButton>
           {!!actions && (

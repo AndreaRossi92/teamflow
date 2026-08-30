@@ -1,5 +1,10 @@
 import type { PaginatedResponse } from "../../types/paginatedResponse";
-import type { AssignableUser, Project, ProjectFilters } from "./types/project";
+import type {
+  AssignableUser,
+  Project,
+  ProjectDashboard,
+  ProjectFilters,
+} from "./types/project";
 import type {
   ProjectCreateFormValues,
   ProjectEditFormValues,
@@ -100,5 +105,10 @@ export async function projectAssignUsers(
 export async function deleteProject(id: string): Promise<void> {
   const response = await api.delete<void>(`/projects/${id}`);
 
+  return response.data;
+}
+
+export async function projectDashboard(): Promise<ProjectDashboard[]> {
+  const response = await api.get("/projects/workload");
   return response.data;
 }

@@ -38,3 +38,7 @@ export type AssignableUser = Pick<
 > & {
   isMember: boolean;
 };
+
+export type TicketDashboard = User & {
+  ticketBreakdown: Record<TicketStatus, Record<TicketPriority, number>>;
+};

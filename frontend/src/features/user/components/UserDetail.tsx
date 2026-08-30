@@ -6,12 +6,12 @@ import {
   Divider,
   Box,
   Stack,
-  Chip,
 } from "@mui/material";
 import type { User } from "../types/user";
 import { formatDateTime } from "../../../formatters/date";
 import { useTranslation } from "react-i18next";
 import ActiveDot from "../../../components/ActiveDot";
+import { UserRoleBadge } from "./UserRoleBadge";
 
 type UserDetailProps = { user: User };
 
@@ -43,7 +43,7 @@ export default function UserDetail({ user }: UserDetailProps) {
               <Typography variant="h5" gutterBottom>
                 {user.fullName}
               </Typography>
-              <Chip label={t(user.role)} color={user.role} size="small" />
+              <UserRoleBadge role={user.role} />
             </Stack>
           </Stack>
 

@@ -8,6 +8,7 @@ import {
 import { ProjectsService } from './projects.service';
 import { Project } from './project.entity';
 import { User, Role } from '../users/user.entity';
+import { Ticket } from '../tickets/ticket.entity';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { ListProjectsDto } from './dto/list-projects.dto';
 import { ListAssignableUsersDto } from './dto/list-assignable-users.dto';
@@ -68,6 +69,39 @@ const mockProject: Project = {
   updatedAt: new Date(),
 };
 
+const secondProject: Project = {
+  id: 'project-uuid-2',
+  name: 'TeamFlow Mobile',
+  description: 'Mobile app',
+  isActive: true,
+  createdBy: managerEntity,
+  members: [managerEntity],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
+const thirdProject: Project = {
+  id: 'project-uuid-3',
+  name: 'TeamFlow Analytics',
+  description: 'Analytics dashboard',
+  isActive: true,
+  createdBy: managerEntity,
+  members: [managerEntity, devEntity],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
+const inactiveProject: Project = {
+  id: 'project-uuid-4',
+  name: 'TeamFlow Legacy',
+  description: 'Deprecated',
+  isActive: false,
+  createdBy: managerEntity,
+  members: [devEntity],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
 // QueryBuilder mock for findAllForUser (non-admin path)
@@ -108,6 +142,23 @@ const mockUserRepo = {
   find: jest.fn(),
 };
 
+// QueryBuilder mock for the ticket-count aggregates used by getProjectsWorkload
+const mockTicketGetRawMany = jest.fn();
+const mockTicketQueryBuilder = {
+  select: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
+  andWhere: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  innerJoin: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  addGroupBy: jest.fn().mockReturnThis(),
+  getRawMany: mockTicketGetRawMany,
+};
+
+const mockTicketRepo = {
+  createQueryBuilder: jest.fn(() => mockTicketQueryBuilder),
+};
+
 // ─── Module factory ──────────────────────────────────────────────────────────
 
 async function buildModule(): Promise<TestingModule> {
@@ -116,6 +167,7 @@ async function buildModule(): Promise<TestingModule> {
       ProjectsService,
       { provide: getRepositoryToken(Project), useValue: mockProjectRepo },
       { provide: getRepositoryToken(User), useValue: mockUserRepo },
+      { provide: getRepositoryToken(Ticket), useValue: mockTicketRepo },
     ],
   }).compile();
 }
@@ -271,6 +323,373 @@ describe('ProjectsService', () => {
       });
 
       expect(result.hasNextPage).toBe(false);
+    });
+  });
+
+  // ── getProjectsWorkload ────────────────────────────────────────────────────
+
+  describe('getProjectsWorkload', () => {
+    it('should fetch all projects via repo.find (no pagination) for admins', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getProjectsWorkload(adminUser);
+
+      expect(mockProjectRepo.find).toHaveBeenCalledTimes(1);
+      expect(mockProjectRepo.findAndCount).not.toHaveBeenCalled();
+      const calls = mockProjectRepo.find.mock.calls as {
+        take?: unknown;
+        skip?: unknown;
+      }[][];
+      expect(calls[0][0].take).toBeUndefined();
+      expect(calls[0][0].skip).toBeUndefined();
+    });
+
+    it('should use a query builder .getMany() (no pagination) for non-admins', async () => {
+      mockQueryBuilder.getMany.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getProjectsWorkload(managerUser);
+
+      expect(mockProjectRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockQueryBuilder.getMany).toHaveBeenCalledTimes(1);
+      expect(mockQueryBuilder.take).not.toHaveBeenCalled();
+      expect(mockQueryBuilder.skip).not.toHaveBeenCalled();
+    });
+
+    it('should run a single grouped ticket query', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getProjectsWorkload(adminUser);
+
+      expect(mockTicketRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockTicketQueryBuilder.groupBy).toHaveBeenCalledWith(
+        'ticket.project',
+      );
+      expect(mockTicketQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'ticket.status',
+      );
+      expect(mockTicketQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'ticket.priority',
+      );
+    });
+
+    it('should build ticketBreakdown with per-status priority counts', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        {
+          projectId: mockProject.id,
+          status: 'open',
+          priority: 'high',
+          count: '1',
+        },
+        {
+          projectId: mockProject.id,
+          status: 'closed',
+          priority: 'low',
+          count: '10',
+        },
+        {
+          projectId: mockProject.id,
+          status: 'resolved',
+          priority: 'medium',
+          count: '2',
+        },
+      ]);
+
+      const result = await service.getProjectsWorkload(adminUser);
+
+      expect(result[0].ticketBreakdown).toEqual({
+        open: { high: 1, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 2, low: 0 },
+        closed: { high: 0, medium: 0, low: 10 },
+      });
+    });
+
+    it('should default the breakdown and totals to zero for a project with no tickets', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getProjectsWorkload(adminUser);
+
+      expect(result[0].ticketBreakdown).toEqual({
+        open: { high: 0, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 0 },
+      });
+    });
+
+    it('should keep the breakdown isolated per project', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject, secondProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        {
+          projectId: mockProject.id,
+          status: 'open',
+          priority: 'high',
+          count: '5',
+        },
+        {
+          projectId: secondProject.id,
+          status: 'resolved',
+          priority: 'low',
+          count: '2',
+        },
+      ]);
+
+      const result = await service.getProjectsWorkload(adminUser);
+
+      const first = result.find((p) => p.id === mockProject.id);
+      const second = result.find((p) => p.id === secondProject.id);
+
+      expect(first?.ticketBreakdown.open.high).toBe(5);
+      expect(first?.ticketBreakdown.resolved.low).toBe(0);
+      expect(second?.ticketBreakdown.resolved.low).toBe(2);
+      expect(second?.ticketBreakdown.open.high).toBe(0);
+    });
+
+    it('should not query tickets when there are no visible projects', async () => {
+      mockProjectRepo.find.mockResolvedValue([]);
+
+      const result = await service.getProjectsWorkload(adminUser);
+
+      expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
+
+    it('should scope the ticket query to the ids of the visible projects', async () => {
+      mockQueryBuilder.getMany.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getProjectsWorkload(managerUser);
+
+      expect(mockTicketQueryBuilder.where).toHaveBeenCalledWith(
+        'ticket.project IN (:...projectIds)',
+        { projectIds: [mockProject.id] },
+      );
+    });
+
+    it('should return every visible project, not just a page of them', async () => {
+      const manyProjects = Array.from({ length: 47 }, (_, i) => ({
+        ...mockProject,
+        id: `project-${i}`,
+      }));
+      mockProjectRepo.find.mockResolvedValue(manyProjects);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getProjectsWorkload(adminUser);
+
+      expect(result).toHaveLength(47);
+    });
+  });
+
+  // ── getMembersWorkload ──────────────────────────────────────────────────────
+
+  describe('getMembersWorkload', () => {
+    it('should fetch all projects via repo.find for admins', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getMembersWorkload(adminUser);
+
+      expect(mockProjectRepo.find).toHaveBeenCalledTimes(1);
+      expect(mockProjectRepo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('should use a query builder for managers (own projects only)', async () => {
+      mockQueryBuilder.getMany.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getMembersWorkload(managerUser);
+
+      expect(mockProjectRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockProjectRepo.find).not.toHaveBeenCalled();
+    });
+
+    it('should use a query builder for devs (own projects only)', async () => {
+      mockQueryBuilder.getMany.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getMembersWorkload(devUser);
+
+      expect(mockProjectRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    });
+
+    it('should deduplicate members shared across multiple projects', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject, secondProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      // managerEntity è membro sia di mockProject che di secondProject
+      const managerEntries = result.filter((u) => u.id === managerEntity.id);
+      expect(managerEntries).toHaveLength(1);
+    });
+
+    it('should return every distinct member across visible projects', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject, thirdProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      expect(result.map((u) => u.id).sort()).toEqual(
+        [managerEntity.id, devEntity.id].sort(),
+      );
+    });
+
+    it('should strip passwordHash from returned members', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      expect(result[0]).not.toHaveProperty('passwordHash');
+    });
+
+    it('should query tickets joined on assignees', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getMembersWorkload(adminUser);
+
+      expect(mockTicketRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockTicketQueryBuilder.innerJoin).toHaveBeenCalledWith(
+        'ticket.assignees',
+        'assignee',
+      );
+      expect(mockTicketQueryBuilder.groupBy).toHaveBeenCalledWith(
+        'assignee.id',
+      );
+      expect(mockTicketQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'ticket.status',
+      );
+      expect(mockTicketQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'ticket.priority',
+      );
+    });
+
+    it('should scope the ticket query to active project ids and member ids', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getMembersWorkload(adminUser);
+
+      expect(mockTicketQueryBuilder.where).toHaveBeenCalledWith(
+        'ticket.project IN (:...projectIds)',
+        { projectIds: [mockProject.id] },
+      );
+      expect(mockTicketQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'assignee.id IN (:...memberIds)',
+        { memberIds: [managerEntity.id] },
+      );
+    });
+
+    it('should exclude inactive projects from the ticket count but keep their members', async () => {
+      mockProjectRepo.find.mockResolvedValue([inactiveProject]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      // Nessuna query ticket: non ci sono progetti attivi
+      expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
+      // Ma il membro del progetto inattivo compare comunque, con breakdown a zero
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(devEntity.id);
+      expect(result[0].ticketBreakdown).toEqual({
+        open: { high: 0, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 0 },
+      });
+    });
+
+    it('should build ticketBreakdown with per-status priority counts', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        {
+          userId: managerEntity.id,
+          status: 'open',
+          priority: 'high',
+          count: '3',
+        },
+        {
+          userId: managerEntity.id,
+          status: 'closed',
+          priority: 'low',
+          count: '7',
+        },
+      ]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      expect(result[0].ticketBreakdown).toEqual({
+        open: { high: 3, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 7 },
+      });
+    });
+
+    it('should default the breakdown to zero for a member with no tickets', async () => {
+      mockProjectRepo.find.mockResolvedValue([mockProject]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      expect(result[0].ticketBreakdown).toEqual({
+        open: { high: 0, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 0 },
+      });
+    });
+
+    it('should keep the breakdown isolated per member', async () => {
+      mockProjectRepo.find.mockResolvedValue([thirdProject]); // members: manager + dev
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        {
+          userId: managerEntity.id,
+          status: 'open',
+          priority: 'high',
+          count: '4',
+        },
+        {
+          userId: devEntity.id,
+          status: 'resolved',
+          priority: 'low',
+          count: '1',
+        },
+      ]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      const manager = result.find((u) => u.id === managerEntity.id);
+      const dev = result.find((u) => u.id === devEntity.id);
+
+      expect(manager?.ticketBreakdown.open.high).toBe(4);
+      expect(manager?.ticketBreakdown.resolved.low).toBe(0);
+      expect(dev?.ticketBreakdown.resolved.low).toBe(1);
+      expect(dev?.ticketBreakdown.open.high).toBe(0);
+    });
+
+    it('should not query tickets when there are no visible projects', async () => {
+      mockProjectRepo.find.mockResolvedValue([]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
+
+    it('should return an empty array when visible projects have no members', async () => {
+      const emptyProject: Project = { ...mockProject, members: [] };
+      mockProjectRepo.find.mockResolvedValue([emptyProject]);
+
+      const result = await service.getMembersWorkload(adminUser);
+
+      expect(result).toEqual([]);
+      expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
     });
   });
 

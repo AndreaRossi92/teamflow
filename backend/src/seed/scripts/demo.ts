@@ -52,4 +52,4 @@ async function bootstrap(): Promise<void> {
   }
 }
 
-bootstrap();
+bootstrap().catch(console.error);

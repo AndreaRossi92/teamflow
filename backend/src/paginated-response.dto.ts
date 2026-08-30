@@ -8,7 +8,9 @@ export interface Paginated<T> {
   hasNextPage: boolean;
 }
 
-export function PaginatedResponseDto<T>(ItemClass: new (...args: any[]) => T) {
+export function PaginatedResponseDto<T>(
+  ItemClass: new (...args: unknown[]) => T,
+) {
   abstract class PaginatedResponse {
     @ApiProperty({ type: [ItemClass] })
     data!: T[];

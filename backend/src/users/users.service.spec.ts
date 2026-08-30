@@ -11,6 +11,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ListUsersDto } from './dto/list-users.dto';
 import * as bcrypt from 'bcrypt';
+import { Ticket } from '../tickets/ticket.entity';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn(),
@@ -29,15 +30,52 @@ const mockUser: User = {
   updatedAt: new Date(),
 };
 
+const otherUser: User = {
+  id: 'uuid-456',
+  email: 'manager@teamflow.com',
+  fullName: 'Manager User',
+  passwordHash: 'hashed-password',
+  role: Role.MANAGER,
+  isActive: true,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 // ─── Mocks ───────────────────────────────────────────────────────────────────
+const mockUserGetRawMany = jest.fn();
+const mockUserQueryBuilder = {
+  select: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  addGroupBy: jest.fn().mockReturnThis(),
+  getRawMany: mockUserGetRawMany,
+};
 
 const mockUserRepo = {
   findOne: jest.fn(),
   findAndCount: jest.fn(),
+  find: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+  createQueryBuilder: jest.fn(() => mockUserQueryBuilder),
+};
+
+// QueryBuilder mock per l'aggregato ticket-breakdown per utente
+const mockTicketGetRawMany = jest.fn();
+const mockTicketQueryBuilder = {
+  innerJoin: jest.fn().mockReturnThis(),
+  select: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  addGroupBy: jest.fn().mockReturnThis(),
+  getRawMany: mockTicketGetRawMany,
+};
+
+const mockTicketRepo = {
+  createQueryBuilder: jest.fn(() => mockTicketQueryBuilder),
 };
 
 // ─── Module factory ──────────────────────────────────────────────────────────
@@ -47,6 +85,7 @@ async function buildModule(): Promise<TestingModule> {
     providers: [
       UsersService,
       { provide: getRepositoryToken(User), useValue: mockUserRepo },
+      { provide: getRepositoryToken(Ticket), useValue: mockTicketRepo },
     ],
   }).compile();
 }
@@ -173,6 +212,335 @@ describe('UsersService', () => {
     });
   });
 
+  // ── getUsersWorkload ──────────────────────────────────────────────
+
+  describe('getUsersWorkload', () => {
+    it('should fetch only active users via repo.find', async () => {
+      mockUserRepo.find.mockResolvedValue([mockUser]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUsersWorkload();
+
+      expect(mockUserRepo.find).toHaveBeenCalledTimes(1);
+      const calls = mockUserRepo.find.mock.calls as {
+        where: { isActive?: unknown };
+      }[][];
+      expect(calls[0][0].where.isActive).toBe(true);
+    });
+
+    it('should run a single grouped ticket query joined on assignees', async () => {
+      mockUserRepo.find.mockResolvedValue([mockUser]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUsersWorkload();
+
+      expect(mockTicketRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockTicketQueryBuilder.innerJoin).toHaveBeenCalledWith(
+        'ticket.assignees',
+        'assignee',
+      );
+      expect(mockTicketQueryBuilder.groupBy).toHaveBeenCalledWith(
+        'assignee.id',
+      );
+      expect(mockTicketQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'ticket.status',
+      );
+      expect(mockTicketQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'ticket.priority',
+      );
+    });
+
+    it('should scope the ticket query to the ids of the active users', async () => {
+      mockUserRepo.find.mockResolvedValue([mockUser]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUsersWorkload();
+
+      expect(mockTicketQueryBuilder.where).toHaveBeenCalledWith(
+        'assignee.id IN (:...userIds)',
+        { userIds: [mockUser.id] },
+      );
+    });
+
+    it('should build ticketBreakdown with per-status priority counts', async () => {
+      mockUserRepo.find.mockResolvedValue([mockUser]);
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        { userId: mockUser.id, status: 'open', priority: 'high', count: '1' },
+        { userId: mockUser.id, status: 'closed', priority: 'low', count: '10' },
+        {
+          userId: mockUser.id,
+          status: 'resolved',
+          priority: 'medium',
+          count: '2',
+        },
+      ]);
+
+      const result = await service.getUsersWorkload();
+
+      expect(result[0].ticketBreakdown).toEqual({
+        open: { high: 1, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 2, low: 0 },
+        closed: { high: 0, medium: 0, low: 10 },
+      });
+    });
+
+    it('should default the breakdown and totals to zero for a user with no assigned tickets', async () => {
+      mockUserRepo.find.mockResolvedValue([mockUser]);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getUsersWorkload();
+
+      expect(result[0].ticketBreakdown).toEqual({
+        open: { high: 0, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 0 },
+      });
+    });
+
+    it('should keep the breakdown isolated per user', async () => {
+      mockUserRepo.find.mockResolvedValue([mockUser, otherUser]);
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        { userId: mockUser.id, status: 'open', priority: 'high', count: '5' },
+        {
+          userId: otherUser.id,
+          status: 'resolved',
+          priority: 'low',
+          count: '2',
+        },
+      ]);
+
+      const result = await service.getUsersWorkload();
+
+      const first = result.find((u) => u.id === mockUser.id);
+      const second = result.find((u) => u.id === otherUser.id);
+
+      expect(first?.ticketBreakdown.open.high).toBe(5);
+      expect(first?.ticketBreakdown.resolved.low).toBe(0);
+      expect(second?.ticketBreakdown.resolved.low).toBe(2);
+      expect(second?.ticketBreakdown.open.high).toBe(0);
+    });
+
+    it('should not query tickets when there are no active users', async () => {
+      mockUserRepo.find.mockResolvedValue([]);
+
+      const result = await service.getUsersWorkload();
+
+      expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
+
+    it('should count a ticket once per assignee when it has multiple assignees', async () => {
+      // Simula un ticket condiviso: la query raggruppata per assignee.id
+      // produce una riga per ciascun assegnatario dello stesso ticket.
+      mockUserRepo.find.mockResolvedValue([mockUser, otherUser]);
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        {
+          userId: mockUser.id,
+          status: 'open',
+          priority: 'medium',
+          count: '1',
+        },
+        {
+          userId: otherUser.id,
+          status: 'open',
+          priority: 'medium',
+          count: '1',
+        },
+      ]);
+
+      const result = await service.getUsersWorkload();
+
+      const first = result.find((u) => u.id === mockUser.id);
+      const second = result.find((u) => u.id === otherUser.id);
+
+      expect(first?.ticketBreakdown.open.medium).toBe(1);
+      expect(second?.ticketBreakdown.open.medium).toBe(1);
+    });
+  });
+
+  // ── getUserWorkload ───────────────────────────────────────────────
+
+  describe('getUserWorkload', () => {
+    it('should throw NotFoundException when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.getUserWorkload('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should not query tickets when the user does not exist', async () => {
+      mockUserRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.getUserWorkload('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('should query tickets joined on assignees, scoped to the given user id', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUserWorkload(mockUser.id);
+
+      expect(mockTicketRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockTicketQueryBuilder.innerJoin).toHaveBeenCalledWith(
+        'ticket.assignees',
+        'assignee',
+      );
+      expect(mockTicketQueryBuilder.where).toHaveBeenCalledWith(
+        'assignee.id = :userId',
+        { userId: mockUser.id },
+      );
+      expect(mockTicketQueryBuilder.groupBy).toHaveBeenCalledWith(
+        'ticket.status',
+      );
+      expect(mockTicketQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'ticket.priority',
+      );
+    });
+
+    it('should build ticketBreakdown with per-status priority counts', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+      mockTicketGetRawMany.mockResolvedValueOnce([
+        { status: 'open', priority: 'high', count: '2' },
+        { status: 'inProgress', priority: 'medium', count: '4' },
+        { status: 'closed', priority: 'low', count: '9' },
+      ]);
+
+      const result = await service.getUserWorkload(mockUser.id);
+
+      expect(result.ticketBreakdown).toEqual({
+        open: { high: 2, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 4, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 9 },
+      });
+    });
+
+    it('should default the breakdown to zero when the user has no assigned tickets', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getUserWorkload(mockUser.id);
+
+      expect(result.ticketBreakdown).toEqual({
+        open: { high: 0, medium: 0, low: 0 },
+        inProgress: { high: 0, medium: 0, low: 0 },
+        resolved: { high: 0, medium: 0, low: 0 },
+        closed: { high: 0, medium: 0, low: 0 },
+      });
+    });
+
+    it('should return the requested user data alongside the breakdown', async () => {
+      mockUserRepo.findOne.mockResolvedValue(mockUser);
+      mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getUserWorkload(mockUser.id);
+
+      expect(result.id).toBe(mockUser.id);
+      expect(result.fullName).toBe(mockUser.fullName);
+      expect(result.email).toBe(mockUser.email);
+    });
+  });
+
+  // ── getUsersBreakdown ─────────────────────────────────────────────────────
+
+  describe('getUsersBreakdown', () => {
+    it('should run a single grouped query by role and isActive', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUsersBreakdown();
+
+      expect(mockUserRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mockUserQueryBuilder.groupBy).toHaveBeenCalledWith('user.role');
+      expect(mockUserQueryBuilder.addGroupBy).toHaveBeenCalledWith(
+        'user.isActive',
+      );
+    });
+
+    it('should return an entry for every role, even with no users', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([]);
+
+      const result = await service.getUsersBreakdown();
+
+      expect(result.map((r) => r.role).sort()).toEqual(
+        Object.values(Role).sort(),
+      );
+      expect(result.every((r) => r.active === 0 && r.inactive === 0)).toBe(
+        true,
+      );
+    });
+
+    it('should count active users per role', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([
+        { role: Role.DEV, isActive: true, count: '5' },
+        { role: Role.MANAGER, isActive: true, count: '2' },
+      ]);
+
+      const result = await service.getUsersBreakdown();
+
+      const dev = result.find((r) => r.role === Role.DEV);
+      const manager = result.find((r) => r.role === Role.MANAGER);
+      expect(dev?.active).toBe(5);
+      expect(manager?.active).toBe(2);
+    });
+
+    it('should count inactive users per role', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([
+        { role: Role.DEV, isActive: false, count: '3' },
+      ]);
+
+      const result = await service.getUsersBreakdown();
+
+      const dev = result.find((r) => r.role === Role.DEV);
+      expect(dev?.inactive).toBe(3);
+      expect(dev?.active).toBe(0);
+    });
+
+    it('should keep active and inactive counts isolated per role', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([
+        { role: Role.DEV, isActive: true, count: '4' },
+        { role: Role.DEV, isActive: false, count: '1' },
+        { role: Role.ADMIN, isActive: true, count: '1' },
+      ]);
+
+      const result = await service.getUsersBreakdown();
+
+      const dev = result.find((r) => r.role === Role.DEV);
+      const admin = result.find((r) => r.role === Role.ADMIN);
+      expect(dev).toMatchObject({ active: 4, inactive: 1 });
+      expect(admin).toMatchObject({ active: 1, inactive: 0 });
+    });
+
+    it('should handle isActive coming back as a string or numeric flag from the driver', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([
+        { role: Role.DEV, isActive: 'true', count: '2' },
+        { role: Role.DEV, isActive: '1', count: '1' },
+        { role: Role.DEV, isActive: 'false', count: '5' },
+      ]);
+
+      const result = await service.getUsersBreakdown();
+
+      const dev = result.find((r) => r.role === Role.DEV);
+      expect(dev?.active).toBe(3);
+      expect(dev?.inactive).toBe(5);
+    });
+
+    it('should not call findAndCount or find (uses the query builder only)', async () => {
+      mockUserGetRawMany.mockResolvedValueOnce([]);
+
+      await service.getUsersBreakdown();
+
+      expect(mockUserRepo.findAndCount).not.toHaveBeenCalled();
+      expect(mockUserRepo.find).not.toHaveBeenCalled();
+    });
+  });
+
   // ── createUser ─────────────────────────────────────────────────────────────
 
   describe('createUser', () => {
@@ -185,6 +553,7 @@ describe('UsersService', () => {
 
     beforeEach(() => {
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
+      mockUserRepo.findOne.mockResolvedValue(null);
     });
 
     it('should hash the password with bcrypt before saving', async () => {

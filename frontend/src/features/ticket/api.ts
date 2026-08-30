@@ -2,6 +2,7 @@ import type { PaginatedResponse } from "../../types/paginatedResponse";
 import type {
   AssignableUser,
   Ticket,
+  TicketDashboard,
   TicketFilters,
   TicketStatus,
 } from "./types/ticket";
@@ -104,5 +105,15 @@ export async function ticketAssignUsers(
 
 export async function deleteTicket(id: string): Promise<void> {
   const response = await api.delete<void>(`/tickets/${id}`);
+  return response.data;
+}
+
+export async function ticketDashboard(): Promise<TicketDashboard[]> {
+  const response = await api.get("/projects/members-workload");
+  return response.data;
+}
+
+export async function ticketDevDashboard(): Promise<TicketDashboard> {
+  const response = await api.get("/users/me/workload");
   return response.data;
 }

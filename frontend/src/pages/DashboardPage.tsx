@@ -1,64 +1,126 @@
 import {
-  Alert,
+  Button,
   Card,
-  CardActionArea,
   CardContent,
   CardHeader,
   Grid,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/useAuth";
+import ProjectDashboardChart from "../features/project/components/ProjectDashboardChart";
+import useProjectDashboardQuery from "../features/project/hooks/useProjectDashboardQuery";
+import { ArrowForward } from "@mui/icons-material";
+import TicketDashboardChart from "../features/ticket/components/TicketDashboardChart";
+import useTicketDashboardQuery from "../features/ticket/hooks/useTicketDashboardQuery";
+import useTicketdevDashboardQuery from "../features/ticket/hooks/useTicketDevDashboardQuery";
+import useUserDashboardQuery from "../features/user/hooks/useUserDashboardQuery";
+import UserDashboardChart from "../features/user/components/UserDashboardChart";
 
 export default function DashboardPage() {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("dashboard");
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const projectDashboardQuery = useProjectDashboardQuery();
+  const ticketDashboardQuery = useTicketDashboardQuery();
+  const ticketDevDashboardQuery = useTicketdevDashboardQuery();
+  const userDashboardQuery = useUserDashboardQuery();
 
   return (
     <Grid container spacing={2}>
       {user?.role === "admin" && (
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12 }}>
           <Card>
-            <CardActionArea
-              onClick={() => {
-                navigate("/users");
-              }}
-            >
-              <CardHeader title={t("users")} />
-              <CardContent>
-                <Alert severity="success">{t("openSection")}</Alert>
-              </CardContent>
-            </CardActionArea>
+            <CardHeader
+              title={t("users")}
+              action={
+                <Button
+                  variant="text"
+                  endIcon={<ArrowForward />}
+                  onClick={() => {
+                    navigate("/users");
+                  }}
+                >
+                  {t("list")}
+                </Button>
+              }
+            />
+            <CardContent>
+              <UserDashboardChart
+                userDashboard={userDashboardQuery.data ?? []}
+                width={isSmallScreen ? 200 : 300}
+                height={isSmallScreen ? 200 : 300}
+                loading={userDashboardQuery.isFetching}
+              />
+            </CardContent>
           </Card>
         </Grid>
       )}
-      <Grid size={{ xs: 12, md: 6 }}>
+      <Grid size={{ xs: 12 }}>
         <Card>
-          <CardActionArea
-            onClick={() => {
-              navigate("/projects");
-            }}
-          >
-            <CardHeader title={t("projects")} />
-            <CardContent>
-              <Alert severity="success">{t("openSection")}</Alert>
-            </CardContent>
-          </CardActionArea>
+          <CardHeader
+            title={t("projects")}
+            action={
+              <Button
+                variant="text"
+                endIcon={<ArrowForward />}
+                onClick={() => {
+                  navigate("/projects");
+                }}
+              >
+                {t("list")}
+              </Button>
+            }
+          />
+          <CardContent>
+            <ProjectDashboardChart
+              projectDashboard={projectDashboardQuery.data ?? []}
+              width={isSmallScreen ? 200 : 300}
+              height={isSmallScreen ? 200 : 300}
+              loading={projectDashboardQuery.isFetching}
+            />
+          </CardContent>
         </Card>
       </Grid>
-      <Grid size={{ xs: 12, md: 6 }}>
+      <Grid size={{ xs: 12 }}>
         <Card>
-          <CardActionArea
-            onClick={() => {
-              navigate("/tickets");
-            }}
-          >
-            <CardHeader title={t("tickets")} />
-            <CardContent>
-              <Alert severity="success">{t("openSection")}</Alert>
-            </CardContent>
-          </CardActionArea>
+          <CardHeader
+            title={t("tickets")}
+            action={
+              <Button
+                variant="text"
+                endIcon={<ArrowForward />}
+                onClick={() => {
+                  navigate("/tickets");
+                }}
+              >
+                {t("list")}
+              </Button>
+            }
+          />
+          <CardContent>
+            <TicketDashboardChart
+              ticketDashboard={
+                (user?.role === "dev"
+                  ? ticketDevDashboardQuery.data
+                    ? [ticketDevDashboardQuery.data]
+                    : []
+                  : ticketDashboardQuery.data) ?? []
+              }
+              width={isSmallScreen ? 200 : 300}
+              height={isSmallScreen ? 200 : 300}
+              loading={
+                ticketDashboardQuery.isFetching ||
+                ticketDevDashboardQuery.isFetching
+              }
+            />
+          </CardContent>
         </Card>
       </Grid>
     </Grid>

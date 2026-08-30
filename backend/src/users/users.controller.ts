@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -32,6 +33,9 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthService } from '../auth/auth.service';
 import { ListUsersDto } from './dto/list-users.dto';
 import { Paginated, PaginatedResponseDto } from '../paginated-response.dto';
+import { RoleBreakdownDto, UserDashboardDto } from './dto/user-dashboard.dto';
+import { JwtUser } from '../auth/strategies/jwt.strategy';
+import { Request } from 'express';
 
 class PaginatedUsersResponse extends PaginatedResponseDto(User) {}
 
@@ -51,6 +55,21 @@ export class UsersController {
   @ApiOkResponse({ type: PaginatedUsersResponse })
   findAll(@Query() query: ListUsersDto): Promise<Paginated<User>> {
     return this.usersService.findAll(query);
+  }
+
+  @Get('me/workload')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.DEV)
+  @ApiOperation({ summary: 'Logged user workload' })
+  @ApiOkResponse({ type: UserDashboardDto })
+  getMyWorkload(@Req() req: Request): Promise<UserDashboardDto> {
+    return this.usersService.getUserWorkload((req.user as JwtUser).id);
+  }
+
+  @Get('breakdown')
+  @ApiOperation({ summary: 'Users breakdown by role and active state' })
+  @ApiOkResponse({ type: RoleBreakdownDto, isArray: true })
+  getBreakdown(): Promise<RoleBreakdownDto[]> {
+    return this.usersService.getUsersBreakdown();
   }
 
   @Get(':id')

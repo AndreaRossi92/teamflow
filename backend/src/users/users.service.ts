@@ -7,19 +7,141 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from './user.entity';
+import { Role, User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ListUsersDto } from './dto/list-users.dto';
 import { ErrorCode } from '../app-error.codes';
 import { Paginated } from '../paginated-response.dto';
+import { Ticket, TicketPriority, TicketStatus } from '../tickets/ticket.entity';
+import {
+  emptyRoleBreakdown,
+  emptyTicketBreakdown,
+  RoleBreakdownDto,
+  UserDashboardDto,
+} from './dto/user-dashboard.dto';
 
+interface UserTicketBreakdownRow {
+  userId: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  count: string;
+}
+
+interface RoleCountRow {
+  role: Role;
+  isActive: boolean | string; // driver-dependent: postgres boolean, sqlite 0/1, ecc.
+  count: string;
+}
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly repo: Repository<User>,
+    @InjectRepository(Ticket)
+    private readonly ticketRepo: Repository<Ticket>,
   ) {}
+
+  async getUsersWorkload(): Promise<UserDashboardDto[]> {
+    const users = await this.repo.find({
+      where: { isActive: true },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      order: { fullName: 'ASC' },
+    });
+
+    if (users.length === 0) return [];
+
+    const userIds = users.map((u) => u.id);
+
+    const rows = await this.ticketRepo
+      .createQueryBuilder('ticket')
+      .innerJoin('ticket.assignees', 'assignee')
+      .select('assignee.id', 'userId')
+      .addSelect('ticket.status', 'status')
+      .addSelect('ticket.priority', 'priority')
+      .addSelect('COUNT(*)', 'count')
+      .where('assignee.id IN (:...userIds)', { userIds })
+      .groupBy('assignee.id')
+      .addGroupBy('ticket.status')
+      .addGroupBy('ticket.priority')
+      .getRawMany<UserTicketBreakdownRow>();
+
+    const breakdownByUser = new Map<
+      string,
+      Record<TicketStatus, Record<TicketPriority, number>>
+    >();
+
+    for (const row of rows) {
+      const breakdown =
+        breakdownByUser.get(row.userId) ?? emptyTicketBreakdown();
+      breakdown[row.status][row.priority] = Number(row.count);
+      breakdownByUser.set(row.userId, breakdown);
+    }
+
+    return users.map((user) => ({
+      ...user,
+      ticketBreakdown: breakdownByUser.get(user.id) ?? emptyTicketBreakdown(),
+    }));
+  }
+
+  async getUserWorkload(id: string): Promise<UserDashboardDto> {
+    const user = await this.findOne(id);
+
+    const rows = await this.ticketRepo
+      .createQueryBuilder('ticket')
+      .innerJoin('ticket.assignees', 'assignee')
+      .select('ticket.status', 'status')
+      .addSelect('ticket.priority', 'priority')
+      .addSelect('COUNT(*)', 'count')
+      .where('assignee.id = :userId', { userId: id })
+      .groupBy('ticket.status')
+      .addGroupBy('ticket.priority')
+      .getRawMany<UserTicketBreakdownRow>();
+
+    const breakdown = emptyTicketBreakdown();
+    for (const row of rows) {
+      breakdown[row.status][row.priority] = Number(row.count);
+    }
+
+    return { ...user, ticketBreakdown: breakdown };
+  }
+
+  async getUsersBreakdown(): Promise<RoleBreakdownDto[]> {
+    const rows = await this.repo
+      .createQueryBuilder('user')
+      .select('user.role', 'role')
+      .addSelect('user.isActive', 'isActive')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('user.role')
+      .addGroupBy('user.isActive')
+      .getRawMany<RoleCountRow>();
+
+    const breakdown = emptyRoleBreakdown();
+
+    for (const row of rows) {
+      const isActive =
+        row.isActive === true ||
+        row.isActive === 'true' ||
+        row.isActive === '1';
+      const count = Number(row.count);
+      if (isActive) breakdown[row.role].active += count;
+      else breakdown[row.role].inactive += count;
+    }
+
+    return Object.entries(breakdown).map(([role, { active, inactive }]) => ({
+      role: role as Role,
+      active,
+      inactive,
+    }));
+  }
 
   async findAll(query: ListUsersDto): Promise<Paginated<User>> {
     const { fullName, role, isActive, page = 1, limit = 20 } = query;

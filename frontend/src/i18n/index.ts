@@ -14,6 +14,8 @@ import itProject from "./locales/it/project.json";
 import enProject from "./locales/en/project.json";
 import itTicket from "./locales/it/ticket.json";
 import enTicket from "./locales/en/ticket.json";
+import itDashboard from "./locales/it/dashboard.json";
+import enDashboard from "./locales/en/dashboard.json";
 
 i18n
   .use(LanguageDetector)
@@ -27,6 +29,7 @@ i18n
         user: enUser,
         project: enProject,
         ticket: enTicket,
+        dashboard: enDashboard,
       },
       it: {
         auth: itAuth,
@@ -35,6 +38,7 @@ i18n
         user: itUser,
         project: itProject,
         ticket: itTicket,
+        dashboard: itDashboard,
       },
     },
     fallbackLng: "en",

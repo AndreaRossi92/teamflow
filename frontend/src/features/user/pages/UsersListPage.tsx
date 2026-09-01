@@ -142,7 +142,7 @@ export default function UserListPage() {
         }}
       />
       <Stack
-        direction={{ xs: "column", sm: "row" }}
+        direction={{ xs: "column", md: "row" }}
         spacing={2}
         sx={{ mb: 2 }}
         divider={<Divider orientation="vertical" flexItem />}

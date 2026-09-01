@@ -40,5 +40,9 @@
   "generate": "Genera",
   "generated": "Generato",
   "demoMode": "Modalità demo — il backend non è attivo. I dati sono simulati, indipendetemente da cosa verrà scritto nell'input di testo",
-  "request": "Richiesta"
+  "request": "Richiesta",
+  "assignedTo": "Assegnato a",
+  "me": "Me",
+  "others": "Altri",
+  "searchByProject": "Cerca per progetto"
 }

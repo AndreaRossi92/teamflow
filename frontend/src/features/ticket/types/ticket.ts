@@ -29,7 +29,8 @@ export type TicketFilters = {
   title?: string;
   status?: TicketStatus | null;
   priority?: TicketPriority | null;
-  projectId?: string | null;
+  projectName?: string;
+  assignedToMe?: "true" | "false" | null;
 };
 
 export type AssignableUser = Pick<

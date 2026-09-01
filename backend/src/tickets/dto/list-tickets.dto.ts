@@ -1,11 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
   IsString,
-  IsUUID,
   Min,
   MinLength,
 } from 'class-validator';
@@ -31,11 +31,28 @@ export class ListTicketsDto {
   priority?: TicketPriority;
 
   @ApiPropertyOptional({
-    description: 'Filter by project',
+    description: 'Filter by project name (case-insensitive, partial match)',
   })
   @IsOptional()
-  @IsUUID('4')
-  projectId?: string;
+  @IsString()
+  @MinLength(1)
+  projectName?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Filter by assignment to the requesting user. true: only tickets assigned to them; ' +
+      'false: only tickets NOT assigned to them; omitted: no filtering by assignment. ' +
+      'Mainly useful for admin and manager, who otherwise see all tickets in their scope — ' +
+      'devs already see only their assigned tickets, so true is redundant and false returns an empty list for them.',
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value as boolean;
+  })
+  @IsBoolean()
+  assignedToMe?: boolean;
 
   @ApiPropertyOptional({ example: 1, default: 1 })
   @IsOptional()

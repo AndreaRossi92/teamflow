@@ -29,7 +29,9 @@ export async function ticketsList({
   if (filters?.title) params.append("title", filters.title);
   if (filters?.status) params.append("status", filters.status);
   if (filters?.priority) params.append("priority", filters.priority);
-  if (filters?.projectId) params.append("projectId", filters.projectId);
+  if (filters?.projectName) params.append("projectName", filters.projectName);
+  if (filters?.assignedToMe)
+    params.append("assignedToMe", filters.assignedToMe);
 
   params.set("page", String(page));
   params.set("limit", String(limit));

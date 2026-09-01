@@ -266,17 +266,58 @@ describe('TicketsService', () => {
       );
     });
 
-    it('should apply andWhere for the projectId filter', async () => {
+    it('should apply andWhere for the projectName filter', async () => {
       mockGetManyAndCount.mockResolvedValue([[], 0]);
 
       await service.findAllForUser(adminUser, {
         ...baseQuery,
-        projectId: mockProject.id,
+        projectName: 'flow',
       });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'ticket.project = :projectId',
-        { projectId: mockProject.id },
+        'project.name ILIKE :projectName',
+        { projectName: '%flow%' },
+      );
+    });
+
+    it('should not apply the assignedToMe filter when omitted', async () => {
+      mockGetManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(adminUser, baseQuery);
+
+      expect(mockQueryBuilder.setParameter).not.toHaveBeenCalledWith(
+        'assignedUserId',
+        expect.anything(),
+      );
+    });
+
+    it('should apply the assignedToMe=false filter as NOT IN', async () => {
+      mockGetManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(adminUser, {
+        ...baseQuery,
+        assignedToMe: false,
+      });
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('NOT IN'),
+      );
+      expect(mockQueryBuilder.setParameter).toHaveBeenCalledWith(
+        'assignedUserId',
+        adminUser.id,
+      );
+    });
+
+    it('should apply the assignedToMe=true filter as IN', async () => {
+      mockGetManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(adminUser, {
+        ...baseQuery,
+        assignedToMe: true,
+      });
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringMatching(/ticket\.id IN \(/),
       );
     });
 

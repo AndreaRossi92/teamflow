@@ -40,5 +40,9 @@
   "generate": "Generate",
   "generated": "Generated",
   "demoMode": "Demo mode — running without backend. Ticket data is mocked, regardless of what is written in the input text.",
-  "request": "Request"
+  "request": "Request",
+  "assignedTo": "Assigned to",
+  "me": "Me",
+  "others": "Others",
+  "searchByProject": "Search by project"
 }

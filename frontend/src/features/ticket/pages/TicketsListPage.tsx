@@ -35,8 +35,13 @@ export default function TicketsListPage() {
 
   const [title, setTitle] = useState("");
   const [debouncedTitle] = useDebounce(title, 400);
+  const [project, setProject] = useState("");
+  const [debouncedProject] = useDebounce(project, 400);
   const [status, setStatus] = useState<TicketStatus | null>(null);
   const [priority, setPriority] = useState<TicketPriority | null>(null);
+  const [assignedToMe, setAssignedToMe] = useState<"true" | "false" | null>(
+    null,
+  );
 
   const {
     data,
@@ -47,8 +52,10 @@ export default function TicketsListPage() {
     isError,
   } = useTicketsListQuery({
     title: debouncedTitle || undefined,
+    projectName: debouncedProject || undefined,
     status,
     priority,
+    assignedToMe,
   });
 
   const tickets =
@@ -118,8 +125,29 @@ export default function TicketsListPage() {
         }}
       />
 
+      <TextField
+        fullWidth
+        size="small"
+        placeholder={t("searchByProject")}
+        label={t("project")}
+        value={project}
+        onChange={(e) => setProject(e.target.value)}
+        sx={{ mb: 2 }}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Icon>
+                  <SearchIcon />
+                </Icon>
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+
       <Stack
-        direction={{ xs: "column", sm: "row" }}
+        direction={{ xs: "column", md: "row" }}
         spacing={2}
         sx={{ mb: 2 }}
         divider={<Divider orientation="vertical" flexItem />}
@@ -191,6 +219,52 @@ export default function TicketsListPage() {
                 {t(p)}
               </ToggleButton>
             ))}
+          </ToggleButtonGroup>
+        </Box>
+
+        <Box>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mb: 0.5, display: "block" }}
+          >
+            {t("assignedTo")}
+          </Typography>
+          <ToggleButtonGroup
+            value={assignedToMe}
+            exclusive
+            onChange={(_, v) => setAssignedToMe(v === "ALL" ? null : v)}
+            size="small"
+          >
+            <ToggleButton value="ALL">{t("all")}</ToggleButton>
+            <ToggleButton
+              value={"true"}
+              sx={{
+                "&.Mui-selected": {
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
+                },
+              }}
+            >
+              {t("me")}
+            </ToggleButton>
+            <ToggleButton
+              value={"false"}
+              sx={{
+                "&.Mui-selected": {
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
+                },
+              }}
+            >
+              {t("others")}
+            </ToggleButton>
           </ToggleButtonGroup>
         </Box>
       </Stack>

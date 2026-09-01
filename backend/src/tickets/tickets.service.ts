@@ -35,7 +35,15 @@ export class TicketsService {
     requestingUser: JwtUser,
     query: ListTicketsDto,
   ): Promise<Paginated<Ticket>> {
-    const { title, status, priority, projectId, page = 1, limit = 20 } = query;
+    const {
+      title,
+      status,
+      priority,
+      projectName,
+      assignedToMe,
+      page = 1,
+      limit = 20,
+    } = query;
     const skip = (page - 1) * limit;
 
     const qb = this.ticketRepo
@@ -72,6 +80,18 @@ export class TicketsService {
 
     qb.setParameter('userId', requestingUser.id);
 
+    if (assignedToMe !== undefined) {
+      const sub = qb
+        .subQuery()
+        .select('ta2.ticketId')
+        .from('ticket_assignees', 'ta2')
+        .where('ta2.userId = :assignedUserId')
+        .getQuery();
+
+      qb.andWhere(`ticket.id ${assignedToMe ? 'IN' : 'NOT IN'} ${sub}`);
+      qb.setParameter('assignedUserId', requestingUser.id);
+    }
+
     if (title !== undefined) {
       qb.andWhere('ticket.title ILIKE :title', { title: `%${title}%` });
     }
@@ -81,8 +101,10 @@ export class TicketsService {
     if (priority !== undefined) {
       qb.andWhere('ticket.priority = :priority', { priority });
     }
-    if (projectId !== undefined) {
-      qb.andWhere('ticket.project = :projectId', { projectId });
+    if (projectName !== undefined) {
+      qb.andWhere('project.name ILIKE :projectName', {
+        projectName: `%${projectName}%`,
+      });
     }
     qb.andWhere('project.isActive = :isActiveProject', {
       isActiveProject: true,

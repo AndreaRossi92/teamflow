@@ -42,6 +42,7 @@ export default function TicketDashboardChart({
   const { user: loggedUser } = useAuth();
 
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   const INNER_RADIUS = isSmallScreen ? 50 : 80;
   const OUTER_RADIUS = isSmallScreen ? 80 : 110;
@@ -227,7 +228,7 @@ export default function TicketDashboardChart({
             flexWrap: "nowrap",
             width: "100%",
             height: "100%",
-            maxHeight: isSmallScreen ? 200 : 480,
+            maxHeight: isMediumScreen ? 240 : 480,
             maxWidth: 600,
           }}
         >

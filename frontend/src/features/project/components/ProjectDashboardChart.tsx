@@ -47,6 +47,7 @@ export default function ProjectDashboardChart({
   const navigate = useNavigate();
 
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   const INNER_RADIUS = isSmallScreen ? 50 : 80;
   const OUTER_RADIUS = isSmallScreen ? 80 : 110;
@@ -287,7 +288,7 @@ export default function ProjectDashboardChart({
           flexWrap: "nowrap",
           width: "100%",
           height: "100%",
-          maxHeight: isSmallScreen ? 200 : 500,
+          maxHeight: isMediumScreen ? 250 : 500,
           maxWidth: 600,
         }}
       >

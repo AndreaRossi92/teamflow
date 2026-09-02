@@ -4,6 +4,8 @@ import {
   CardContent,
   CardHeader,
   Grid,
+  Stack,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -12,7 +14,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/useAuth";
 import ProjectDashboardChart from "../features/project/components/ProjectDashboardChart";
 import useProjectDashboardQuery from "../features/project/hooks/useProjectDashboardQuery";
-import { ArrowForward } from "@mui/icons-material";
+import {
+  ArrowForward,
+  Group,
+  Folder,
+  ConfirmationNumber,
+} from "@mui/icons-material";
 import TicketDashboardChart from "../features/ticket/components/TicketDashboardChart";
 import useTicketDashboardQuery from "../features/ticket/hooks/useTicketDashboardQuery";
 import useTicketdevDashboardQuery from "../features/ticket/hooks/useTicketDevDashboardQuery";
@@ -38,7 +45,16 @@ export default function DashboardPage() {
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
-              title={t("users")}
+              title={
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{ alignItems: "center" }}
+                >
+                  <Group fontSize="large" />
+                  <Typography variant="h5">{t("users")}</Typography>
+                </Stack>
+              }
               action={
                 <Button
                   variant="text"
@@ -65,7 +81,12 @@ export default function DashboardPage() {
       <Grid size={{ xs: 12 }}>
         <Card>
           <CardHeader
-            title={t("projects")}
+            title={
+              <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                <Folder fontSize="large" />
+                <Typography variant="h5">{t("projects")}</Typography>
+              </Stack>
+            }
             action={
               <Button
                 variant="text"
@@ -91,7 +112,12 @@ export default function DashboardPage() {
       <Grid size={{ xs: 12 }}>
         <Card>
           <CardHeader
-            title={t("tickets")}
+            title={
+              <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                <ConfirmationNumber fontSize="large" />
+                <Typography variant="h5">{t("tickets")}</Typography>
+              </Stack>
+            }
             action={
               <Button
                 variant="text"

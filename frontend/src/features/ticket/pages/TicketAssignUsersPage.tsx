@@ -27,8 +27,6 @@ import type { AssignableUser } from "../types/ticket";
 import useTicketAssignUsersMutation from "../hooks/useTicketAssignUsersMutation";
 import { Save } from "@mui/icons-material";
 
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
-
 export default function TicketAssignUsersPage() {
   const { t } = useTranslation("ticket");
   const navigate = useNavigate();
@@ -109,12 +107,6 @@ export default function TicketAssignUsersPage() {
           </IconButton>
         }
       />
-
-      {isDemoMode && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {t("demoList")}
-        </Alert>
-      )}
 
       <Typography variant="h6" sx={{ textAlign: "center", mb: 2 }}>
         {ticket.data?.title}

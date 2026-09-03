@@ -28,8 +28,6 @@ import useReactivateUserMutation from "../hooks/useReactivateUserMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "../../../providers/useSnackbar";
 
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
-
 export default function UserListPage() {
   const { t } = useTranslation("user");
   const navigate = useNavigate();
@@ -114,12 +112,6 @@ export default function UserListPage() {
         }
         BackButtonProps={{ path: "/", replace: true }}
       />
-
-      {isDemoMode && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {t("demoList")}
-        </Alert>
-      )}
 
       <TextField
         fullWidth

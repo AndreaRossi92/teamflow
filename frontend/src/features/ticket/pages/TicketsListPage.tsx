@@ -26,8 +26,6 @@ import type { Ticket, TicketPriority, TicketStatus } from "../types/ticket";
 import { TICKET_PRIORITIES, TICKET_STATUSES } from "../types/ticket";
 import { PRIORITY_COLOR, STATUS_COLOR } from "../const/tickets";
 
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
-
 export default function TicketsListPage() {
   const { t } = useTranslation("ticket");
   const navigate = useNavigate();
@@ -97,12 +95,6 @@ export default function TicketsListPage() {
         }
         BackButtonProps={{ path: "/", replace: true }}
       />
-
-      {isDemoMode && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {t("demoList")}
-        </Alert>
-      )}
 
       <TextField
         fullWidth

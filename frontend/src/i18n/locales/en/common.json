@@ -2,7 +2,6 @@
   "error": "Something went wrong. Please try again.",
   "reset": "Reset",
   "language": "Language",
-  "demoMode": "Demo mode — running without backend. Data is mocked.",
   "demo": "Demo",
   "hidePassword": "Hide password",
   "showPassword": "Show password",
@@ -24,5 +23,6 @@
   "noData": "No data",
   "loading": "Loading",
   "active": "Active",
-  "inactive": "Inactive"
+  "inactive": "Inactive",
+  "back": "Back"
 }

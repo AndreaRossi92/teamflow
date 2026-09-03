@@ -88,7 +88,12 @@ export default function Header() {
           </Button>
           {isDemoMode && (
             <Tooltip title={t("demoMode")}>
-              <Chip label={t("demo")} variant="outlined" />
+              <Chip
+                label={t("demo")}
+                variant="outlined"
+                size="small"
+                color="primary"
+              />
             </Tooltip>
           )}
         </Stack>

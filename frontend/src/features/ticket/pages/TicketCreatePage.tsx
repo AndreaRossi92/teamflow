@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   Button,
   Container,
   Dialog,
@@ -32,8 +31,6 @@ import {
 } from "../../ai/types/generateTicketForm";
 import { GenerateTicketForm } from "../../ai/forms/GenerateTIcketForm";
 import { useState } from "react";
-
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
 export default function TicketCreatePage() {
   const { t } = useTranslation("ticket");
@@ -145,11 +142,6 @@ export default function TicketCreatePage() {
         >
           <DialogTitle>{t("generateWithAI")}</DialogTitle>
           <DialogContent style={{ paddingTop: 10 }}>
-            {isDemoMode && (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                {t("demoMode")}
-              </Alert>
-            )}
             <FormProvider {...generateTicketForm}>
               <GenerateTicketForm
                 onEnter={() => {

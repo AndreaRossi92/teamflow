@@ -27,8 +27,6 @@ import type { AssignableUser } from "../types/project";
 import useProjectAssignUsersMutation from "../hooks/useProjectAssignUsersMutation";
 import { Save } from "@mui/icons-material";
 
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
-
 export default function ProjectAssignUsersPage() {
   const { t } = useTranslation("project");
   const navigate = useNavigate();
@@ -109,12 +107,6 @@ export default function ProjectAssignUsersPage() {
           </IconButton>
         }
       />
-
-      {isDemoMode && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {t("demoList")}
-        </Alert>
-      )}
 
       <Typography variant="h6" sx={{ textAlign: "center", mb: 2 }}>
         {project.data?.name}

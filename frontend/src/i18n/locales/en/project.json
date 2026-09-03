@@ -29,6 +29,5 @@
   "deleted": "Project deleted successfully",
   "noProjectFound": "No projects found",
   "noUsersFound": "No users found",
-  "searchByName": "Search by name",
-  "demoList": "This is a demo environment. Data shown is for demonstration purposes only. Filters and deactivation / reactivation / creation / modification of projects have no effects"
+  "searchByName": "Search by name"
 }

@@ -52,14 +52,6 @@ export default function UserEditPage() {
           <Stack direction="row" spacing={1}>
             <IconButton
               size="small"
-              title={t("resetPassword")}
-              onClick={() => {
-                navigate(`/user/${id}/reset-password`);
-              }}
-              loading={userEditMutation.isPending}
-            ></IconButton>
-            <IconButton
-              size="small"
               title={t("save")}
               onClick={handleSubmit}
               loading={userEditMutation.isPending}

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../../../components/PageHeader";
 import UserDetail from "../components/UserDetail";
 import PageLoader from "../../../components/PageLoader";
-import { Alert, IconButton, Stack } from "@mui/material";
+import { Alert, Button, IconButton, Stack } from "@mui/material";
 import { Edit, SettingsBackupRestore } from "@mui/icons-material";
 import DeleteIconButton from "../../../components/DeleteIconButton";
 import useDeactivateUserMutation from "../hooks/useDeactivateUserMutation";
@@ -107,8 +107,23 @@ export default function UserDetailPage() {
       {!user.isFetching && !user.isError && !!user.data && (
         <>
           <UserDetail user={user.data} />
-          {!user.data.isActive && (
-            <Stack direction="row" sx={{ justifyContent: "center" }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            sx={{
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            spacing={2}
+          >
+            <Button
+              variant="contained"
+              onClick={() => {
+                navigate(`/user/${id}/reset-password`);
+              }}
+            >
+              {t("resetPassword")}
+            </Button>
+            {!user.data.isActive && (
               <DeleteButton
                 onDelete={() =>
                   deleteUserMutation.mutateAsync(user.data.id).then(() => {
@@ -117,8 +132,8 @@ export default function UserDetailPage() {
                   })
                 }
               />
-            </Stack>
-          )}
+            )}
+          </Stack>
         </>
       )}
     </>

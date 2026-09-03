@@ -22,7 +22,7 @@ import {
 } from "@mui/icons-material";
 import TicketDashboardChart from "../features/ticket/components/TicketDashboardChart";
 import useTicketDashboardQuery from "../features/ticket/hooks/useTicketDashboardQuery";
-import useTicketdevDashboardQuery from "../features/ticket/hooks/useTicketDevDashboardQuery";
+import useTicketDevDashboardQuery from "../features/ticket/hooks/useTicketDevDashboardQuery";
 import useUserDashboardQuery from "../features/user/hooks/useUserDashboardQuery";
 import UserDashboardChart from "../features/user/components/UserDashboardChart";
 
@@ -36,7 +36,7 @@ export default function DashboardPage() {
 
   const projectDashboardQuery = useProjectDashboardQuery();
   const ticketDashboardQuery = useTicketDashboardQuery();
-  const ticketDevDashboardQuery = useTicketdevDashboardQuery();
+  const ticketDevDashboardQuery = useTicketDevDashboardQuery();
   const userDashboardQuery = useUserDashboardQuery();
 
   return (

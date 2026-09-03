@@ -3,7 +3,7 @@ import { ticketDevDashboard } from "../api";
 import type { TicketDashboard } from "../types/ticket";
 import { useAuth } from "../../../providers/useAuth";
 
-export default function useTicketdevDashboardQuery() {
+export default function useTicketDevDashboardQuery() {
   const { user } = useAuth();
   return useQuery<TicketDashboard>({
     queryKey: ["ticketDevDashboard"],

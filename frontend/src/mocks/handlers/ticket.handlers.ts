@@ -109,6 +109,25 @@ export const ticketHandlers = [
     },
   ),
 
+  http.patch<{ id: string }, { status: string }>(
+    "/api/tickets/:id/status",
+    async ({ params, request }) => {
+      await delay(300);
+      const ticket = mockTickets.find((t) => t.id === params.id);
+      if (!ticket)
+        return HttpResponse.json(
+          { message: "Ticket not found", error: "Not Found", statusCode: 404 },
+          { status: 404 },
+        );
+      const body = await request.json();
+      return HttpResponse.json({
+        ...ticket,
+        status: body.status ?? ticket.status,
+        updatedAt: new Date(),
+      });
+    },
+  ),
+
   http.delete<{ id: string }>("/api/tickets/:id", async ({ params }) => {
     await delay(300);
     const ticket = mockTickets.find((u) => u.id === params.id);

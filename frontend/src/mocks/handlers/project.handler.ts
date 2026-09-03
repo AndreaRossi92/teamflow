@@ -2,6 +2,10 @@ import { http, HttpResponse, delay } from "msw";
 import { mockProjects } from "../data/project.data";
 import type { Project } from "../../features/project/types/project";
 import { mockUsers } from "../data/user.data";
+import {
+  mockMembersWorkload,
+  mockProjectsWorkload,
+} from "../data/dashboard.data";
 
 export const projectHandlers = [
   http.get("/api/projects", async () => {
@@ -13,6 +17,16 @@ export const projectHandlers = [
       limit: 20,
       hasNexPage: false,
     });
+  }),
+
+  http.get("/api/projects/workload", async () => {
+    await delay(500);
+    return HttpResponse.json(mockProjectsWorkload);
+  }),
+
+  http.get("/api/projects/members-workload", async () => {
+    await delay(500);
+    return HttpResponse.json(mockMembersWorkload);
   }),
 
   http.get<{ id: string }>("/api/projects/:id", async ({ params }) => {

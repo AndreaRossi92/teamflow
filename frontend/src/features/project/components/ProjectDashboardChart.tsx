@@ -344,7 +344,7 @@ export default function ProjectDashboardChart({
                     <LinearProgress
                       variant="determinate"
                       value={
-                        (projectCount(project, { excludeClosed: true }) /
+                        (projectCount(project, { onlyClosed: true }) /
                           projectCount(project)) *
                         100
                       }
@@ -373,10 +373,14 @@ export default function ProjectDashboardChart({
 
 const projectCount = (
   project: ProjectDashboard,
-  config?: { excludeClosed: boolean },
+  config?: { excludeClosed?: boolean; onlyClosed?: boolean },
 ): number =>
   Object.entries(project.ticketBreakdown)
-    .filter(([status]) => (config?.excludeClosed ? status !== "closed" : true))
+    .filter(([status]) => {
+      if (config?.excludeClosed) return status !== "closed";
+      if (config?.onlyClosed) return status === "closed";
+      return true;
+    })
     .reduce(
       (acc, [_status, priorities]) =>
         acc +

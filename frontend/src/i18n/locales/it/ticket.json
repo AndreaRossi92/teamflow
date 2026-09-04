@@ -42,5 +42,7 @@
   "assignedTo": "Assegnato a",
   "me": "Me",
   "others": "Altri",
-  "searchByProject": "Cerca per progetto"
+  "searchByProject": "Cerca per progetto",
+  "mockRequest": "Aggiungere un bottone per esportare il contenuto corrente filtrato come PDF nella pagina dei report",
+  "demoMessage": "Modalità demo - La richiesta e il risultato della IA sono simulati"
 }

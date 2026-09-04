@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import {
+  Alert,
   Button,
   Container,
   Dialog,
@@ -32,6 +33,8 @@ import {
 import { GenerateTicketForm } from "../../ai/forms/GenerateTIcketForm";
 import { useState } from "react";
 
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
+
 export default function TicketCreatePage() {
   const { t } = useTranslation("ticket");
   const { showMessage } = useSnackbar();
@@ -55,7 +58,7 @@ export default function TicketCreatePage() {
   const generateTicketForm = useCustomForm<GenerateTicketFormValues>({
     schema: generateTicketFormSchema,
     defaultValues: {
-      request: "",
+      request: isDemoMode ? t("mockRequest") : "",
     },
   });
 
@@ -142,12 +145,17 @@ export default function TicketCreatePage() {
         >
           <DialogTitle>{t("generateWithAI")}</DialogTitle>
           <DialogContent style={{ paddingTop: 10 }}>
+            {isDemoMode && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {t("demoMessage")}
+              </Alert>
+            )}
             <FormProvider {...generateTicketForm}>
               <GenerateTicketForm
                 onEnter={() => {
                   if (generateTicketForm.formState.isValid) handleGenerate();
                 }}
-                disabled={generateTicketMutation.isPending}
+                disabled={generateTicketMutation.isPending || isDemoMode}
               />
             </FormProvider>
           </DialogContent>

@@ -42,5 +42,7 @@
   "assignedTo": "Assigned to",
   "me": "Me",
   "others": "Others",
-  "searchByProject": "Search by project"
+  "searchByProject": "Search by project",
+  "mockRequest": "Add a button to export the current filtered view as a PDF file on reports page",
+  "demoMessage": "Demo mode - AI request data and result are mocked"
 }

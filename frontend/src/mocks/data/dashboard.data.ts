@@ -33,16 +33,18 @@ function breakdownForTickets(tickets: Ticket[]): TicketBreakdown {
   return breakdown;
 }
 
-export const mockProjectsWorkload = mockProjects.map((project) => ({
-  ...project,
-  ticketBreakdown: breakdownForTickets(
-    mockTickets.filter((t) => t.project.id === project.id),
-  ),
-}));
+export function getProjectsWorkload() {
+  return mockProjects.map((project) => ({
+    ...project,
+    ticketBreakdown: breakdownForTickets(
+      mockTickets.filter((t) => t.project.id === project.id),
+    ),
+  }));
+}
 
-export const mockMembersWorkload: Array<
+export function getMembersWorkload(): Array<
   User & { ticketBreakdown: TicketBreakdown }
-> = (() => {
+> {
   const memberMap = new Map<string, User>();
   mockProjects.forEach((p) => p.members.forEach((m) => memberMap.set(m.id, m)));
 
@@ -52,7 +54,7 @@ export const mockMembersWorkload: Array<
       mockTickets.filter((t) => t.assignees.some((a) => a.id === member.id)),
     ),
   }));
-})();
+}
 
 export function getMockUserWorkload(userId: string) {
   const user = mockUsers.find((u) => u.id === userId);
@@ -66,7 +68,7 @@ export function getMockUserWorkload(userId: string) {
   };
 }
 
-export const mockUsersBreakdown = (() => {
+export function getUsersBreakdown() {
   const roles = [...new Set(mockUsers.map((u) => u.role))];
   return roles.map((role) => {
     const usersWithRole = mockUsers.filter((u) => u.role === role);
@@ -76,4 +78,4 @@ export const mockUsersBreakdown = (() => {
       inactive: usersWithRole.filter((u) => !u.isActive).length,
     };
   });
-})();
+}

@@ -1,6 +1,8 @@
 import { http, HttpResponse, delay } from "msw";
-import { mockAdminUser } from "../data/auth.data";
+import { mockAdminUser, mockUsers } from "../data/user.data";
 import type { ChangePasswordFormValues } from "../../features/auth/types/changePasswordForm";
+
+const MOCK_PASSWORD = "password123";
 
 export const authHandlers = [
   http.post<never, { email: string; password: string }>(
@@ -8,7 +10,10 @@ export const authHandlers = [
     async ({ request }) => {
       await delay(800);
       const { email, password } = await request.json();
-      if (email !== "admin@teamflow.com" || password !== "admin123")
+
+      const user = mockUsers.find((u) => u.email === email);
+
+      if (!user || password !== MOCK_PASSWORD)
         return HttpResponse.json(
           {
             message: "Invalid credentials",
@@ -17,7 +22,8 @@ export const authHandlers = [
           },
           { status: 401 },
         );
-      return HttpResponse.json({ user: mockAdminUser });
+
+      return HttpResponse.json({ user });
     },
   ),
 
@@ -31,7 +37,7 @@ export const authHandlers = [
     async ({ request }) => {
       await delay(500);
       const { currentPassword } = await request.json();
-      if (currentPassword !== "admin123")
+      if (currentPassword !== MOCK_PASSWORD)
         return HttpResponse.json(
           {
             message: "Invalid credentials",
@@ -40,6 +46,7 @@ export const authHandlers = [
           },
           { status: 401 },
         );
+      // Note: logged user not known. Always return mockAdminUser
       return HttpResponse.json({ user: mockAdminUser });
     },
   ),

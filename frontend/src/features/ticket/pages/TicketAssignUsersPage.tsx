@@ -12,6 +12,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import PageHeader from "../../../components/PageHeader";
@@ -32,6 +34,8 @@ export default function TicketAssignUsersPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [fullName, setFullName] = useState("");
   const [debouncedFullName] = useDebounce(fullName, 400);
@@ -153,6 +157,7 @@ export default function TicketAssignUsersPage() {
             onChange={(_, v) => setRole(v === "ALL" ? null : v)}
             size="small"
             disabled={!hasInitialized}
+            orientation={isSmallScreen ? "vertical" : "horizontal"}
           >
             <ToggleButton value="ALL">{t("all")}</ToggleButton>
             {ROLES.map((role) => (

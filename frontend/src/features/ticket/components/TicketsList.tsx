@@ -28,7 +28,7 @@ export default function TicketsList({
   return (
     <List disablePadding dense>
       {tickets.map((ticket) => (
-        <ListItem key={ticket.id} {...listItemProps}>
+        <ListItem key={ticket.id} divider {...listItemProps}>
           <ListItemButton
             sx={{
               flexDirection: { xs: "column", sm: "row" },

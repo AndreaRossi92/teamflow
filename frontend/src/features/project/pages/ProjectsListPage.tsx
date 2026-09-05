@@ -12,6 +12,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Add, Edit, Group, SettingsBackupRestore } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
@@ -35,6 +37,8 @@ export default function ProjectsListPage() {
   const queryClient = useQueryClient();
   const { showMessage } = useSnackbar();
   const { user } = useAuth();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [name, setName] = useState("");
   const [debouncedName] = useDebounce(name, 400);
@@ -156,6 +160,7 @@ export default function ProjectsListPage() {
             exclusive
             onChange={(_, v) => setIsActive(v === "ALL" ? null : v)}
             size="small"
+            orientation={isSmallScreen ? "vertical" : "horizontal"}
           >
             <ToggleButton value="ALL">{t("all")}</ToggleButton>
             <ToggleButton

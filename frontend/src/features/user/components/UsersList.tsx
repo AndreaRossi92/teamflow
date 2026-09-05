@@ -1,5 +1,4 @@
 import {
-  Chip,
   List,
   ListItem,
   ListItemButton,
@@ -12,7 +11,7 @@ import {
 import type { User } from "../types/user";
 import ActiveDot from "../../../components/ActiveDot";
 import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { UserRoleBadge } from "./UserRoleBadge";
 
 type UsersListProps = {
   users: User[];
@@ -27,12 +26,10 @@ export default function UsersList({
   onClick,
   listItemProps,
 }: UsersListProps) {
-  const { t } = useTranslation("user");
-
   return (
     <List disablePadding dense>
       {users.map((user) => (
-        <ListItem key={user.id} {...listItemProps}>
+        <ListItem key={user.id} divider {...listItemProps}>
           <ListItemButton
             sx={{
               flexDirection: { xs: "column", sm: "row" },
@@ -58,9 +55,13 @@ export default function UsersList({
                   <Typography>{user.fullName}</Typography>
                 </Stack>
               }
-              secondary={user.email}
+              secondary={
+                <Typography variant="body2" color="textSecondary">
+                  {user.email}
+                </Typography>
+              }
             />
-            <Chip label={t(user.role)} color={user.role} size="small" />
+            <UserRoleBadge role={user.role} />
           </ListItemButton>
           {!!actions && (
             <ListItemSecondaryAction>{actions(user)}</ListItemSecondaryAction>

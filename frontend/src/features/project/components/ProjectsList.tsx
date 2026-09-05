@@ -28,7 +28,7 @@ export default function ProjectsList({
   return (
     <List disablePadding dense>
       {projects.map((project) => (
-        <ListItem key={project.id} {...listItemProps}>
+        <ListItem key={project.id} divider {...listItemProps}>
           <ListItemButton
             sx={{
               flexDirection: { xs: "column", sm: "row" },
@@ -54,7 +54,11 @@ export default function ProjectsList({
                   <Typography>{project.name}</Typography>
                 </Stack>
               }
-              secondary={project.description}
+              secondary={
+                <Typography variant="body2" color="textSecondary">
+                  {project.description}
+                </Typography>
+              }
             />
           </ListItemButton>
           {!!actions && (

@@ -12,6 +12,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Add, Edit, SettingsBackupRestore } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
@@ -33,6 +35,8 @@ export default function UserListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showMessage } = useSnackbar();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [fullName, setFullName] = useState("");
   const [debouncedFullName] = useDebounce(fullName, 400);
@@ -152,6 +156,7 @@ export default function UserListPage() {
             exclusive
             onChange={(_, v) => setRole(v === "ALL" ? null : v)}
             size="small"
+            orientation={isSmallScreen ? "vertical" : "horizontal"}
           >
             <ToggleButton value="ALL">{t("all")}</ToggleButton>
             {ROLES.map((role) => (
@@ -186,6 +191,7 @@ export default function UserListPage() {
             exclusive
             onChange={(_, v) => setIsActive(v === "ALL" ? null : v)}
             size="small"
+            orientation={isSmallScreen ? "vertical" : "horizontal"}
           >
             <ToggleButton value="ALL">{t("all")}</ToggleButton>
             <ToggleButton
@@ -255,6 +261,8 @@ export default function UserListPage() {
                 <DeleteIconButton
                   dialogTitle={user.fullName}
                   dialogText={t("deactivateConfirm")}
+                  title={t("deactivate")}
+                  deleteLabel={t("deactivate")}
                   onDelete={() =>
                     deactivateUserMutation
                       .mutateAsync(user.id)

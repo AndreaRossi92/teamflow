@@ -12,6 +12,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Add, Edit, Group } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
@@ -30,6 +32,8 @@ export default function TicketsListPage() {
   const { t } = useTranslation("ticket");
   const navigate = useNavigate();
   const { user } = useAuth();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [title, setTitle] = useState("");
   const [debouncedTitle] = useDebounce(title, 400);
@@ -157,6 +161,7 @@ export default function TicketsListPage() {
             exclusive
             onChange={(_, v) => setStatus(v === "ALL" ? null : v)}
             size="small"
+            orientation={isSmallScreen ? "vertical" : "horizontal"}
           >
             <ToggleButton value="ALL">{t("all")}</ToggleButton>
             {TICKET_STATUSES.map((s) => (
@@ -192,6 +197,7 @@ export default function TicketsListPage() {
             exclusive
             onChange={(_, v) => setPriority(v === "ALL" ? null : v)}
             size="small"
+            orientation={isSmallScreen ? "vertical" : "horizontal"}
           >
             <ToggleButton value="ALL">{t("all")}</ToggleButton>
             {TICKET_PRIORITIES.map((p) => (
@@ -227,6 +233,7 @@ export default function TicketsListPage() {
             exclusive
             onChange={(_, v) => setAssignedToMe(v === "ALL" ? null : v)}
             size="small"
+            orientation={isSmallScreen ? "vertical" : "horizontal"}
           >
             <ToggleButton value="ALL">{t("all")}</ToggleButton>
             <ToggleButton

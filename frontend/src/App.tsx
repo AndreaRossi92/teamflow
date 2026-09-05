@@ -22,7 +22,7 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <Suspense fallback={<PageLoader />}>
-              <BrowserRouter>
+              <BrowserRouter basename={import.meta.env.BASE_URL}>
                 <AppContent />
               </BrowserRouter>
             </Suspense>

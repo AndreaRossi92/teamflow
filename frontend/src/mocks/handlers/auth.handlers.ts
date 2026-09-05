@@ -1,6 +1,14 @@
 import { http, HttpResponse, delay } from "msw";
-import { mockAdminUser } from "../data/auth.data";
+import { mockUsers } from "../data/user.data";
+import {
+  clearCurrentUser,
+  getCurrentUser,
+  setCurrentUser,
+} from "../data/auth.data";
 import type { ChangePasswordFormValues } from "../../features/auth/types/changePasswordForm";
+import { unauthorized } from "../data/http.errors";
+
+const MOCK_PASSWORD = "password123";
 
 export const authHandlers = [
   http.post<never, { email: string; password: string }>(
@@ -8,21 +16,21 @@ export const authHandlers = [
     async ({ request }) => {
       await delay(800);
       const { email, password } = await request.json();
-      if (email !== "admin@teamflow.com" || password !== "admin123")
-        return HttpResponse.json(
-          {
-            message: "Invalid credentials",
-            error: "Unauthorized",
-            statusCode: 401,
-          },
-          { status: 401 },
-        );
-      return HttpResponse.json({ user: mockAdminUser });
+
+      const user = mockUsers.find((u) => u.email === email);
+
+      if (!user || password !== MOCK_PASSWORD) {
+        return unauthorized("Invalid credentials");
+      }
+
+      setCurrentUser(user);
+      return HttpResponse.json({ user });
     },
   ),
 
   http.post("/api/auth/logout", async () => {
     await delay(300);
+    clearCurrentUser();
     return HttpResponse.json({ success: true });
   }),
 
@@ -30,17 +38,16 @@ export const authHandlers = [
     "/api/auth/change-password",
     async ({ request }) => {
       await delay(500);
+
+      const currentUser = getCurrentUser();
+      if (!currentUser) return unauthorized();
+
       const { currentPassword } = await request.json();
-      if (currentPassword !== "admin123")
-        return HttpResponse.json(
-          {
-            message: "Invalid credentials",
-            error: "Unauthorized",
-            statusCode: 401,
-          },
-          { status: 401 },
-        );
-      return HttpResponse.json({ user: mockAdminUser });
+      if (currentPassword !== MOCK_PASSWORD) {
+        return unauthorized("Invalid credentials");
+      }
+
+      return HttpResponse.json({ user: currentUser });
     },
   ),
 ];

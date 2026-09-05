@@ -48,7 +48,7 @@ function resolveLanguageCode(lng: string): LanguageCode {
 export default function Header() {
   const { i18n, t } = useTranslation("common");
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const logoutMutation = useLogoutMutation();
 
@@ -70,13 +70,15 @@ export default function Header() {
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          <IconButton
-            onClick={() => {
-              setIsOpenDrawer(!isOpenDrawer);
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
+          {isAuthenticated && (
+            <IconButton
+              onClick={() => {
+                setIsOpenDrawer(!isOpenDrawer);
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
           <Button
             variant="text"
             sx={{ fontWeight: "bold" }}
@@ -88,7 +90,12 @@ export default function Header() {
           </Button>
           {isDemoMode && (
             <Tooltip title={t("demoMode")}>
-              <Chip label={t("demo")} variant="outlined" />
+              <Chip
+                label={t("demo")}
+                variant="outlined"
+                size="small"
+                color="primary"
+              />
             </Tooltip>
           )}
         </Stack>
@@ -181,23 +188,25 @@ export default function Header() {
         <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           <List>
-            <ListItem disablePadding>
-              <ListItemButton
-                sx={{ gap: 1 }}
-                onClick={() => {
-                  navigate("/users");
-                  setIsOpenDrawer(false);
-                }}
-              >
-                <ListItemIcon>
-                  <Group />
-                </ListItemIcon>
-                <ListItemText
-                  primary={t("users")}
-                  slotProps={{ primary: { variant: "h6" } }}
-                />
-              </ListItemButton>
-            </ListItem>
+            {user?.role === "admin" && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  sx={{ gap: 1 }}
+                  onClick={() => {
+                    navigate("/users");
+                    setIsOpenDrawer(false);
+                  }}
+                >
+                  <ListItemIcon>
+                    <Group />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={t("users")}
+                    slotProps={{ primary: { variant: "h6" } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )}
             <ListItem disablePadding>
               <ListItemButton
                 sx={{ gap: 1 }}

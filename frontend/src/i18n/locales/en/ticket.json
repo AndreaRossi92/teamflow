@@ -15,7 +15,6 @@
   "save": "Save",
   "ticket": "Ticket",
   "assignUsers": "Assign users",
-  "demoList": "This is a demo environment. Data shown is for demonstration purposes only. Filters and / creation / modification of projects have no effects",
   "searchByName": "Search by name",
   "name": "Name",
   "role": "Role",
@@ -39,10 +38,11 @@
   "generateWithAI": "Generate with AI",
   "generate": "Generate",
   "generated": "Generated",
-  "demoMode": "Demo mode — running without backend. Ticket data is mocked, regardless of what is written in the input text.",
   "request": "Request",
   "assignedTo": "Assigned to",
   "me": "Me",
   "others": "Others",
-  "searchByProject": "Search by project"
+  "searchByProject": "Search by project",
+  "mockRequest": "Add a button to export the current filtered view as a PDF file on reports page",
+  "demoMessage": "Demo mode - AI request data and result are mocked"
 }

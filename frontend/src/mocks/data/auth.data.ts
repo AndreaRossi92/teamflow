@@ -1,8 +1,15 @@
-import type { AuthUser } from "../../features/auth/types/authUser";
+import type { User } from "../../features/user/types/user";
 
-export const mockAdminUser: AuthUser = {
-  id: "mock-uuid-admin",
-  email: "admin@teamflow.com",
-  role: "admin",
-  fullName: "Admin",
-};
+let currentUser: User | null = null;
+
+export function getCurrentUser(): User | null {
+  return currentUser;
+}
+
+export function setCurrentUser(user: User | null): void {
+  currentUser = user;
+}
+
+export function clearCurrentUser(): void {
+  currentUser = null;
+}

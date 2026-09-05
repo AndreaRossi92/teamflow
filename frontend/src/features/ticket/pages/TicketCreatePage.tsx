@@ -58,7 +58,7 @@ export default function TicketCreatePage() {
   const generateTicketForm = useCustomForm<GenerateTicketFormValues>({
     schema: generateTicketFormSchema,
     defaultValues: {
-      request: "",
+      request: isDemoMode ? t("mockRequest") : "",
     },
   });
 
@@ -147,7 +147,7 @@ export default function TicketCreatePage() {
           <DialogContent style={{ paddingTop: 10 }}>
             {isDemoMode && (
               <Alert severity="info" sx={{ mb: 2 }}>
-                {t("demoMode")}
+                {t("demoMessage")}
               </Alert>
             )}
             <FormProvider {...generateTicketForm}>
@@ -155,7 +155,7 @@ export default function TicketCreatePage() {
                 onEnter={() => {
                   if (generateTicketForm.formState.isValid) handleGenerate();
                 }}
-                disabled={generateTicketMutation.isPending}
+                disabled={generateTicketMutation.isPending || isDemoMode}
               />
             </FormProvider>
           </DialogContent>

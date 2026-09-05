@@ -31,7 +31,7 @@ export default function ResetPasswordPage() {
 
   const resetPasswordMutation = useResetPasswordMutation(id ?? "", {
     onSuccess: () => {
-      showMessage("passwordReset", "success");
+      showMessage(t("passwordReset"), "success");
       navigate(`/user/${id}`, { replace: true });
     },
     onError: () => {

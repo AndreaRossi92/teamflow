@@ -26,6 +26,14 @@ declare module "@mui/material/Chip" {
   }
 }
 
+declare module "@mui/material/Button" {
+  interface ButtonPropsColorOverrides {
+    admin: true;
+    manager: true;
+    dev: true;
+  }
+}
+
 export default function useAppTheme() {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const { t } = useTranslation("common");

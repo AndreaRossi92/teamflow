@@ -29,8 +29,6 @@ import ProjectsList from "../components/ProjectsList";
 import type { Project } from "../types/project";
 import { useAuth } from "../../../providers/useAuth";
 
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
-
 export default function ProjectsListPage() {
   const { t } = useTranslation("project");
   const navigate = useNavigate();
@@ -118,12 +116,6 @@ export default function ProjectsListPage() {
         }
         BackButtonProps={{ path: "/", replace: true }}
       />
-
-      {isDemoMode && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {t("demoList")}
-        </Alert>
-      )}
 
       <TextField
         fullWidth

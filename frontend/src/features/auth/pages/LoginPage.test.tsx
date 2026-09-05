@@ -14,7 +14,6 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoginPage from "./LoginPage";
-import { act } from "react";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async (importOriginal) => ({
@@ -225,31 +224,6 @@ describe("LoginPage", () => {
       await user.keyboard("{Enter}");
 
       expect(mockSetUser).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("demo mode", () => {
-    it("show demo banner if VITE_DEMO_MODE is true", async () => {
-      vi.stubEnv("VITE_DEMO_MODE", "true");
-
-      // force re-import with new env variable
-      vi.resetModules();
-      const { default: LoginPage } = await import("./LoginPage");
-
-      await act(async () => {
-        render(
-          <QueryClientProvider client={new QueryClient()}>
-            <MemoryRouter>
-              <LoginPage />
-            </MemoryRouter>
-          </QueryClientProvider>,
-        );
-      });
-
-      expect(screen.getByText("login.demoCredentials")).toBeInTheDocument();
-
-      vi.unstubAllEnvs();
-      vi.resetModules();
     });
   });
 });

@@ -17,7 +17,7 @@ import UsersList from "../../user/components/UsersList";
 
 type TicketDetailProps = { ticket: Ticket };
 
-export default function ProjectDetail({ ticket }: TicketDetailProps) {
+export default function TicketDetail({ ticket }: TicketDetailProps) {
   const { i18n, t } = useTranslation("ticket");
 
   return (

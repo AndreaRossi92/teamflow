@@ -14,6 +14,7 @@ export default function Dot({ title, color }: Dot) {
           height: 10,
           borderRadius: "50%",
           bgcolor: color,
+          flexShrink: 0,
         }}
       />
     </Tooltip>

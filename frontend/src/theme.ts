@@ -77,6 +77,11 @@ export default function useAppTheme() {
             },
           },
         },
+        MuiTypography: {
+          defaultProps: {
+            sx: { wordBreak: "break-word", overflowWrap: "anywhere" },
+          },
+        },
       },
     });
   }, [prefersDarkMode, t]);

@@ -1,6 +1,5 @@
 import {
   Checkbox,
-  Chip,
   List,
   ListItem,
   ListItemButton,
@@ -13,8 +12,8 @@ import {
 } from "@mui/material";
 import ActiveDot from "../../../components/ActiveDot";
 import { type ReactNode } from "react";
-import { useTranslation } from "react-i18next";
 import type { AssignableUser } from "../types/ticket";
+import { UserRoleBadge } from "../../user/components/UserRoleBadge";
 
 type TicketAssignUsersProps = {
   assignableUsers: AssignableUser[];
@@ -29,12 +28,10 @@ export default function TicketAssignUsers({
   onClick,
   listItemProps,
 }: TicketAssignUsersProps) {
-  const { t } = useTranslation("user");
-
   return (
     <List disablePadding dense>
       {assignableUsers.map((user) => (
-        <ListItem key={user.id} {...listItemProps}>
+        <ListItem key={user.id} divider {...listItemProps}>
           <ListItemButton
             sx={{
               flexDirection: { xs: "column", sm: "row" },
@@ -70,7 +67,7 @@ export default function TicketAssignUsers({
               }
               secondary={user.email}
             />
-            <Chip label={t(user.role)} color={user.role} size="small" />
+            <UserRoleBadge role={user.role} />
           </ListItemButton>
           {!!actions && (
             <ListItemSecondaryAction>{actions(user)}</ListItemSecondaryAction>

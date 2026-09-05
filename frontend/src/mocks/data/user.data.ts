@@ -10,26 +10,6 @@ export const mockAdminUser: User = {
   updatedAt: "2024-01-05T09:00:00.000Z",
 };
 
-export const mockManagerUser: User = {
-  id: "user-manager",
-  email: "manager@teamflow.com",
-  role: "manager",
-  fullName: "Manager User",
-  isActive: true,
-  createdAt: "2024-01-05T09:00:00.000Z",
-  updatedAt: "2024-01-05T09:00:00.000Z",
-};
-
-export const mockDevUser: User = {
-  id: "user-dev",
-  email: "dev@teamflow.com",
-  role: "dev",
-  fullName: "Dev User",
-  isActive: true,
-  createdAt: "2024-01-05T09:00:00.000Z",
-  updatedAt: "2024-01-05T09:00:00.000Z",
-};
-
 export const mockManagerUser1: User = {
   id: "user-manager-1",
   email: "sara.bianchi@teamflow.com",

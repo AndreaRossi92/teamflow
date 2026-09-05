@@ -6,6 +6,7 @@ import {
   Typography,
   Alert,
   Paper,
+  Stack,
 } from "@mui/material";
 import { FormProvider } from "react-hook-form";
 import { LoginForm } from "../forms/LoginForm";
@@ -17,6 +18,15 @@ import { loginFormSchema, type LoginFormValues } from "../types/loginForm";
 import useLoginMutation from "../hooks/useLoginMutation";
 import { useAuth } from "../../../providers/useAuth";
 import { Navigate } from "react-router-dom";
+import { ROLE_COLOR } from "../../user/const/user";
+
+const DEMO_USERS = {
+  admin: { email: "admin@teamflow.com", password: "password123" },
+  manager: { email: "sara.bianchi@teamflow.com", password: "password123" },
+  dev: { email: "giulia.verdi@teamflow.com", password: "password123" },
+} as const;
+
+type DemoRole = keyof typeof DEMO_USERS;
 
 export default function LoginPage() {
   const { t } = useTranslation("auth");
@@ -25,8 +35,8 @@ export default function LoginPage() {
   const loginForm = useCustomForm<LoginFormValues>({
     schema: loginFormSchema,
     defaultValues: {
-      email: isDemoMode ? "admin@teamflow.com" : "",
-      password: isDemoMode ? "admin123" : "",
+      email: "",
+      password: "",
     },
   });
 
@@ -35,6 +45,18 @@ export default function LoginPage() {
   const handleLogin = loginForm.handleSubmit((data) =>
     loginMutation.mutate(data),
   );
+
+  const fillDemoUser = (role: DemoRole) => {
+    const user = DEMO_USERS[role];
+    loginForm.setValue("email", user.email, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    loginForm.setValue("password", user.password, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
 
   if (isAuthenticated) return <Navigate to="/" />;
 
@@ -47,8 +69,23 @@ export default function LoginPage() {
           </Typography>
 
           {isDemoMode && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              {t("login.demoCredentials")}
+            <Alert severity="info" sx={{ mb: 2 }} icon={false}>
+              <Typography variant="body2" sx={{ mb: 1.5 }}>
+                {t("login.demoMessage")}
+              </Typography>
+              <Stack spacing={1}>
+                {(Object.keys(DEMO_USERS) as DemoRole[]).map((role) => (
+                  <Button
+                    key={role}
+                    variant="outlined"
+                    size="small"
+                    onClick={() => fillDemoUser(role)}
+                    color={ROLE_COLOR[role]}
+                  >
+                    {t(role, { ns: "user" })}
+                  </Button>
+                ))}
+              </Stack>
             </Alert>
           )}
 

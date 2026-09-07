@@ -30,17 +30,6 @@ const mockUser: User = {
   updatedAt: new Date(),
 };
 
-const otherUser: User = {
-  id: 'uuid-456',
-  email: 'manager@teamflow.com',
-  fullName: 'Manager User',
-  passwordHash: 'hashed-password',
-  role: Role.MANAGER,
-  isActive: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 const mockUserGetRawMany = jest.fn();
 const mockUserQueryBuilder = {

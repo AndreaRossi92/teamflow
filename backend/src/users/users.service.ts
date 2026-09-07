@@ -42,66 +42,18 @@ export class UsersService {
     private readonly ticketRepo: Repository<Ticket>,
   ) {}
 
-  async getUsersWorkload(): Promise<UserDashboardDto[]> {
-    const users = await this.repo.find({
-      where: { isActive: true },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      order: { fullName: 'ASC' },
-    });
-
-    if (users.length === 0) return [];
-
-    const userIds = users.map((u) => u.id);
-
-    const rows = await this.ticketRepo
-      .createQueryBuilder('ticket')
-      .innerJoin('ticket.assignees', 'assignee')
-      .select('assignee.id', 'userId')
-      .addSelect('ticket.status', 'status')
-      .addSelect('ticket.priority', 'priority')
-      .addSelect('COUNT(*)', 'count')
-      .where('assignee.id IN (:...userIds)', { userIds })
-      .groupBy('assignee.id')
-      .addGroupBy('ticket.status')
-      .addGroupBy('ticket.priority')
-      .getRawMany<UserTicketBreakdownRow>();
-
-    const breakdownByUser = new Map<
-      string,
-      Record<TicketStatus, Record<TicketPriority, number>>
-    >();
-
-    for (const row of rows) {
-      const breakdown =
-        breakdownByUser.get(row.userId) ?? emptyTicketBreakdown();
-      breakdown[row.status][row.priority] = Number(row.count);
-      breakdownByUser.set(row.userId, breakdown);
-    }
-
-    return users.map((user) => ({
-      ...user,
-      ticketBreakdown: breakdownByUser.get(user.id) ?? emptyTicketBreakdown(),
-    }));
-  }
-
   async getUserWorkload(id: string): Promise<UserDashboardDto> {
     const user = await this.findOne(id);
 
     const rows = await this.ticketRepo
       .createQueryBuilder('ticket')
       .innerJoin('ticket.assignees', 'assignee')
+      .innerJoin('ticket.project', 'project')
       .select('ticket.status', 'status')
       .addSelect('ticket.priority', 'priority')
       .addSelect('COUNT(*)', 'count')
       .where('assignee.id = :userId', { userId: id })
+      .andWhere('project.isActive = :isActive', { isActive: true })
       .groupBy('ticket.status')
       .addGroupBy('ticket.priority')
       .getRawMany<UserTicketBreakdownRow>();

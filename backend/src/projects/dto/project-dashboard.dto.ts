@@ -35,7 +35,6 @@ export class ProjectDashboardDto extends Project {
   ticketBreakdown!: TicketBreakdownDto;
 }
 
-/** All statuses × priorities defaulted to 0 — used so every project reports a complete shape even with zero tickets. */
 export function emptyTicketBreakdown(): Record<
   TicketStatus,
   Record<TicketPriority, number>
@@ -48,7 +47,6 @@ export function emptyTicketBreakdown(): Record<
   };
 }
 
-/** All priorities defaulted to 0 — used so every project reports a complete shape even with zero tickets. */
 export function emptyTicketPriorityCounts(): Record<TicketPriority, number> {
   return {
     [TicketPriority.LOW]: 0,

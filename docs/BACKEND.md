@@ -296,8 +296,6 @@ Routes (`/users`, globally guarded by `JwtGuard, RolesGuard` + `@Roles(ADMIN)`, 
 | PATCH  | `/users/:id/reset-password` | ADMIN               | Resets password + revokes all of the user's sessions         |
 | DELETE | `/users/:id`                | ADMIN               | Hard-delete, **only if the user is already inactive**        |
 
-The service also implements `getUsersWorkload()` (aggregated workload for all active users) and `getUsersBreakdown()` (counts per role/status), via grouped queries against `ticket_assignees`.
-
 ### Projects Module
 
 Routes (`/projects`, global `JwtGuard`):

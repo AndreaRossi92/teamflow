@@ -312,12 +312,6 @@ export class TicketsService {
     return ticket;
   }
 
-  /**
-   * Given a list of userIds, loads the users and asserts that every one of
-   * them is a member of the given project. Throws NotFoundException if any
-   * userId doesn't resolve to a user, BadRequestException if any resolved
-   * user is not a project member.
-   */
   private async resolveProjectMembers(
     userIds: string[],
     project: Project,

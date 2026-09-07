@@ -485,6 +485,40 @@ describe('ProjectsService', () => {
     });
   });
 
+  it('should filter tickets by assignee for devs', async () => {
+    mockQueryBuilder.getMany.mockResolvedValue([mockProject]);
+    mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+    await service.getProjectsWorkload(devUser);
+
+    expect(mockTicketQueryBuilder.innerJoin).toHaveBeenCalledWith(
+      'ticket.assignees',
+      'assignee',
+    );
+    expect(mockTicketQueryBuilder.andWhere).toHaveBeenCalledWith(
+      'assignee.id = :userId',
+      { userId: devUser.id },
+    );
+  });
+
+  it('should NOT filter by assignee for admins', async () => {
+    mockProjectRepo.find.mockResolvedValue([mockProject]);
+    mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+    await service.getProjectsWorkload(adminUser);
+
+    expect(mockTicketQueryBuilder.innerJoin).not.toHaveBeenCalled();
+  });
+
+  it('should NOT filter by assignee for managers', async () => {
+    mockQueryBuilder.getMany.mockResolvedValue([mockProject]);
+    mockTicketGetRawMany.mockResolvedValueOnce([]);
+
+    await service.getProjectsWorkload(managerUser);
+
+    expect(mockTicketQueryBuilder.innerJoin).not.toHaveBeenCalled();
+  });
+
   // ── getMembersWorkload ──────────────────────────────────────────────────────
 
   describe('getMembersWorkload', () => {

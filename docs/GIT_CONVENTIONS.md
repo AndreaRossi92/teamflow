@@ -83,7 +83,7 @@ Every issue must contain (at least) two sections:
 
 Additional sections or subsections can be added when useful (e.g. `## Acceptance criteria`, `## References`).
 
-A ready-to-use template is available in [`.github/ISSUE_TEMPLATE.md`](../.github/ISSUE_TEMPLATE.md), which GitHub will pre-fill automatically when opening a new issue.
+A ready-to-use template is available in [`.github/ISSUE_TEMPLATE/task.md`](../.github/ISSUE_TEMPLATE/task.md), which GitHub will pre-fill automatically when opening a new issue.
 
 ### Example
 

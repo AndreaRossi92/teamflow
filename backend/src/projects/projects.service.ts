@@ -102,9 +102,6 @@ export class ProjectsService {
     return { data, total, page, limit, hasNextPage: page * limit < total };
   }
 
-  /**
-   * Ticket breakdown by project
-   */
   async getProjectsWorkload(
     requestingUser: JwtUser,
   ): Promise<ProjectDashboardDto[]> {
@@ -114,13 +111,23 @@ export class ProjectsService {
 
     const projectIds = projects.filter((p) => p.isActive).map((p) => p.id);
 
-    const rows = await this.ticketRepo
+    const query = this.ticketRepo
       .createQueryBuilder('ticket')
       .select('ticket.project', 'projectId')
       .addSelect('ticket.status', 'status')
       .addSelect('ticket.priority', 'priority')
       .addSelect('COUNT(*)', 'count')
-      .where('ticket.project IN (:...projectIds)', { projectIds })
+      .where('ticket.project IN (:...projectIds)', { projectIds });
+
+    if (requestingUser.role === Role.DEV) {
+      query
+        .innerJoin('ticket.assignees', 'assignee')
+        .andWhere('assignee.id = :userId', {
+          userId: requestingUser.id,
+        });
+    }
+
+    const rows = await query
       .groupBy('ticket.project')
       .addGroupBy('ticket.status')
       .addGroupBy('ticket.priority')
@@ -211,11 +218,6 @@ export class ProjectsService {
     });
   }
 
-  /**
-   * Same admin/non-admin visibility + name/isActive filtering as
-   * findAllForUser, but returns the full result set with no take/skip —
-   * used by getProjectsWorkload, which needs every visible project at once.
-   */
   private async findAllProjectsForUser(
     requestingUser: JwtUser,
   ): Promise<Project[]> {

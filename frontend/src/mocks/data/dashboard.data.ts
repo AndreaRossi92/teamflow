@@ -48,14 +48,26 @@ export function getProjectsWorkload(user: User) {
     projects.filter((p) => p.isActive).map((p) => p.id),
   );
 
-  return projects.map((project) => ({
-    ...project,
-    ticketBreakdown: activeProjectIds.has(project.id)
-      ? breakdownForTickets(
-          mockTickets.filter((t) => t.project.id === project.id),
-        )
-      : emptyTicketBreakdown(),
-  }));
+  return projects.map((project) => {
+    if (!activeProjectIds.has(project.id)) {
+      return { ...project, ticketBreakdown: emptyTicketBreakdown() };
+    }
+
+    const projectTickets = mockTickets.filter(
+      (t) => t.project.id === project.id,
+    );
+    const relevantTickets =
+      user.role === "dev"
+        ? projectTickets.filter((t) =>
+            t.assignees.some((a) => a.id === user.id),
+          )
+        : projectTickets;
+
+    return {
+      ...project,
+      ticketBreakdown: breakdownForTickets(relevantTickets),
+    };
+  });
 }
 
 export function getMembersWorkload(
@@ -89,7 +101,9 @@ export function getMockUserWorkload(userId: string) {
   return {
     ...user,
     ticketBreakdown: breakdownForTickets(
-      mockTickets.filter((t) => t.assignees.some((a) => a.id === userId)),
+      mockTickets.filter(
+        (t) => t.project.isActive && t.assignees.some((a) => a.id === userId),
+      ),
     ),
   };
 }

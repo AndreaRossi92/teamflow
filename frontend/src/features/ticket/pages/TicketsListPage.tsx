@@ -220,52 +220,54 @@ export default function TicketsListPage() {
           </ToggleButtonGroup>
         </Box>
 
-        <Box>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 0.5, display: "block" }}
-          >
-            {t("assignedTo")}
-          </Typography>
-          <ToggleButtonGroup
-            value={assignedToMe}
-            exclusive
-            onChange={(_, v) => setAssignedToMe(v === "ALL" ? null : v)}
-            size="small"
-            orientation={isSmallScreen ? "vertical" : "horizontal"}
-          >
-            <ToggleButton value="ALL">{t("all")}</ToggleButton>
-            <ToggleButton
-              value={"true"}
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  "&:hover": {
-                    backgroundColor: "primary.dark",
-                  },
-                },
-              }}
+        {(user?.role === "admin" || user?.role === "manager") && (
+          <Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 0.5, display: "block" }}
             >
-              {t("me")}
-            </ToggleButton>
-            <ToggleButton
-              value={"false"}
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  "&:hover": {
-                    backgroundColor: "primary.dark",
-                  },
-                },
-              }}
+              {t("assignedTo")}
+            </Typography>
+            <ToggleButtonGroup
+              value={assignedToMe}
+              exclusive
+              onChange={(_, v) => setAssignedToMe(v === "ALL" ? null : v)}
+              size="small"
+              orientation={isSmallScreen ? "vertical" : "horizontal"}
             >
-              {t("others")}
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+              <ToggleButton value="ALL">{t("all")}</ToggleButton>
+              <ToggleButton
+                value={"true"}
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    "&:hover": {
+                      backgroundColor: "primary.dark",
+                    },
+                  },
+                }}
+              >
+                {t("me")}
+              </ToggleButton>
+              <ToggleButton
+                value={"false"}
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    "&:hover": {
+                      backgroundColor: "primary.dark",
+                    },
+                  },
+                }}
+              >
+                {t("others")}
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+        )}
       </Stack>
 
       {isLoading && <LinearProgress />}

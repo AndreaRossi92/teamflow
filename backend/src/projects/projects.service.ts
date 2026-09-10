@@ -106,10 +106,11 @@ export class ProjectsService {
     requestingUser: JwtUser,
   ): Promise<ProjectDashboardDto[]> {
     const projects = await this.findAllProjectsForUser(requestingUser);
+    const activeProjects = projects.filter((p) => p.isActive);
 
     if (projects.length === 0) return [];
 
-    const projectIds = projects.filter((p) => p.isActive).map((p) => p.id);
+    const projectIds = activeProjects.map((p) => p.id);
 
     const query = this.ticketRepo
       .createQueryBuilder('ticket')
@@ -145,7 +146,7 @@ export class ProjectsService {
       breakdownByProject.set(row.projectId, breakdown);
     }
 
-    return projects.map((project) => {
+    return activeProjects.map((project) => {
       const breakdown =
         breakdownByProject.get(project.id) ?? emptyTicketBreakdown();
 
@@ -160,20 +161,19 @@ export class ProjectsService {
     requestingUser: JwtUser,
   ): Promise<UserDashboardDto[]> {
     const projects = await this.findAllProjectsForUser(requestingUser);
+    const activeProjects = projects.filter((p) => p.isActive);
 
     const memberMap = new Map<string, User>();
-    for (const project of projects) {
+    for (const project of activeProjects) {
       for (const member of project.members) {
-        memberMap.set(member.id, member);
+        if (member.isActive) memberMap.set(member.id, member);
       }
     }
     const members = [...memberMap.values()];
 
     if (members.length === 0) return [];
 
-    const activeProjectIds = projects
-      .filter((p) => p.isActive)
-      .map((p) => p.id);
+    const activeProjectIds = activeProjects.map((p) => p.id);
 
     const memberIds = members.map((m) => m.id);
 
@@ -241,7 +241,6 @@ export class ProjectsService {
           .getQuery();
         return `project.id IN ${sub}`;
       })
-      .andWhere('project.isActive = :isActive', { isActive: true })
       .setParameter('userId', requestingUser.id)
       .orderBy('project.createdAt', 'DESC');
 

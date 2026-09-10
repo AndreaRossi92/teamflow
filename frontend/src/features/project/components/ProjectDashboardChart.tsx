@@ -20,13 +20,13 @@ import {
 } from "@mui/material";
 import { PRIORITY_COLOR, STATUS_COLOR } from "../../ticket/const/tickets";
 import { useTranslation } from "react-i18next";
-import Dot from "../../../components/Dot";
 import type { ProjectDashboard } from "../types/project";
 import { useState } from "react";
 import { ArrowForward } from "@mui/icons-material";
 import { TicketStatusBadge } from "../../ticket/components/TicketStatusBadge";
 import { TicketPriorityBadge } from "../../ticket/components/TicketPriorityBadge";
 import { useNavigate } from "react-router-dom";
+import ActiveDot from "../../../components/ActiveDot";
 
 const PRIORITY_ORDER: TicketPriority[] = ["high", "medium", "low"];
 const STATUS_ORDER: TicketStatus[] = ["open", "inProgress", "resolved"];
@@ -331,7 +331,7 @@ export default function ProjectDashboardChart({
                         sx={{ alignItems: "center" }}
                         spacing={1}
                       >
-                        <Dot color="primary" />
+                        <ActiveDot active={project.isActive} />
                         <Typography variant="body2">{project.name}</Typography>
                       </Stack>
                       <Chip

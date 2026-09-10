@@ -5,8 +5,9 @@
   "others": "Others",
   "list": "List",
   "allProjects": "All projects",
-  "myTickets": "My tickets",
+  "allTickets": "All tickets",
   "status": "Status",
   "priority": "Priority",
-  "role": "Role"
+  "role": "Role",
+  "me": "Me"
 }

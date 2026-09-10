@@ -6,8 +6,9 @@
   "others": "Altro",
   "list": "Lista",
   "allProjects": "Tutti i progetti",
-  "myTickets": "I miei ticket",
+  "allTickets": "Tutti i ticket",
   "status": "Status",
   "priority": "Priorità",
-  "role": "Ruolo"
+  "role": "Ruolo",
+  "me": "Io"
 }

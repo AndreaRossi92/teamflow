@@ -16,12 +16,12 @@ import {
 } from "@mui/material";
 import { PRIORITY_COLOR, STATUS_COLOR } from "../const/tickets";
 import { useTranslation } from "react-i18next";
-import Dot from "../../../components/Dot";
 import type { TicketDashboard } from "../types/ticket";
 import { useState } from "react";
 import { TicketStatusBadge } from "./TicketStatusBadge";
 import { TicketPriorityBadge } from "./TicketPriorityBadge";
 import { useAuth } from "../../../providers/useAuth";
+import ActiveDot from "../../../components/ActiveDot";
 
 const PRIORITY_ORDER: TicketPriority[] = ["high", "medium", "low"];
 const STATUS_ORDER: TicketStatus[] = ["open", "inProgress", "resolved"];
@@ -51,10 +51,6 @@ export default function TicketDashboardChart({
     null,
   );
   const [mode, setMode] = useState<"status" | "priority">("status");
-
-  const filteredData = ticketDashboard.filter(
-    (item) => item.id !== loggedUser?.id,
-  );
 
   const ticketStatusByUserData = ticketDashboard.flatMap((user) =>
     Object.entries(user.ticketBreakdown)
@@ -104,12 +100,44 @@ export default function TicketDashboardChart({
       }));
   });
 
-  const myTicketStatusData = ticketStatusByUserData.filter(
-    (item) => loggedUser?.id && item.id.includes(loggedUser.id),
-  );
-  const myTicketPriorityData = ticketPriorityByUserData.filter(
-    (item) => loggedUser?.id && item.id.includes(loggedUser.id),
-  );
+  const ticketStatusTotalData = STATUS_ORDER.map((status) => ({
+    id: status,
+    status,
+    label: t(status, { ns: "ticket" }),
+    value: ticketDashboard.reduce((sum, user) => {
+      const priorities = user.ticketBreakdown[status];
+      if (!priorities) return sum;
+      return (
+        sum +
+        Object.values(priorities).reduce((count, value) => count + value, 0)
+      );
+    }, 0),
+    color: theme.palette[STATUS_COLOR[status]].main,
+  }));
+
+  const ticketPriorityTotalData = PRIORITY_ORDER.map((priority) => ({
+    id: priority,
+    priority,
+    label: t(priority, { ns: "ticket" }),
+    value: ticketDashboard.reduce(
+      (sum, user) =>
+        sum +
+        Object.entries(user.ticketBreakdown)
+          .filter(([status]) => status !== "closed")
+          .reduce(
+            (count, [, priorities]) => count + (priorities[priority] ?? 0),
+            0,
+          ),
+      0,
+    ),
+    color: theme.palette[PRIORITY_COLOR[priority]].main,
+  }));
+
+  const sortedUserList = [...ticketDashboard].sort((a, b) => {
+    if (a.id === loggedUser?.id) return -1;
+    if (b.id === loggedUser?.id) return 1;
+    return 0;
+  });
 
   return (
     <Stack
@@ -139,7 +167,7 @@ export default function TicketDashboardChart({
         </Box>
         {loggedUser?.role !== "dev" && (
           <Typography sx={{ textAlign: "center" }}>
-            {!selectedUser ? t("myTickets") : selectedUser.fullName}
+            {!selectedUser ? t("allTickets") : selectedUser.fullName}
           </Typography>
         )}
         <PieChart
@@ -154,8 +182,8 @@ export default function TicketDashboardChart({
               data: handleZeroValues(
                 !selectedUser
                   ? mode === "status"
-                    ? myTicketStatusData
-                    : myTicketPriorityData
+                    ? ticketStatusTotalData
+                    : ticketPriorityTotalData
                   : mode === "status"
                     ? ticketStatusByUserData.filter((item) =>
                         item.id.includes(selectedUser.id),
@@ -181,14 +209,14 @@ export default function TicketDashboardChart({
         >
           {!selectedUser
             ? mode === "status"
-              ? myTicketStatusData.map(({ status, value }) => (
+              ? ticketStatusTotalData.map(({ status, value }) => (
                   <TicketStatusBadge
                     key={status}
                     status={status as TicketStatus}
                     count={value}
                   />
                 ))
-              : myTicketPriorityData.map(({ priority, value }) => (
+              : ticketPriorityTotalData.map(({ priority, value }) => (
                   <TicketPriorityBadge
                     key={priority}
                     priority={priority as TicketPriority}
@@ -233,7 +261,7 @@ export default function TicketDashboardChart({
           }}
         >
           <List dense disablePadding>
-            {filteredData.map((user) => (
+            {sortedUserList.map((user) => (
               <ListItem key={user.id} disablePadding>
                 <ListItemButton
                   onClick={() =>
@@ -257,10 +285,13 @@ export default function TicketDashboardChart({
                           sx={{ alignItems: "center" }}
                           spacing={1}
                         >
-                          <Dot color="primary" />
+                          <ActiveDot active={user.isActive} />
                           <Typography variant="body2">
                             {user.fullName}
                           </Typography>
+                          {user.id === loggedUser?.id && (
+                            <Chip label={t("me")} size="small" />
+                          )}
                         </Stack>
                         <Chip
                           label={userCount(user, { excludeClosed: true })}

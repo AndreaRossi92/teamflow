@@ -68,10 +68,13 @@ export const ticketHandlers = [
     const assignedToMeParam = url.searchParams.get("assignedToMe");
     const assignedToMe =
       assignedToMeParam === null ? undefined : assignedToMeParam === "true";
+    const isActiveParam = url.searchParams.get("isActive");
+    const isActive =
+      isActiveParam === null ? undefined : isActiveParam === "true";
     const page = Number(url.searchParams.get("page")) || 1;
     const limit = Number(url.searchParams.get("limit")) || 20;
 
-    let filtered = mockTickets.filter((t) => t.project.isActive);
+    let filtered = mockTickets;
 
     if (currentUser.role === "manager") {
       filtered = filtered.filter((t) =>
@@ -106,6 +109,9 @@ export const ticketHandlers = [
       filtered = filtered.filter((t) =>
         t.project.name.toLowerCase().includes(projectName.toLowerCase()),
       );
+    }
+    if (isActive !== undefined) {
+      filtered = filtered.filter((t) => t.project.isActive === isActive);
     }
 
     const total = filtered.length;

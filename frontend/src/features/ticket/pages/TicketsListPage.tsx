@@ -44,6 +44,9 @@ export default function TicketsListPage() {
   const [assignedToMe, setAssignedToMe] = useState<"true" | "false" | null>(
     null,
   );
+  const [isActive, setIsActive] = useState<"active" | "inactive" | null>(
+    "active",
+  );
 
   const {
     data,
@@ -58,6 +61,8 @@ export default function TicketsListPage() {
     status,
     priority,
     assignedToMe,
+    isActive:
+      isActive === "active" ? true : isActive === "inactive" ? false : null,
   });
 
   const tickets =
@@ -142,132 +147,184 @@ export default function TicketsListPage() {
         }}
       />
 
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={2}
-        sx={{ mb: 2 }}
-        divider={<Divider orientation="vertical" flexItem />}
-      >
-        <Box>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 0.5, display: "block" }}
-          >
-            {t("status")}
-          </Typography>
-          <ToggleButtonGroup
-            value={status}
-            exclusive
-            onChange={(_, v) => setStatus(v === "ALL" ? null : v)}
-            size="small"
-            orientation={isSmallScreen ? "vertical" : "horizontal"}
-          >
-            <ToggleButton value="ALL">{t("all")}</ToggleButton>
-            {TICKET_STATUSES.map((s) => (
-              <ToggleButton
-                key={s}
-                value={s}
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: `${STATUS_COLOR[s]}.main`,
-                    color: `${STATUS_COLOR[s]}.contrastText`,
-                    "&:hover": {
-                      backgroundColor: `${STATUS_COLOR[s]}.dark`,
-                    },
-                  },
-                }}
-              >
-                {t(s)}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </Box>
-
-        <Box>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 0.5, display: "block" }}
-          >
-            {t("priority")}
-          </Typography>
-          <ToggleButtonGroup
-            value={priority}
-            exclusive
-            onChange={(_, v) => setPriority(v === "ALL" ? null : v)}
-            size="small"
-            orientation={isSmallScreen ? "vertical" : "horizontal"}
-          >
-            <ToggleButton value="ALL">{t("all")}</ToggleButton>
-            {TICKET_PRIORITIES.map((p) => (
-              <ToggleButton
-                key={p}
-                value={p}
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: `${PRIORITY_COLOR[p]}.main`,
-                    color: `${PRIORITY_COLOR[p]}.contrastText`,
-                    "&:hover": {
-                      backgroundColor: `${PRIORITY_COLOR[p]}.dark`,
-                    },
-                  },
-                }}
-              >
-                {t(p)}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </Box>
-
-        {(user?.role === "admin" || user?.role === "manager") && (
+      <Stack direction="column" spacing={4} sx={{ mb: 2 }}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          divider={<Divider orientation="vertical" flexItem />}
+        >
           <Box>
             <Typography
               variant="caption"
               color="text.secondary"
               sx={{ mb: 0.5, display: "block" }}
             >
-              {t("assignedTo")}
+              {t("status")}
             </Typography>
             <ToggleButtonGroup
-              value={assignedToMe}
+              value={status}
               exclusive
-              onChange={(_, v) => setAssignedToMe(v === "ALL" ? null : v)}
+              onChange={(_, v) => setStatus(v === "ALL" ? null : v)}
+              size="small"
+              orientation={isSmallScreen ? "vertical" : "horizontal"}
+            >
+              <ToggleButton value="ALL">{t("all")}</ToggleButton>
+              {TICKET_STATUSES.map((s) => (
+                <ToggleButton
+                  key={s}
+                  value={s}
+                  sx={{
+                    "&.Mui-selected": {
+                      backgroundColor: `${STATUS_COLOR[s]}.main`,
+                      color: `${STATUS_COLOR[s]}.contrastText`,
+                      "&:hover": {
+                        backgroundColor: `${STATUS_COLOR[s]}.dark`,
+                      },
+                    },
+                  }}
+                >
+                  {t(s)}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Box>
+
+          <Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 0.5, display: "block" }}
+            >
+              {t("priority")}
+            </Typography>
+            <ToggleButtonGroup
+              value={priority}
+              exclusive
+              onChange={(_, v) => setPriority(v === "ALL" ? null : v)}
+              size="small"
+              orientation={isSmallScreen ? "vertical" : "horizontal"}
+            >
+              <ToggleButton value="ALL">{t("all")}</ToggleButton>
+              {TICKET_PRIORITIES.map((p) => (
+                <ToggleButton
+                  key={p}
+                  value={p}
+                  sx={{
+                    "&.Mui-selected": {
+                      backgroundColor: `${PRIORITY_COLOR[p]}.main`,
+                      color: `${PRIORITY_COLOR[p]}.contrastText`,
+                      "&:hover": {
+                        backgroundColor: `${PRIORITY_COLOR[p]}.dark`,
+                      },
+                    },
+                  }}
+                >
+                  {t(p)}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Box>
+        </Stack>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          divider={<Divider orientation="vertical" flexItem />}
+        >
+          <Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 0.5, display: "block" }}
+            >
+              {t("status")}
+            </Typography>
+            <ToggleButtonGroup
+              value={isActive}
+              exclusive
+              onChange={(_, v) => setIsActive(v === "ALL" ? null : v)}
               size="small"
               orientation={isSmallScreen ? "vertical" : "horizontal"}
             >
               <ToggleButton value="ALL">{t("all")}</ToggleButton>
               <ToggleButton
-                value={"true"}
+                value="active"
                 sx={{
                   "&.Mui-selected": {
-                    backgroundColor: "primary.main",
-                    color: "primary.contrastText",
+                    backgroundColor: "success.main",
+                    color: "success.contrastText",
                     "&:hover": {
-                      backgroundColor: "primary.dark",
+                      backgroundColor: "success.dark",
                     },
                   },
                 }}
               >
-                {t("me")}
+                {t("active")}
               </ToggleButton>
               <ToggleButton
-                value={"false"}
+                value="inactive"
                 sx={{
                   "&.Mui-selected": {
-                    backgroundColor: "primary.main",
-                    color: "primary.contrastText",
+                    backgroundColor: "error.main",
+                    color: "error.contrastText",
                     "&:hover": {
-                      backgroundColor: "primary.dark",
+                      backgroundColor: "error.dark",
                     },
                   },
                 }}
               >
-                {t("others")}
+                {t("inactive")}
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
-        )}
+          {(user?.role === "admin" || user?.role === "manager") && (
+            <Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mb: 0.5, display: "block" }}
+              >
+                {t("assignedTo")}
+              </Typography>
+              <ToggleButtonGroup
+                value={assignedToMe}
+                exclusive
+                onChange={(_, v) => setAssignedToMe(v === "ALL" ? null : v)}
+                size="small"
+                orientation={isSmallScreen ? "vertical" : "horizontal"}
+              >
+                <ToggleButton value="ALL">{t("all")}</ToggleButton>
+                <ToggleButton
+                  value={"true"}
+                  sx={{
+                    "&.Mui-selected": {
+                      backgroundColor: "primary.main",
+                      color: "primary.contrastText",
+                      "&:hover": {
+                        backgroundColor: "primary.dark",
+                      },
+                    },
+                  }}
+                >
+                  {t("me")}
+                </ToggleButton>
+                <ToggleButton
+                  value={"false"}
+                  sx={{
+                    "&.Mui-selected": {
+                      backgroundColor: "primary.main",
+                      color: "primary.contrastText",
+                      "&:hover": {
+                        backgroundColor: "primary.dark",
+                      },
+                    },
+                  }}
+                >
+                  {t("others")}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          )}
+        </Stack>
       </Stack>
 
       {isLoading && <LinearProgress />}

@@ -31,6 +31,7 @@ export type TicketFilters = {
   priority?: TicketPriority | null;
   projectName?: string;
   assignedToMe?: "true" | "false" | null;
+  isActive?: boolean | null;
 };
 
 export type AssignableUser = Pick<

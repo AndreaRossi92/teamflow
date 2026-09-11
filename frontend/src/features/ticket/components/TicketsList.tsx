@@ -11,6 +11,7 @@ import {
 import type { Ticket } from "../types/ticket";
 import { TicketStatusBadge } from "./TicketStatusBadge";
 import { TicketPriorityBadge } from "./TicketPriorityBadge";
+import ActiveDot from "../../../components/ActiveDot";
 
 type TicketsListProps = {
   tickets: Ticket[];
@@ -50,6 +51,7 @@ export default function TicketsList({
                   spacing={1}
                   sx={{ alignItems: "center" }}
                 >
+                  <ActiveDot active={ticket.project.isActive} />
                   <TicketStatusBadge status={ticket.status} />
                   <Typography>{ticket.title}</Typography>
                 </Stack>

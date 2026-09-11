@@ -54,6 +54,19 @@ export class ListTicketsDto {
   @IsBoolean()
   assignedToMe?: boolean;
 
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Filter by active/inactive status',
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }: { value: unknown }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value as boolean;
+  })
+  isActive?: boolean;
+
   @ApiPropertyOptional({ example: 1, default: 1 })
   @IsOptional()
   @Type(() => Number)

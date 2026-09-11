@@ -41,6 +41,7 @@ export class TicketsService {
       priority,
       projectName,
       assignedToMe,
+      isActive,
       page = 1,
       limit = 20,
     } = query;
@@ -106,9 +107,9 @@ export class TicketsService {
         projectName: `%${projectName}%`,
       });
     }
-    qb.andWhere('project.isActive = :isActiveProject', {
-      isActiveProject: true,
-    });
+    if (isActive !== undefined) {
+      qb.andWhere('project.isActive = :isActive', { isActive });
+    }
 
     const [data, total] = await qb.getManyAndCount();
     return { data, total, page, limit, hasNextPage: page * limit < total };

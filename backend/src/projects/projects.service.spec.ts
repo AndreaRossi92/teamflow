@@ -230,21 +230,7 @@ describe('ProjectsService', () => {
       });
     });
 
-    it('should pass the isActive filter for admins', async () => {
-      mockProjectRepo.findAndCount.mockResolvedValue([[], 0]);
-
-      await service.findAllForUser(adminUser, {
-        ...baseQuery,
-        isActive: false,
-      });
-
-      const calls = mockProjectRepo.findAndCount.mock.calls as {
-        where: { name?: unknown; isActive?: unknown };
-      }[][];
-      expect(calls[0][0].where.isActive).toBe(false);
-    });
-
-    it('should apply andWhere for name filter for non-admins', async () => {
+    it('should apply andWhere for name filter', async () => {
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
       await service.findAllForUser(managerUser, { ...baseQuery, name: 'flow' });
@@ -255,7 +241,7 @@ describe('ProjectsService', () => {
       );
     });
 
-    it('should apply andWhere for isActive filter for non-admins', async () => {
+    it('should apply andWhere for isActive filter', async () => {
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
       await service.findAllForUser(managerUser, {

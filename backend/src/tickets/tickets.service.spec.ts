@@ -280,6 +280,20 @@ describe('TicketsService', () => {
       );
     });
 
+    it('should apply andWhere for isActive filter', async () => {
+      mockGetManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllForUser(adminUser, {
+        ...baseQuery,
+        isActive: true,
+      });
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'project.isActive = :isActive',
+        { isActive: true },
+      );
+    });
+
     it('should not apply the assignedToMe filter when omitted', async () => {
       mockGetManyAndCount.mockResolvedValue([[], 0]);
 

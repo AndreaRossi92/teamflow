@@ -234,10 +234,10 @@ export default function ProjectDashboardChart({
           sx={{
             display: "flex",
             flexWrap: "wrap",
-            height: 100,
             justifyContent: "center",
             gap: 5,
             alignItems: "center",
+            mb: 2,
           }}
         >
           {!selectedProject

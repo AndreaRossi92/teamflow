@@ -32,6 +32,8 @@ export async function ticketsList({
   if (filters?.projectName) params.append("projectName", filters.projectName);
   if (filters?.assignedToMe)
     params.append("assignedToMe", filters.assignedToMe);
+  if (typeof filters?.isActive === "boolean")
+    params.append("isActive", String(filters.isActive));
 
   params.set("page", String(page));
   params.set("limit", String(limit));

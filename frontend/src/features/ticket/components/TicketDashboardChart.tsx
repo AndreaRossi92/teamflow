@@ -201,10 +201,10 @@ export default function TicketDashboardChart({
           sx={{
             display: "flex",
             flexWrap: "wrap",
-            height: 100,
             justifyContent: "center",
             gap: 5,
             alignItems: "center",
+            mb: 2,
           }}
         >
           {!selectedUser

@@ -91,17 +91,6 @@ const thirdProject: Project = {
   updatedAt: new Date(),
 };
 
-const inactiveProject: Project = {
-  id: 'project-uuid-4',
-  name: 'TeamFlow Legacy',
-  description: 'Deprecated',
-  isActive: false,
-  createdBy: managerEntity,
-  members: [devEntity],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
 // QueryBuilder mock for findAllForUser (non-admin path)

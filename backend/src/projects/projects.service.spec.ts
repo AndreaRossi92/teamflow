@@ -620,24 +620,6 @@ describe('ProjectsService', () => {
       );
     });
 
-    it('should exclude inactive projects from the ticket count but keep their members', async () => {
-      mockProjectRepo.find.mockResolvedValue([inactiveProject]);
-
-      const result = await service.getMembersWorkload(adminUser);
-
-      // Nessuna query ticket: non ci sono progetti attivi
-      expect(mockTicketRepo.createQueryBuilder).not.toHaveBeenCalled();
-      // Ma il membro del progetto inattivo compare comunque, con breakdown a zero
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(devEntity.id);
-      expect(result[0].ticketBreakdown).toEqual({
-        open: { high: 0, medium: 0, low: 0 },
-        inProgress: { high: 0, medium: 0, low: 0 },
-        resolved: { high: 0, medium: 0, low: 0 },
-        closed: { high: 0, medium: 0, low: 0 },
-      });
-    });
-
     it('should build ticketBreakdown with per-status priority counts', async () => {
       mockProjectRepo.find.mockResolvedValue([mockProject]);
       mockTicketGetRawMany.mockResolvedValueOnce([

@@ -153,8 +153,8 @@ export const ticketHandlers = [
 
       const body = await request.json();
 
-      if (!body.title?.trim() || !body.description?.trim()) {
-        return badRequest("title and description are required");
+      if (!body.title?.trim()) {
+        return badRequest("title is required");
       }
 
       const projectResult = findProjectWithAccess(body.projectId, currentUser);

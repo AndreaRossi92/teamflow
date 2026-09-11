@@ -36,17 +36,14 @@ function breakdownForTickets(tickets: Ticket[]): TicketBreakdown {
 }
 
 function findProjectsForWorkload(user: User): Project[] {
-  if (user.role === "admin") return mockProjects;
-  return mockProjects.filter(
-    (p) => p.isActive && p.members.some((m) => m.id === user.id),
-  );
+  const activeProjects = mockProjects.filter((p) => p.isActive);
+  if (user.role === "admin") return activeProjects;
+  return activeProjects.filter((p) => p.members.some((m) => m.id === user.id));
 }
 
 export function getProjectsWorkload(user: User) {
   const projects = findProjectsForWorkload(user);
-  const activeProjectIds = new Set(
-    projects.filter((p) => p.isActive).map((p) => p.id),
-  );
+  const activeProjectIds = new Set(projects.map((p) => p.id));
 
   return projects.map((project) => {
     if (!activeProjectIds.has(project.id)) {
@@ -76,7 +73,11 @@ export function getMembersWorkload(
   const projects = findProjectsForWorkload(user);
 
   const memberMap = new Map<string, User>();
-  projects.forEach((p) => p.members.forEach((m) => memberMap.set(m.id, m)));
+  projects.forEach((p) =>
+    p.members.forEach((m) => {
+      if (m.isActive) memberMap.set(m.id, m);
+    }),
+  );
 
   const activeProjectIds = new Set(
     projects.filter((p) => p.isActive).map((p) => p.id),

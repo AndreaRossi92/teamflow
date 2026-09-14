@@ -24,5 +24,11 @@
   "loading": "Caricamento",
   "active": "Attivo",
   "inactive": "Inattivo",
-  "back": "Indietro"
+  "back": "Indietro",
+  "userList": "Lista utenti",
+  "addUser": "Aggiungi utente",
+  "projectList": "Lista progetti",
+  "addProject": "Aggiungi progetto",
+  "ticketList": "Lista ticket",
+  "addTicket": "Aggiungi ticket"
 }

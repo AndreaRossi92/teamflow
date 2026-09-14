@@ -24,5 +24,11 @@
   "loading": "Loading",
   "active": "Active",
   "inactive": "Inactive",
-  "back": "Back"
+  "back": "Back",
+  "userList": "User list",
+  "addUser": "Add user",
+  "projectList": "Project list",
+  "addProject": "Add project",
+  "ticketList": "Ticket list",
+  "addTicket": "Add ticket"
 }

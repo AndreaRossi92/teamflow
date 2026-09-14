@@ -19,16 +19,24 @@ import {
   ListItemButton,
   Avatar,
   useTheme,
+  Typography,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import LogoutIcon from "@mui/icons-material/Logout";
 import useLogoutMutation from "../features/auth/hooks/useLogoutMutation";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import PasswordIcon from "@mui/icons-material/Password";
 import { useAuth } from "../providers/useAuth";
 import { Menu as MenuIcon } from "@mui/icons-material";
-import { Group, Folder, ConfirmationNumber } from "@mui/icons-material";
+import {
+  Group,
+  Folder,
+  Assignment,
+  PersonAddAlt1,
+  CreateNewFolder,
+  Logout,
+  Password,
+  AssignmentAdd,
+} from "@mui/icons-material";
 import { ROLE_COLOR } from "../features/user/const/user";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
@@ -166,7 +174,7 @@ export default function Header() {
               }}
             >
               <ListItemIcon>
-                <PasswordIcon />
+                <Password />
               </ListItemIcon>
               <ListItemText>{t("changePassword")}</ListItemText>
             </MenuItem>
@@ -177,7 +185,7 @@ export default function Header() {
               }}
             >
               <ListItemIcon>
-                <LogoutIcon />
+                <Logout />
               </ListItemIcon>
               <ListItemText>{t("logout")}</ListItemText>
             </MenuItem>
@@ -202,58 +210,145 @@ export default function Header() {
         <Box sx={{ overflow: "auto" }}>
           <List>
             {user?.role === "admin" && (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    textAlign: "center",
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                  }}
+                >
+                  {t("users")}
+                </Typography>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    sx={{ gap: 1 }}
+                    onClick={() => {
+                      navigate("/users");
+                      setIsOpenDrawer(false);
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Group />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={t("userList")}
+                      slotProps={{ primary: { variant: "body1" } }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    sx={{ gap: 1 }}
+                    onClick={() => {
+                      navigate("/user/create");
+                      setIsOpenDrawer(false);
+                    }}
+                  >
+                    <ListItemIcon>
+                      <PersonAddAlt1 />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={t("addUser")}
+                      slotProps={{ primary: { variant: "body1" } }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            )}
+            <>
+              <Typography
+                variant="h6"
+                sx={{
+                  textAlign: "center",
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
+                }}
+              >
+                {t("projects")}
+              </Typography>
               <ListItem disablePadding>
                 <ListItemButton
                   sx={{ gap: 1 }}
                   onClick={() => {
-                    navigate("/users");
+                    navigate("/projects");
                     setIsOpenDrawer(false);
                   }}
                 >
                   <ListItemIcon>
-                    <Group />
+                    <Folder />
                   </ListItemIcon>
                   <ListItemText
-                    primary={t("users")}
-                    slotProps={{ primary: { variant: "h6" } }}
+                    primary={t("projectList")}
+                    slotProps={{ primary: { variant: "body1" } }}
                   />
                 </ListItemButton>
               </ListItem>
-            )}
-            <ListItem disablePadding>
-              <ListItemButton
-                sx={{ gap: 1 }}
-                onClick={() => {
-                  navigate("/projects");
-                  setIsOpenDrawer(false);
+              <ListItem disablePadding>
+                <ListItemButton
+                  sx={{ gap: 1 }}
+                  onClick={() => {
+                    navigate("/project/create");
+                    setIsOpenDrawer(false);
+                  }}
+                >
+                  <ListItemIcon>
+                    <CreateNewFolder />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={t("addProject")}
+                    slotProps={{ primary: { variant: "body1" } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </>
+            <>
+              <Typography
+                variant="h6"
+                sx={{
+                  textAlign: "center",
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
                 }}
               >
-                <ListItemIcon>
-                  <Folder />
-                </ListItemIcon>
-                <ListItemText
-                  primary={t("projects")}
-                  slotProps={{ primary: { variant: "h6" } }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                sx={{ gap: 1 }}
-                onClick={() => {
-                  navigate("/tickets");
-                  setIsOpenDrawer(false);
-                }}
-              >
-                <ListItemIcon>
-                  <ConfirmationNumber />
-                </ListItemIcon>
-                <ListItemText
-                  primary={t("tickets")}
-                  slotProps={{ primary: { variant: "h6" } }}
-                />
-              </ListItemButton>
-            </ListItem>
+                {t("tickets")}
+              </Typography>
+              <ListItem disablePadding>
+                <ListItemButton
+                  sx={{ gap: 1 }}
+                  onClick={() => {
+                    navigate("/tickets");
+                    setIsOpenDrawer(false);
+                  }}
+                >
+                  <ListItemIcon>
+                    <Assignment />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={t("ticketList")}
+                    slotProps={{ primary: { variant: "body1" } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton
+                  sx={{ gap: 1 }}
+                  onClick={() => {
+                    navigate("/ticket/create");
+                    setIsOpenDrawer(false);
+                  }}
+                >
+                  <ListItemIcon>
+                    <AssignmentAdd />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={t("addTicket")}
+                    slotProps={{ primary: { variant: "body1" } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </>
           </List>
         </Box>
       </Drawer>

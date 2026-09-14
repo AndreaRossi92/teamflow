@@ -17,10 +17,11 @@ import {
   List,
   ListItem,
   ListItemButton,
+  Avatar,
+  useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import LogoutIcon from "@mui/icons-material/Logout";
-import SettingsIcon from "@mui/icons-material/Settings";
 import useLogoutMutation from "../features/auth/hooks/useLogoutMutation";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -28,6 +29,7 @@ import PasswordIcon from "@mui/icons-material/Password";
 import { useAuth } from "../providers/useAuth";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { Group, Folder, ConfirmationNumber } from "@mui/icons-material";
+import { ROLE_COLOR } from "../features/user/const/user";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -46,6 +48,7 @@ function resolveLanguageCode(lng: string): LanguageCode {
 }
 
 export default function Header() {
+  const theme = useTheme();
   const { i18n, t } = useTranslation("common");
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -130,13 +133,23 @@ export default function Header() {
             ))}
           </Select>
           {isAuthenticated && (
-            <IconButton
-              title={t("settings")}
-              onClick={(e) => {
-                setAnchorEl(e.currentTarget);
-              }}
-            >
-              <SettingsIcon />
+            <IconButton size="small">
+              <Tooltip
+                title={`${user?.fullName} - ${t(user?.role ?? "", { ns: "user" })}`}
+              >
+                <Avatar
+                  sx={{
+                    bgcolor:
+                      theme.palette[ROLE_COLOR[user?.role ?? "dev"]].main,
+                    color:
+                      theme.palette[ROLE_COLOR[user?.role ?? "dev"]]
+                        .contrastText,
+                  }}
+                  onClick={(e) => {
+                    setAnchorEl(e.currentTarget);
+                  }}
+                >{`${user?.fullName[0]}${user?.fullName.split(" ")?.[1]?.[0] ?? ""}`}</Avatar>
+              </Tooltip>
             </IconButton>
           )}
           <Menu

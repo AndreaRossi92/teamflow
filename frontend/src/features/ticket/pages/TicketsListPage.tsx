@@ -343,7 +343,12 @@ export default function TicketsListPage() {
         <TicketsList
           tickets={tickets}
           onClick={(ticket) => navigate(`/ticket/${ticket.id}`)}
-          listItemProps={{ sx: { pr: 12 }, disablePadding: true }}
+          listItemProps={{
+            sx: {
+              pr: user?.role === "admin" || user?.role === "manager" ? 12 : 8,
+            },
+            disablePadding: true,
+          }}
           actions={(ticket) => (
             <Stack direction="row" spacing={1}>
               <IconButton

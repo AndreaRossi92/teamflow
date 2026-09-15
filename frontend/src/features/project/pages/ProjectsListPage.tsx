@@ -214,7 +214,9 @@ export default function ProjectsListPage() {
             navigate(`/project/${project.id}`);
           }}
           listItemProps={{
-            sx: { pr: 18 },
+            sx: {
+              pr: user?.role === "admin" || user?.role === "manager" ? 18 : 0,
+            },
             disablePadding: true,
           }}
           actions={(project) =>

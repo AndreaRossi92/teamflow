@@ -7,6 +7,18 @@ vi.mock("../../../formatters/date", () => ({
   formatDateTime: (date: string) => date,
 }));
 
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", () => ({
+  useNavigate: () => mockNavigate,
+}));
+
+const mockUseAuth = vi.fn(() => ({
+  user: { id: "u1", role: Role.ADMIN },
+}));
+vi.mock("../../../providers/useAuth", () => ({
+  useAuth: () => mockUseAuth(),
+}));
+
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 const createdByUser = {
   id: "u1",

@@ -15,6 +15,10 @@ import { useAuth } from "../../../providers/useAuth";
 import useDeleteProjectMutation from "../hooks/useDeleteProjectMutation";
 import DeleteButton from "../../../components/DeleteButton";
 import { Role } from "../../user/const/user";
+import useTicketsListQuery from "../../ticket/hooks/useTicketsListQuery";
+import type { Ticket } from "../../ticket/types/ticket";
+
+const TICKET_SIZE = 5;
 
 export default function ProjectDetailPage() {
   const { t } = useTranslation("project");
@@ -25,6 +29,15 @@ export default function ProjectDetailPage() {
 
   const { id } = useParams();
   const project = useProjectDetailQuery(id ?? "");
+  const tickets = useTicketsListQuery(
+    { projectName: project.data?.name },
+    TICKET_SIZE,
+  );
+  const lastTickets =
+    tickets.data?.pages.reduce(
+      (acc, page) => [...acc, ...page.data],
+      [] as Ticket[],
+    ) ?? [];
   const deactivateProjectMutation = useDeactivateProjectMutation({
     onSuccess: () => {
       showMessage(t("deactivated"), "success");
@@ -124,7 +137,7 @@ export default function ProjectDetailPage() {
       )}
       {!project.isFetching && !project.isError && !!project.data && (
         <>
-          <ProjectDetail project={project.data} />
+          <ProjectDetail project={project.data} lastTickets={lastTickets} />
           {!project.data.isActive &&
             (user?.role === Role.ADMIN || user?.role === Role.MANAGER) && (
               <Stack direction="row" sx={{ justifyContent: "center" }}>

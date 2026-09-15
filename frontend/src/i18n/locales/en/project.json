@@ -29,5 +29,6 @@
   "deleted": "Project deleted successfully",
   "noProjectFound": "No projects found",
   "noUsersFound": "No users found",
-  "searchByName": "Search by name"
+  "searchByName": "Search by name",
+  "lastTickets": "Last tickets"
 }

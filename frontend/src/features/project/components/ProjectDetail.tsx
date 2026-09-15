@@ -128,7 +128,9 @@ export default function ProjectDetail({
                 />
               )}
               {lastTickets && lastTickets.length === 0 && (
-                <Alert severity="info">{t("noTickets")}</Alert>
+                <Alert severity="info">
+                  {t("noTicketsFound", { ns: "ticket" })}
+                </Alert>
               )}
             </Grid>
 

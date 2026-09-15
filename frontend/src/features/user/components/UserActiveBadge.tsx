@@ -16,7 +16,7 @@ export function UserActiveBadge({
   return (
     <Chip
       size="small"
-      label={count ? `${count} ${t(active)}` : t(active)}
+      label={count !== undefined ? `${count} ${t(active)}` : t(active)}
       color={ACTIVE_COLOR[active]}
       {...props}
     />

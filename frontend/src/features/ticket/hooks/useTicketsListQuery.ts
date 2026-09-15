@@ -10,7 +10,10 @@ import type { AxiosError } from "axios";
 
 const PAGE_SIZE = 20;
 
-export default function useTicketsListQuery(filters?: TicketFilters) {
+export default function useTicketsListQuery(
+  filters?: TicketFilters,
+  limit?: number,
+) {
   return useInfiniteQuery<
     PaginatedResponse<Ticket>,
     AxiosError,
@@ -20,7 +23,7 @@ export default function useTicketsListQuery(filters?: TicketFilters) {
   >({
     queryKey: ["tickets", filters],
     queryFn: ({ pageParam = 1 }) =>
-      ticketsList({ page: pageParam, limit: PAGE_SIZE, filters }),
+      ticketsList({ page: pageParam, limit: limit ?? PAGE_SIZE, filters }),
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.page + 1 : undefined,
     initialPageParam: 1,

@@ -29,5 +29,7 @@
   "deleted": "Progetto eliminato con successo",
   "noProjectFound": "Nessun progetto trovato",
   "noUsersFound": "Nessun utente trovato",
-  "searchByName": "Cerca per nome"
+  "searchByName": "Cerca per nome",
+  "lastTickets": "Ultimi ticket",
+  "noTicket": "Nessun ticket trovato"
 }

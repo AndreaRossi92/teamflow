@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { Add, Edit, Group } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
 import SearchIcon from "@mui/icons-material/Search";
 import PageHeader from "../../../components/PageHeader";
@@ -35,10 +35,11 @@ export default function TicketsListPage() {
   const { user } = useAuth();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const location = useLocation();
 
   const [title, setTitle] = useState("");
   const [debouncedTitle] = useDebounce(title, 400);
-  const [project, setProject] = useState("");
+  const [project, setProject] = useState(location?.state?.projectName ?? "");
   const [debouncedProject] = useDebounce(project, 400);
   const [status, setStatus] = useState<TicketStatus | null>(null);
   const [priority, setPriority] = useState<TicketPriority | null>(null);

@@ -2,10 +2,20 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import TicketDetail from "./TicketDetail";
 import type { Ticket } from "../types/ticket";
+import { Role } from "../../user/const/user";
 
-// ── Child / util mocks ───────────────────────────────────────────────────────
-// Badges, UsersList and the date formatter are stubbed so this suite only
-// exercises TicketDetail's own layout/branching logic.
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", () => ({
+  useNavigate: () => mockNavigate,
+}));
+
+const mockUseAuth = vi.fn(() => ({
+  user: { id: "u1", role: Role.ADMIN },
+}));
+vi.mock("../../../providers/useAuth", () => ({
+  useAuth: () => mockUseAuth(),
+}));
+
 vi.mock("./TicketStatusBadge", () => ({
   TicketStatusBadge: ({ status }: { status: string }) => (
     <span data-testid="status-badge">{status}</span>

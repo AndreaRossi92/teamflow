@@ -14,11 +14,16 @@ import type { Ticket } from "../types/ticket";
 import { TicketStatusBadge } from "./TicketStatusBadge";
 import { TicketPriorityBadge } from "./TicketPriorityBadge";
 import UsersList from "../../user/components/UsersList";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../providers/useAuth";
+import { Role } from "../../user/const/user";
 
 type TicketDetailProps = { ticket: Ticket };
 
 export default function TicketDetail({ ticket }: TicketDetailProps) {
   const { i18n, t } = useTranslation("ticket");
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <Box
@@ -98,7 +103,7 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
               </Typography>
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
+            <Grid size={{ xs: 12 }} sx={{ mt: 5 }}>
               <Typography variant="subtitle2" color="textSecondary">
                 {t("members")}
               </Typography>
@@ -106,6 +111,13 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
                 <UsersList
                   users={ticket.assignees}
                   listItemProps={{ disablePadding: true }}
+                  onClick={
+                    user?.role === Role.ADMIN
+                      ? (u) => {
+                          navigate(`/user/${u.id}`);
+                        }
+                      : undefined
+                  }
                 />
               )}
               {ticket.assignees.length === 0 && (

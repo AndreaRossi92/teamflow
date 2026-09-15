@@ -10,6 +10,7 @@ import useUserEditMutation from "../hooks/useUserEditMutation";
 import useUserDetailQuery from "../hooks/useUserDetailQuery";
 import { UserEditForm } from "../forms/UserEditForm";
 import { Save } from "@mui/icons-material";
+import { Role } from "../const/user";
 
 export default function UserEditPage() {
   const { t } = useTranslation("user");
@@ -23,12 +24,12 @@ export default function UserEditPage() {
     defaultValues: {
       email: "",
       fullName: "",
-      role: "dev",
+      role: Role.DEV,
     },
     values: {
       email: user.data?.email ?? "",
       fullName: user.data?.fullName ?? "",
-      role: user.data?.role ?? "dev",
+      role: user.data?.role ?? Role.DEV,
     },
   });
 

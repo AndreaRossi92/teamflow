@@ -3,13 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import UsersList from "./UsersList";
 import type { User } from "../types/user";
+import { Role } from "../const/user";
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 const activeUser: User = {
   id: "1",
   email: "alice@example.com",
   fullName: "Alice Smith",
-  role: "dev",
+  role: Role.DEV,
   isActive: true,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-06-01T00:00:00.000Z",
@@ -19,7 +20,7 @@ const inactiveUser: User = {
   id: "2",
   email: "bob@example.com",
   fullName: "Bob Jones",
-  role: "admin",
+  role: Role.ADMIN,
   isActive: false,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-06-01T00:00:00.000Z",
@@ -56,8 +57,8 @@ describe("UsersList", () => {
     it("renders each user's role as a chip", () => {
       renderUsersList([activeUser, inactiveUser]);
 
-      expect(screen.getByText("dev")).toBeInTheDocument();
-      expect(screen.getByText("admin")).toBeInTheDocument();
+      expect(screen.getByText(Role.DEV)).toBeInTheDocument();
+      expect(screen.getByText(Role.ADMIN)).toBeInTheDocument();
     });
 
     it("renders nothing when the list is empty", () => {

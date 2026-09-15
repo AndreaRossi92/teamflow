@@ -3,13 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import ProjectAssignUsers from "./ProjectAssignUser";
 import type { AssignableUser } from "../types/project";
+import { Role } from "../../user/const/user";
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 const memberUser: AssignableUser = {
   id: "1",
   email: "alice@example.com",
   fullName: "Alice Smith",
-  role: "dev",
+  role: Role.DEV,
   isMember: true,
 };
 
@@ -17,7 +18,7 @@ const nonMemberUser: AssignableUser = {
   id: "2",
   email: "bob@example.com",
   fullName: "Bob Jones",
-  role: "admin",
+  role: Role.ADMIN,
   isMember: false,
 };
 
@@ -56,8 +57,8 @@ describe("ProjectAssignUsers", () => {
     it("renders each user's role as a chip", () => {
       renderProjectAssignUsers([memberUser, nonMemberUser]);
 
-      expect(screen.getByText("dev")).toBeInTheDocument();
-      expect(screen.getByText("admin")).toBeInTheDocument();
+      expect(screen.getByText(Role.DEV)).toBeInTheDocument();
+      expect(screen.getByText(Role.ADMIN)).toBeInTheDocument();
     });
 
     it("renders nothing when the list is empty", () => {

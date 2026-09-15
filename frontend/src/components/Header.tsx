@@ -36,7 +36,7 @@ import {
   Password,
   AssignmentAdd,
 } from "@mui/icons-material";
-import { ROLE_COLOR } from "../features/user/const/user";
+import { Role, ROLE_COLOR } from "../features/user/const/user";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -143,9 +143,11 @@ export default function Header() {
               <Avatar
                 title={`${user?.fullName} - ${t(user?.role ?? "", { ns: "user" })}`}
                 sx={{
-                  bgcolor: theme.palette[ROLE_COLOR[user?.role ?? "dev"]].main,
+                  bgcolor:
+                    theme.palette[ROLE_COLOR[user?.role ?? Role.DEV]].main,
                   color:
-                    theme.palette[ROLE_COLOR[user?.role ?? "dev"]].contrastText,
+                    theme.palette[ROLE_COLOR[user?.role ?? Role.DEV]]
+                      .contrastText,
                 }}
                 onClick={(e) => {
                   setAnchorEl(e.currentTarget);
@@ -202,7 +204,7 @@ export default function Header() {
         <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           <List>
-            {user?.role === "admin" && (
+            {user?.role === Role.ADMIN && (
               <>
                 <Typography
                   variant="h6"

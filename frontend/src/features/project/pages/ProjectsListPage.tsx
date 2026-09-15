@@ -30,6 +30,7 @@ import useReactivateProjectMutation from "../hooks/useReactivateProjectMutation"
 import ProjectsList from "../components/ProjectsList";
 import type { Project } from "../types/project";
 import { useAuth } from "../../../providers/useAuth";
+import { Role } from "../../user/const/user";
 
 export default function ProjectsListPage() {
   const { t } = useTranslation("project");
@@ -106,7 +107,7 @@ export default function ProjectsListPage() {
         title={t("projects")}
         subtitle={t("list")}
         actions={
-          user?.role === "admin" || user?.role === "manager" ? (
+          user?.role === Role.ADMIN || user?.role === Role.MANAGER ? (
             <IconButton
               size="small"
               title={t("add", { ns: "common" })}
@@ -215,12 +216,15 @@ export default function ProjectsListPage() {
           }}
           listItemProps={{
             sx: {
-              pr: user?.role === "admin" || user?.role === "manager" ? 18 : 0,
+              pr:
+                user?.role === Role.ADMIN || user?.role === Role.MANAGER
+                  ? 18
+                  : 0,
             },
             disablePadding: true,
           }}
           actions={(project) =>
-            user?.role === "admin" || user?.role === "manager" ? (
+            user?.role === Role.ADMIN || user?.role === Role.MANAGER ? (
               <Stack direction="row" spacing={1}>
                 <IconButton
                   size="small"

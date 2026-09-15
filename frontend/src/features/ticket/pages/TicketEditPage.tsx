@@ -18,6 +18,7 @@ import { useState } from "react";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import useUpdateTicketStatusMutation from "../hooks/useUpdateTicketStatusMutation";
 import { useAuth } from "../../../providers/useAuth";
+import { Role } from "../../user/const/user";
 
 export default function TicketEditPage() {
   const { user } = useAuth();
@@ -66,7 +67,7 @@ export default function TicketEditPage() {
   });
 
   const handleSubmit = ticketEditForm.handleSubmit((data) =>
-    user?.role === "dev"
+    user?.role === Role.DEV
       ? updateTicketStatusMutation.mutate(data.status)
       : ticketEditMutation.mutate(data),
   );

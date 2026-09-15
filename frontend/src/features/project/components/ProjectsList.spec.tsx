@@ -3,13 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import ProjectsList from "./ProjectsList";
 import type { Project } from "../types/project";
+import { Role } from "../../user/const/user";
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 const createdByUser = {
   id: "u1",
   email: "jane@example.com",
   fullName: "Jane Doe",
-  role: "admin" as const,
+  role: Role.ADMIN,
   isActive: true,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-06-01T00:00:00.000Z",

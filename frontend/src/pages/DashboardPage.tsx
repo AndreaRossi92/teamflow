@@ -25,6 +25,7 @@ import useTicketDashboardQuery from "../features/ticket/hooks/useTicketDashboard
 import useTicketDevDashboardQuery from "../features/ticket/hooks/useTicketDevDashboardQuery";
 import useUserDashboardQuery from "../features/user/hooks/useUserDashboardQuery";
 import UserDashboardChart from "../features/user/components/UserDashboardChart";
+import { Role } from "../features/user/const/user";
 
 export default function DashboardPage() {
   const { t } = useTranslation("dashboard");
@@ -41,7 +42,7 @@ export default function DashboardPage() {
 
   return (
     <Grid container spacing={2}>
-      {user?.role === "admin" && (
+      {user?.role === Role.ADMIN && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -133,7 +134,7 @@ export default function DashboardPage() {
           <CardContent>
             <TicketDashboardChart
               ticketDashboard={
-                (user?.role === "dev"
+                (user?.role === Role.DEV
                   ? ticketDevDashboardQuery.data
                     ? [ticketDevDashboardQuery.data]
                     : []

@@ -14,6 +14,7 @@ import PageHeader from "../../../components/PageHeader";
 import { omit } from "lodash";
 import { useSnackbar } from "../../../providers/useSnackbar";
 import { Save } from "@mui/icons-material";
+import { Role } from "../const/user";
 
 export default function UserCreatePage() {
   const { t } = useTranslation("user");
@@ -28,7 +29,7 @@ export default function UserCreatePage() {
       fullName: "",
       password: "",
       confirmPassword: "",
-      role: "dev",
+      role: Role.DEV,
     },
   });
 

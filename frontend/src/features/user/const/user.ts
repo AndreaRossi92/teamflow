@@ -1,6 +1,12 @@
-import type { Role } from "../types/user";
+import type { Role as RoleType } from "../types/user";
 
-export const ROLE_COLOR: Record<Role, "admin" | "manager" | "dev"> = {
+export const Role: Record<"ADMIN" | "MANAGER" | "DEV", RoleType> = {
+  ADMIN: "admin",
+  MANAGER: "manager",
+  DEV: "dev",
+};
+
+export const ROLE_COLOR: Record<RoleType, RoleType> = {
   admin: "admin",
   manager: "manager",
   dev: "dev",

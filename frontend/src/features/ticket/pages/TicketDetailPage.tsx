@@ -11,6 +11,7 @@ import useTicketDetailQuery from "../hooks/useTicketDetailQuery";
 import useDeleteTicketMutation from "../hooks/useDeleteTicketMutation";
 import TicketDetail from "../components/TicketDetail";
 import DeleteButton from "../../../components/DeleteButton";
+import { Role } from "../../user/const/user";
 
 export default function TicketDetailPage() {
   const { t } = useTranslation("ticket");
@@ -47,7 +48,7 @@ export default function TicketDetailPage() {
               >
                 <Edit fontSize="small" />
               </IconButton>
-              {(user?.role === "admin" || user?.role === "manager") && (
+              {(user?.role === Role.ADMIN || user?.role === Role.MANAGER) && (
                 <IconButton
                   size="small"
                   title={t("members")}
@@ -75,7 +76,7 @@ export default function TicketDetailPage() {
       {!ticket.isFetching && !ticket.isError && ticket.data && (
         <>
           <TicketDetail ticket={ticket.data} />
-          {(user?.role === "admin" || user?.role === "manager") && (
+          {(user?.role === Role.ADMIN || user?.role === Role.MANAGER) && (
             <Stack direction="row" sx={{ justifyContent: "center" }}>
               <DeleteButton
                 onDelete={() =>

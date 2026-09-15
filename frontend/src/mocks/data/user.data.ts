@@ -1,9 +1,10 @@
+import { Role } from "../../features/user/const/user";
 import type { User } from "../../features/user/types/user";
 
 export const mockAdminUser: User = {
   id: "user-admin",
   email: "admin@teamflow.com",
-  role: "admin",
+  role: Role.ADMIN,
   fullName: "Admin User",
   isActive: true,
   createdAt: "2024-01-05T09:00:00.000Z",
@@ -13,7 +14,7 @@ export const mockAdminUser: User = {
 export const mockManagerUser1: User = {
   id: "user-manager-1",
   email: "sara.bianchi@teamflow.com",
-  role: "manager",
+  role: Role.MANAGER,
   fullName: "Sara Bianchi",
   isActive: true,
   createdAt: "2024-01-10T09:00:00.000Z",
@@ -23,7 +24,7 @@ export const mockManagerUser1: User = {
 export const mockManagerUser2: User = {
   id: "user-manager-2",
   email: "marco.rossi@teamflow.com",
-  role: "manager",
+  role: Role.MANAGER,
   fullName: "Marco Rossi",
   isActive: true,
   createdAt: "2024-01-12T09:00:00.000Z",
@@ -33,7 +34,7 @@ export const mockManagerUser2: User = {
 export const mockDevUser1: User = {
   id: "user-dev-1",
   email: "giulia.verdi@teamflow.com",
-  role: "dev",
+  role: Role.DEV,
   fullName: "Giulia Verdi",
   isActive: true,
   createdAt: "2024-01-15T09:00:00.000Z",
@@ -43,7 +44,7 @@ export const mockDevUser1: User = {
 export const mockDevUser2: User = {
   id: "user-dev-2",
   email: "luca.ferrari@teamflow.com",
-  role: "dev",
+  role: Role.DEV,
   fullName: "Luca Ferrari",
   isActive: true,
   createdAt: "2024-01-16T09:00:00.000Z",
@@ -53,7 +54,7 @@ export const mockDevUser2: User = {
 export const mockDevUser3: User = {
   id: "user-dev-3",
   email: "elena.romano@teamflow.com",
-  role: "dev",
+  role: Role.DEV,
   fullName: "Elena Romano",
   isActive: true,
   createdAt: "2024-01-18T09:00:00.000Z",
@@ -63,7 +64,7 @@ export const mockDevUser3: User = {
 export const mockDevUser4: User = {
   id: "user-dev-4",
   email: "davide.conti@teamflow.com",
-  role: "dev",
+  role: Role.DEV,
   fullName: "Davide Conti",
   isActive: true,
   createdAt: "2024-01-20T09:00:00.000Z",
@@ -73,7 +74,7 @@ export const mockDevUser4: User = {
 export const mockDevUser5: User = {
   id: "user-dev-5",
   email: "chiara.galli@teamflow.com",
-  role: "dev",
+  role: Role.DEV,
   fullName: "Chiara Galli",
   isActive: false,
   createdAt: "2024-01-22T09:00:00.000Z",

@@ -8,13 +8,13 @@ import {
   ToggleButton,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import type { Role, UserDashboard } from "../types/user";
+import type { Role as RoleType, UserDashboard } from "../types/user";
 import { useState } from "react";
-import { ACTIVE_COLOR, ROLE_COLOR } from "../const/user";
+import { ACTIVE_COLOR, Role, ROLE_COLOR } from "../const/user";
 import { UserRoleBadge } from "./UserRoleBadge";
 import { UserActiveBadge } from "./UserActiveBadge";
 
-const ROLE_ORDER: Role[] = ["admin", "manager", "dev"];
+const ROLE_ORDER: RoleType[] = [Role.ADMIN, Role.MANAGER, Role.DEV];
 
 type UserDashboardChartProps = Pick<
   PieChartProps,
@@ -44,7 +44,7 @@ export default function UserDashboardChart({
       role: item.role,
       label: t(item.role, { ns: "user" }),
       value: item.active + item.inactive,
-      color: theme.palette[ROLE_COLOR[item.role as Role]].main,
+      color: theme.palette[ROLE_COLOR[item.role as RoleType]].main,
     }));
 
   const userActiveStateData = Object.entries(

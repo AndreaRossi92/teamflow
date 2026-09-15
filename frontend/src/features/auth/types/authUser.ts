@@ -1,6 +1,8 @@
+import type { Role } from "../../user/types/user";
+
 export type AuthUser = {
   id: string;
   email: string;
-  role: "admin" | "manager" | "dev";
+  role: Role;
   fullName: string;
 };

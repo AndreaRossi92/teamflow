@@ -7,11 +7,12 @@ import type {
   TicketPriority,
   TicketStatus,
 } from "../../features/ticket/types/ticket";
-import type { User } from "../../features/user/types/user";
+import type { Role as RoleType, User } from "../../features/user/types/user";
+import { Role } from "../../features/user/const/user";
 
 const STATUSES: TicketStatus[] = ["open", "inProgress", "resolved", "closed"];
 const PRIORITIES: TicketPriority[] = ["low", "medium", "high"];
-const ROLES: User["role"][] = ["admin", "manager", "dev"];
+const ROLES: RoleType[] = [Role.ADMIN, Role.MANAGER, Role.DEV];
 
 type TicketBreakdown = Record<TicketStatus, Record<TicketPriority, number>>;
 
@@ -37,7 +38,7 @@ function breakdownForTickets(tickets: Ticket[]): TicketBreakdown {
 
 function findProjectsForWorkload(user: User): Project[] {
   const activeProjects = mockProjects.filter((p) => p.isActive);
-  if (user.role === "admin") return activeProjects;
+  if (user.role === Role.ADMIN) return activeProjects;
   return activeProjects.filter((p) => p.members.some((m) => m.id === user.id));
 }
 
@@ -54,7 +55,7 @@ export function getProjectsWorkload(user: User) {
       (t) => t.project.id === project.id,
     );
     const relevantTickets =
-      user.role === "dev"
+      user.role === Role.DEV
         ? projectTickets.filter((t) =>
             t.assignees.some((a) => a.id === user.id),
           )

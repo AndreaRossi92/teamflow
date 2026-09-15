@@ -5,11 +5,12 @@ import { getMockUserWorkload, getUsersBreakdown } from "../data/dashboard.data";
 import type { ResetPasswordFormValues } from "../../features/auth/types/resetPasswordForm";
 import { isErrorResponse, requireRole } from "./guards";
 import { badRequest, notFound } from "../data/http.errors";
+import { Role } from "../../features/user/const/user";
 
 export const userHandlers = [
   http.get("/api/users", async ({ request }) => {
     await delay(500);
-    const auth = requireRole("admin");
+    const auth = requireRole(Role.ADMIN);
     if (isErrorResponse(auth)) return auth;
 
     const url = new URL(request.url);
@@ -51,7 +52,7 @@ export const userHandlers = [
 
   http.get("/api/users/me/workload", async () => {
     await delay(400);
-    const auth = requireRole("admin", "manager", "dev");
+    const auth = requireRole(Role.ADMIN, Role.MANAGER, Role.DEV);
     if (isErrorResponse(auth)) return auth;
 
     return HttpResponse.json(getMockUserWorkload(auth.id));
@@ -59,7 +60,7 @@ export const userHandlers = [
 
   http.get("/api/users/breakdown", async () => {
     await delay(300);
-    const auth = requireRole("admin");
+    const auth = requireRole(Role.ADMIN);
     if (isErrorResponse(auth)) return auth;
 
     return HttpResponse.json(getUsersBreakdown());
@@ -67,7 +68,7 @@ export const userHandlers = [
 
   http.get<{ id: string }>("/api/users/:id", async ({ params }) => {
     await delay(300);
-    const auth = requireRole("admin");
+    const auth = requireRole(Role.ADMIN);
     if (isErrorResponse(auth)) return auth;
 
     const user = mockUsers.find((u) => u.id === params.id);
@@ -77,14 +78,14 @@ export const userHandlers = [
 
   http.post<never, Partial<User>>("/api/users", async ({ request }) => {
     await delay(500);
-    const auth = requireRole("admin");
+    const auth = requireRole(Role.ADMIN);
     if (isErrorResponse(auth)) return auth;
 
     const body = await request.json();
     const newUser: User = {
       id: generateUserId(),
       email: body.email ?? "",
-      role: body.role ?? "dev",
+      role: body.role ?? Role.DEV,
       fullName: body.fullName ?? "",
       isActive: true,
       createdAt: new Date().toISOString(),
@@ -98,7 +99,7 @@ export const userHandlers = [
     "/api/users/:id",
     async ({ params, request }) => {
       await delay(500);
-      const auth = requireRole("admin");
+      const auth = requireRole(Role.ADMIN);
       if (isErrorResponse(auth)) return auth;
 
       const user = mockUsers.find((u) => u.id === params.id);
@@ -120,7 +121,7 @@ export const userHandlers = [
     "/api/users/:id/deactivate",
     async ({ params }) => {
       await delay(400);
-      const auth = requireRole("admin");
+      const auth = requireRole(Role.ADMIN);
       if (isErrorResponse(auth)) return auth;
 
       const user = mockUsers.find((u) => u.id === params.id);
@@ -139,7 +140,7 @@ export const userHandlers = [
     "/api/users/:id/reactivate",
     async ({ params }) => {
       await delay(400);
-      const auth = requireRole("admin");
+      const auth = requireRole(Role.ADMIN);
       if (isErrorResponse(auth)) return auth;
 
       const user = mockUsers.find((u) => u.id === params.id);
@@ -159,7 +160,7 @@ export const userHandlers = [
     Omit<ResetPasswordFormValues, "confirmNewPassword">
   >("/api/users/:id/reset-password", async ({ params }) => {
     await delay(500);
-    const auth = requireRole("admin");
+    const auth = requireRole(Role.ADMIN);
     if (isErrorResponse(auth)) return auth;
 
     const user = mockUsers.find((u) => u.id === params.id);
@@ -170,7 +171,7 @@ export const userHandlers = [
 
   http.delete<{ id: string }>("/api/users/:id", async ({ params }) => {
     await delay(300);
-    const auth = requireRole("admin");
+    const auth = requireRole(Role.ADMIN);
     if (isErrorResponse(auth)) return auth;
 
     const index = mockUsers.findIndex((u) => u.id === params.id);

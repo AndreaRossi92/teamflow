@@ -5,15 +5,16 @@ import * as z from "zod";
 import { ControlledAutocomplete } from "./ControlledAutocomplete";
 import { vi } from "vitest";
 import useCustomForm from "../hooks/useCustomForm";
+import { Role } from "../features/user/const/user";
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
-const ROLES = ["admin", "manager", "dev"];
+const ROLES = [Role.ADMIN, Role.MANAGER, Role.DEV];
 
 const ROLE_OBJECTS = [
-  { label: "Admin", value: "admin" },
-  { label: "Manager", value: "manager" },
-  { label: "Dev", value: "dev" },
+  { label: "Admin", value: Role.ADMIN },
+  { label: "Manager", value: Role.MANAGER },
+  { label: "Dev", value: Role.DEV },
 ];
 
 const SINGLE_SCHEMA = z.object({
@@ -137,8 +138,8 @@ describe("ControlledAutocomplete", () => {
     });
 
     it("pre-fills with a default value", () => {
-      render(<SingleWrapper defaultValues={{ role: "admin" }} />);
-      expect(screen.getByRole("combobox")).toHaveValue("admin");
+      render(<SingleWrapper defaultValues={{ role: Role.ADMIN }} />);
+      expect(screen.getByRole("combobox")).toHaveValue(Role.ADMIN);
     });
 
     it("renders all options when the dropdown is opened", async () => {
@@ -157,17 +158,20 @@ describe("ControlledAutocomplete", () => {
     it("updates the input value after selecting an option", async () => {
       const user = userEvent.setup();
       render(<SingleWrapper />);
-      await openAndSelect(user, "manager");
-      expect(screen.getByRole("combobox")).toHaveValue("manager");
+      await openAndSelect(user, Role.MANAGER);
+      expect(screen.getByRole("combobox")).toHaveValue(Role.MANAGER);
     });
 
     it("calls onSubmit with the selected value when the form is valid", async () => {
       const user = userEvent.setup();
       const onSubmit = vi.fn();
       render(<SingleWrapper onSubmit={onSubmit} />);
-      await openAndSelect(user, "dev");
+      await openAndSelect(user, Role.DEV);
       await user.click(screen.getByRole("button", { name: "Submit" }));
-      expect(onSubmit).toHaveBeenCalledWith({ role: "dev" }, expect.anything());
+      expect(onSubmit).toHaveBeenCalledWith(
+        { role: Role.DEV },
+        expect.anything(),
+      );
     });
   });
 
@@ -175,21 +179,21 @@ describe("ControlledAutocomplete", () => {
     it("allows selecting multiple options", async () => {
       const user = userEvent.setup();
       render(<MultiWrapper />);
-      await openAndSelect(user, "admin");
-      await openAndSelect(user, "manager");
-      expect(screen.getByText("admin")).toBeInTheDocument();
-      expect(screen.getByText("manager")).toBeInTheDocument();
+      await openAndSelect(user, Role.ADMIN);
+      await openAndSelect(user, Role.MANAGER);
+      expect(screen.getByText(Role.ADMIN)).toBeInTheDocument();
+      expect(screen.getByText(Role.MANAGER)).toBeInTheDocument();
     });
 
     it("calls onSubmit with an array of selected values", async () => {
       const user = userEvent.setup();
       const onSubmit = vi.fn();
       render(<MultiWrapper onSubmit={onSubmit} />);
-      await openAndSelect(user, "admin");
-      await openAndSelect(user, "manager");
+      await openAndSelect(user, Role.ADMIN);
+      await openAndSelect(user, Role.MANAGER);
       await user.click(screen.getByRole("button", { name: "Submit" }));
       expect(onSubmit).toHaveBeenCalledWith(
-        { roles: ["admin", "manager"] },
+        { roles: [Role.ADMIN, Role.MANAGER] },
         expect.anything(),
       );
     });
@@ -203,7 +207,7 @@ describe("ControlledAutocomplete", () => {
       await openAndSelect(user, "Manager");
       await user.click(screen.getByRole("button", { name: "Submit" }));
       expect(onSubmit).toHaveBeenCalledWith(
-        { role: { label: "Manager", value: "manager" } },
+        { role: { label: "Manager", value: Role.MANAGER } },
         expect.anything(),
       );
     });
@@ -252,7 +256,7 @@ describe("ControlledAutocomplete", () => {
       await user.click(screen.getByRole("button", { name: "Submit" }));
       expect(await screen.findByText("Field is required")).toBeInTheDocument();
 
-      await openAndSelect(user, "admin");
+      await openAndSelect(user, Role.ADMIN);
       await waitFor(() => {
         expect(screen.queryByText("Field is required")).not.toBeInTheDocument();
       });

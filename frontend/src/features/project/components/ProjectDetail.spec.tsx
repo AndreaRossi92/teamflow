@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import ProjectDetail from "./ProjectDetail";
+import { Role } from "../../user/const/user";
 
 vi.mock("../../../formatters/date", () => ({
   formatDateTime: (date: string) => date,
@@ -11,7 +12,7 @@ const createdByUser = {
   id: "u1",
   email: "jane@example.com",
   fullName: "Jane Doe",
-  role: "admin" as const,
+  role: Role.ADMIN,
   isActive: true,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-06-01T00:00:00.000Z",
@@ -21,7 +22,7 @@ const member = {
   id: "u2",
   email: "bob@example.com",
   fullName: "Bob Smith",
-  role: "dev" as const,
+  role: Role.DEV,
   isActive: true,
   createdAt: "2024-02-01T00:00:00.000Z",
   updatedAt: "2024-07-01T00:00:00.000Z",

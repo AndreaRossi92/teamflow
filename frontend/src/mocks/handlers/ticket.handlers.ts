@@ -12,6 +12,7 @@ import {
   requireUser,
 } from "../handlers/guards";
 import { badRequest, forbidden, notFound } from "../data/http.errors";
+import { Role } from "../../features/user/const/user";
 
 function findProjectWithAccess(
   id: string,
@@ -21,7 +22,7 @@ function findProjectWithAccess(
   if (!project) return notFound("Project not found");
 
   if (
-    currentUser.role !== "admin" &&
+    currentUser.role !== Role.ADMIN &&
     !project.members.some((m) => m.id === currentUser.id)
   ) {
     return forbidden();
@@ -38,7 +39,7 @@ function findTicketWithAccess(
   const ticket = mockTickets.find((t) => t.id === id);
   if (!ticket) return notFound("Ticket not found");
 
-  if (currentUser.role === "admin") return ticket;
+  if (currentUser.role === Role.ADMIN) return ticket;
 
   const project = mockProjects.find((p) => p.id === ticket.project.id);
   if (!project) return notFound("Project not found");
@@ -46,7 +47,7 @@ function findTicketWithAccess(
   const isProjectMember = project.members.some((m) => m.id === currentUser.id);
   if (!isProjectMember) return forbidden();
 
-  if (options.requireManagerAccess && currentUser.role === "dev") {
+  if (options.requireManagerAccess && currentUser.role === Role.DEV) {
     return forbidden();
   }
 
@@ -76,11 +77,11 @@ export const ticketHandlers = [
 
     let filtered = mockTickets;
 
-    if (currentUser.role === "manager") {
+    if (currentUser.role === Role.MANAGER) {
       filtered = filtered.filter((t) =>
         t.project.members.some((m) => m.id === currentUser.id),
       );
-    } else if (currentUser.role === "dev") {
+    } else if (currentUser.role === Role.DEV) {
       filtered = filtered.filter((t) =>
         t.assignees.some((a) => a.id === currentUser.id),
       );
@@ -147,7 +148,7 @@ export const ticketHandlers = [
     "/api/tickets",
     async ({ request }) => {
       await delay(500);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
       const currentUser = auth;
 
@@ -182,7 +183,7 @@ export const ticketHandlers = [
     "/api/tickets/:id",
     async ({ params, request }) => {
       await delay(500);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
       const currentUser = auth;
 
@@ -227,7 +228,7 @@ export const ticketHandlers = [
     "/api/tickets/:id/assignable-users",
     async ({ params, request }) => {
       await delay(500);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
 
       const ticketResult = findTicketWithAccess(params.id, auth);
@@ -267,7 +268,7 @@ export const ticketHandlers = [
     "/api/tickets/:id/assign",
     async ({ params, request }) => {
       await delay(500);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
 
       const ticketResult = findTicketWithAccess(params.id, auth, {
@@ -315,7 +316,7 @@ export const ticketHandlers = [
       if (isErrorResponse(result)) return result;
       const ticket = result;
 
-      if (auth.role === "dev") {
+      if (auth.role === Role.DEV) {
         const isAssignee = ticket.assignees.some((a) => a.id === auth.id);
         if (!isAssignee) return forbidden();
       }
@@ -331,7 +332,7 @@ export const ticketHandlers = [
 
   http.delete<{ id: string }>("/api/tickets/:id", async ({ params }) => {
     await delay(300);
-    const auth = requireRole("admin", "manager");
+    const auth = requireRole(Role.ADMIN, Role.MANAGER);
     if (isErrorResponse(auth)) return auth;
 
     const result = findTicketWithAccess(params.id, auth, {

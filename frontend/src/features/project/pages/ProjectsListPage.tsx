@@ -244,6 +244,7 @@ export default function ProjectsListPage() {
                   <DeleteIconButton
                     dialogTitle={project.name}
                     dialogText={t("deactivateConfirm")}
+                    deleteLabel={t("deactivate")}
                     onDelete={() =>
                       deactivateProjectMutation
                         .mutateAsync(project.id)

@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from "vitest";
 import { FormProvider, useForm } from "react-hook-form";
 import { UserCreateForm } from "./UserCreateForm";
 import type { UserCreateFormValues } from "../types/userForm";
+import { Role } from "../const/user";
 
 // ── Render helper ──────────────────────────────────────────────────────────────
 // UserCreateForm relies on FormProvider/useFormContext, so we need to wrap it
@@ -16,7 +17,7 @@ function renderUserCreateForm(onEnter?: () => void) {
         fullName: "",
         password: "",
         confirmPassword: "",
-        role: "dev",
+        role: Role.DEV,
       },
     });
 

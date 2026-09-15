@@ -12,6 +12,7 @@ import type { PaginatedResponse } from "../../../types/paginatedResponse";
 import ControlledInfiniteQueryAutocomplete from "../../../components/ControlledInfiniteQueryAutocomplete";
 import type { AxiosError } from "axios";
 import { useAuth } from "../../../providers/useAuth";
+import { Role } from "../../user/const/user";
 
 type TicketEditFormProps = {
   onEnter?: () => void;
@@ -40,7 +41,7 @@ export function TicketEditForm({
         name="title"
         label={t("title")}
         onKeyDown={handleKeyDown}
-        disabled={user?.role === "dev" || disabled}
+        disabled={user?.role === Role.DEV || disabled}
       />
 
       <ControlledTextField
@@ -49,7 +50,7 @@ export function TicketEditForm({
         multiline
         rows={4}
         onKeyDown={handleKeyDown}
-        disabled={user?.role === "dev" || disabled}
+        disabled={user?.role === Role.DEV || disabled}
       />
 
       <ControlledAutocomplete
@@ -57,7 +58,7 @@ export function TicketEditForm({
         label={t("priority")}
         options={TICKET_PRIORITIES}
         getOptionLabel={(option) => t(option)}
-        disabled={user?.role === "dev" || disabled}
+        disabled={user?.role === Role.DEV || disabled}
       />
 
       <ControlledInfiniteQueryAutocomplete<Project>
@@ -66,7 +67,7 @@ export function TicketEditForm({
         infiniteQuery={projectListQuery}
         getOptionKey={(option) => option.id}
         getOptionLabel={(option) => option.name ?? ""}
-        disabled={user?.role === "dev" || disabled}
+        disabled={user?.role === Role.DEV || disabled}
       />
 
       <ControlledAutocomplete

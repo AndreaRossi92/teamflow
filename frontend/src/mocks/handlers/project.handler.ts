@@ -14,6 +14,7 @@ import {
   requireUser,
 } from "../handlers/guards";
 import { badRequest, forbidden, notFound } from "../data/http.errors";
+import { Role } from "../../features/user/const/user";
 
 function isProjectMember(project: Project, userId: string): boolean {
   return project.members.some((m) => m.id === userId);
@@ -27,7 +28,7 @@ function findProjectWithAccess(
   if (!project) return notFound("Project not found");
 
   if (
-    currentUser.role !== "admin" &&
+    currentUser.role !== Role.ADMIN &&
     !isProjectMember(project, currentUser.id)
   ) {
     return forbidden();
@@ -52,7 +53,7 @@ export const projectHandlers = [
     const limit = Number(url.searchParams.get("limit")) || 20;
 
     let filtered =
-      currentUser.role === "admin"
+      currentUser.role === Role.ADMIN
         ? mockProjects
         : mockProjects.filter((p) => isProjectMember(p, currentUser.id));
 
@@ -93,7 +94,7 @@ export const projectHandlers = [
 
   http.get("/api/projects/members-workload", async () => {
     await delay(500);
-    const auth = requireRole("admin", "manager");
+    const auth = requireRole(Role.ADMIN, Role.MANAGER);
     if (isErrorResponse(auth)) return auth;
 
     return HttpResponse.json(getMembersWorkload(auth));
@@ -112,7 +113,7 @@ export const projectHandlers = [
 
   http.post<never, Partial<Project>>("/api/projects", async ({ request }) => {
     await delay(500);
-    const auth = requireRole("admin", "manager");
+    const auth = requireRole(Role.ADMIN, Role.MANAGER);
     if (isErrorResponse(auth)) return auth;
     const currentUser = auth;
 
@@ -135,7 +136,7 @@ export const projectHandlers = [
     "/api/projects/:id",
     async ({ params, request }) => {
       await delay(500);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
 
       const result = findProjectWithAccess(params.id, auth);
@@ -162,7 +163,7 @@ export const projectHandlers = [
     "/api/projects/:id/deactivate",
     async ({ params }) => {
       await delay(400);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
 
       const result = findProjectWithAccess(params.id, auth);
@@ -183,7 +184,7 @@ export const projectHandlers = [
     "/api/projects/:id/reactivate",
     async ({ params }) => {
       await delay(400);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
 
       const result = findProjectWithAccess(params.id, auth);
@@ -204,7 +205,7 @@ export const projectHandlers = [
     "/api/projects/:id/assignable-users",
     async ({ params, request }) => {
       await delay(500);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
 
       const result = findProjectWithAccess(params.id, auth);
@@ -241,7 +242,7 @@ export const projectHandlers = [
     "/api/projects/:id/assign",
     async ({ params, request }) => {
       await delay(500);
-      const auth = requireRole("admin", "manager");
+      const auth = requireRole(Role.ADMIN, Role.MANAGER);
       if (isErrorResponse(auth)) return auth;
 
       const result = findProjectWithAccess(params.id, auth);
@@ -264,7 +265,7 @@ export const projectHandlers = [
 
   http.delete<{ id: string }>("/api/projects/:id", async ({ params }) => {
     await delay(300);
-    const auth = requireRole("admin", "manager");
+    const auth = requireRole(Role.ADMIN, Role.MANAGER);
     if (isErrorResponse(auth)) return auth;
 
     const result = findProjectWithAccess(params.id, auth);

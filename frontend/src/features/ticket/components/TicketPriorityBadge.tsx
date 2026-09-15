@@ -17,7 +17,7 @@ export function TicketPriorityBadge({
   return (
     <Chip
       size="small"
-      label={count ? `${count} ${t(priority)}` : t(priority)}
+      label={count !== undefined ? `${count} ${t(priority)}` : t(priority)}
       color={PRIORITY_COLOR[priority]}
       {...props}
     />

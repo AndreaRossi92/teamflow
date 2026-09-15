@@ -13,7 +13,7 @@ export function UserRoleBadge({ role, count, ...props }: UserRoleBadgeProps) {
   return (
     <Chip
       size="small"
-      label={count ? `${count} ${t(role)}` : t(role)}
+      label={count !== undefined ? `${count} ${t(role)}` : t(role)}
       color={ROLE_COLOR[role]}
       {...props}
     />

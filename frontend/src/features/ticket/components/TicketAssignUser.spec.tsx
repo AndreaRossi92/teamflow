@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import TicketAssignUsers from "./TicketAssignUser";
 import type { AssignableUser } from "../types/ticket";
+import { Role } from "../../user/const/user";
 
 // ── Child mocks ─────────────────────────────────────────────────────────────
 vi.mock("../ActiveDot", () => ({
@@ -15,7 +16,7 @@ function buildUser(overrides: Partial<AssignableUser> = {}): AssignableUser {
     id: "user-1",
     fullName: "Alice Manager",
     email: "alice@teamflow.com",
-    role: "manager",
+    role: Role.MANAGER,
     isMember: false,
     ...overrides,
   } as AssignableUser;
@@ -25,7 +26,7 @@ const alice = buildUser({ id: "user-1", fullName: "Alice", isMember: true });
 const bob = buildUser({
   id: "user-2",
   fullName: "Bob",
-  role: "dev",
+  role: Role.DEV,
   isMember: false,
 });
 

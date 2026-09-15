@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import PageLoader from "../components/PageLoader";
+import { Role } from "../features/user/const/user";
 
 const lazyWithLoader = (
   importFn: () => Promise<{ default: ComponentType }>,
@@ -82,7 +83,7 @@ export default function AppRoutes() {
         <Route path="/ticket/:id/edit" element={<TicketEditPage />} />
       </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+      <Route element={<ProtectedRoute allowedRoles={[Role.ADMIN]} />}>
         <Route path="/users" element={<UsersListPage />} />
         <Route path="/user/create" element={<UserCreatePage />} />
         <Route path="/user/:id" element={<UserDetailPage />} />
@@ -93,7 +94,9 @@ export default function AppRoutes() {
         />
       </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={["admin", "manager"]} />}>
+      <Route
+        element={<ProtectedRoute allowedRoles={[Role.ADMIN, Role.MANAGER]} />}
+      >
         <Route path="/project/create" element={<ProjectCreatePage />} />
         <Route path="/project/:id/edit" element={<ProjectEditPage />} />
         <Route

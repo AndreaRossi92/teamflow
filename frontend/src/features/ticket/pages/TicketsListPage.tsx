@@ -27,6 +27,7 @@ import TicketsList from "../components/TicketsList";
 import type { Ticket, TicketPriority, TicketStatus } from "../types/ticket";
 import { TICKET_PRIORITIES, TICKET_STATUSES } from "../types/ticket";
 import { PRIORITY_COLOR, STATUS_COLOR } from "../const/tickets";
+import { Role } from "../../user/const/user";
 
 export default function TicketsListPage() {
   const { t } = useTranslation("ticket");
@@ -92,7 +93,7 @@ export default function TicketsListPage() {
         title={t("tickets")}
         subtitle={t("list")}
         actions={
-          user?.role === "admin" || user?.role === "manager" ? (
+          user?.role === Role.ADMIN || user?.role === Role.MANAGER ? (
             <IconButton
               size="small"
               title={t("add", { ns: "common" })}
@@ -276,7 +277,7 @@ export default function TicketsListPage() {
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
-          {(user?.role === "admin" || user?.role === "manager") && (
+          {(user?.role === Role.ADMIN || user?.role === Role.MANAGER) && (
             <Box>
               <Typography
                 variant="caption"
@@ -343,7 +344,15 @@ export default function TicketsListPage() {
         <TicketsList
           tickets={tickets}
           onClick={(ticket) => navigate(`/ticket/${ticket.id}`)}
-          listItemProps={{ sx: { pr: 12 }, disablePadding: true }}
+          listItemProps={{
+            sx: {
+              pr:
+                user?.role === Role.ADMIN || user?.role === Role.MANAGER
+                  ? 12
+                  : 8,
+            },
+            disablePadding: true,
+          }}
           actions={(ticket) => (
             <Stack direction="row" spacing={1}>
               <IconButton
@@ -353,7 +362,7 @@ export default function TicketsListPage() {
               >
                 <Edit fontSize="small" />
               </IconButton>
-              {(user?.role === "admin" || user?.role === "manager") && (
+              {(user?.role === Role.ADMIN || user?.role === Role.MANAGER) && (
                 <IconButton
                   size="small"
                   title={t("members")}

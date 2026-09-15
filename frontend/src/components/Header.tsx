@@ -5,7 +5,6 @@ import {
   MenuItem,
   type SelectChangeEvent,
   Stack,
-  Tooltip,
   Chip,
   IconButton,
   Button,
@@ -37,7 +36,7 @@ import {
   Password,
   AssignmentAdd,
 } from "@mui/icons-material";
-import { ROLE_COLOR } from "../features/user/const/user";
+import { Role, ROLE_COLOR } from "../features/user/const/user";
 
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
@@ -96,18 +95,17 @@ export default function Header() {
             onClick={() => {
               navigate("/", { replace: true });
             }}
+            title={t("home")}
           >
             TeamFlow
           </Button>
           {isDemoMode && (
-            <Tooltip title={t("demoMode")}>
-              <Chip
-                label={t("demo")}
-                variant="outlined"
-                size="small"
-                color="primary"
-              />
-            </Tooltip>
+            <Chip
+              label={t("demo")}
+              variant="outlined"
+              size="small"
+              color="primary"
+            />
           )}
         </Stack>
         <Stack direction="row" spacing={1}>
@@ -142,22 +140,19 @@ export default function Header() {
           </Select>
           {isAuthenticated && (
             <IconButton size="small">
-              <Tooltip
+              <Avatar
                 title={`${user?.fullName} - ${t(user?.role ?? "", { ns: "user" })}`}
-              >
-                <Avatar
-                  sx={{
-                    bgcolor:
-                      theme.palette[ROLE_COLOR[user?.role ?? "dev"]].main,
-                    color:
-                      theme.palette[ROLE_COLOR[user?.role ?? "dev"]]
-                        .contrastText,
-                  }}
-                  onClick={(e) => {
-                    setAnchorEl(e.currentTarget);
-                  }}
-                >{`${user?.fullName[0]}${user?.fullName.split(" ")?.[1]?.[0] ?? ""}`}</Avatar>
-              </Tooltip>
+                sx={{
+                  bgcolor:
+                    theme.palette[ROLE_COLOR[user?.role ?? Role.DEV]].main,
+                  color:
+                    theme.palette[ROLE_COLOR[user?.role ?? Role.DEV]]
+                      .contrastText,
+                }}
+                onClick={(e) => {
+                  setAnchorEl(e.currentTarget);
+                }}
+              >{`${user?.fullName[0]}${user?.fullName.split(" ")?.[1]?.[0] ?? ""}`}</Avatar>
             </IconButton>
           )}
           <Menu
@@ -209,7 +204,7 @@ export default function Header() {
         <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           <List>
-            {user?.role === "admin" && (
+            {user?.role === Role.ADMIN && (
               <>
                 <Typography
                   variant="h6"

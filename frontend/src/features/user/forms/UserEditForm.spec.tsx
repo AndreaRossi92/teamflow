@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from "vitest";
 import { FormProvider, useForm } from "react-hook-form";
 import { UserEditForm } from "./UserEditForm";
 import type { UserEditFormValues } from "../types/userForm";
+import { Role } from "../const/user";
 
 // ── Render helper ──────────────────────────────────────────────────────────────
 function renderUserEditForm(
@@ -15,7 +16,7 @@ function renderUserEditForm(
       defaultValues: {
         email: "",
         fullName: "",
-        role: "dev",
+        role: Role.DEV,
         ...defaultValues,
       },
     });

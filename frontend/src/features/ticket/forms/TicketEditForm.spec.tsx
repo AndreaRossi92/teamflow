@@ -13,6 +13,8 @@ import type {
 } from "@tanstack/react-query";
 import type { PaginatedResponse } from "../../../types/paginatedResponse";
 import type { AxiosError } from "axios";
+import type { Role as RoleType } from "../../user/types/user";
+import { Role } from "../../user/const/user";
 
 // ── Child mocks ─────────────────────────────────────────────────────────────
 vi.mock("../../../components/ControlledAutocomplete", () => {
@@ -139,7 +141,7 @@ function buildProjectListQuery(
   >;
 }
 
-function mockAuthAs(role: "admin" | "manager" | "dev") {
+function mockAuthAs(role: RoleType) {
   vi.mocked(useAuth).mockReturnValue({
     user: { id: "user-1", fullName: "Test User", email: "t@t.com", role },
   } as unknown as ReturnType<typeof useAuth>);
@@ -186,7 +188,7 @@ const getStatusSelect = () => screen.getByRole("combobox", { name: /status/i });
 // ── Tests ──────────────────────────────────────────────────────────────────────
 describe("TicketEditForm", () => {
   beforeEach(() => {
-    mockAuthAs("admin");
+    mockAuthAs(Role.ADMIN);
   });
 
   describe("rendering", () => {
@@ -246,7 +248,7 @@ describe("TicketEditForm", () => {
 
   describe("role-based access", () => {
     it("enables title, description, priority and project for admins", () => {
-      mockAuthAs("admin");
+      mockAuthAs(Role.ADMIN);
       renderTicketEditForm();
 
       expect(getTitleInput()).not.toBeDisabled();
@@ -256,7 +258,7 @@ describe("TicketEditForm", () => {
     });
 
     it("enables title, description, priority and project for managers", () => {
-      mockAuthAs("manager");
+      mockAuthAs(Role.MANAGER);
       renderTicketEditForm();
 
       expect(getTitleInput()).not.toBeDisabled();
@@ -266,7 +268,7 @@ describe("TicketEditForm", () => {
     });
 
     it("disables title, description, priority and project for devs", () => {
-      mockAuthAs("dev");
+      mockAuthAs(Role.DEV);
       renderTicketEditForm();
 
       expect(getTitleInput()).toBeDisabled();
@@ -276,7 +278,7 @@ describe("TicketEditForm", () => {
     });
 
     it("never disables the status field, even for devs", () => {
-      mockAuthAs("dev");
+      mockAuthAs(Role.DEV);
       renderTicketEditForm();
 
       expect(getStatusSelect()).not.toBeDisabled();

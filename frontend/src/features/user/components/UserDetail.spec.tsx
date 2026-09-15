@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import UserDetail from "./UserDetail";
+import { Role } from "../const/user";
 
 vi.mock("../../../formatters/date", () => ({
   formatDateTime: (date: string) => date,
@@ -11,7 +12,7 @@ const activeUser = {
   id: "1",
   email: "john@example.com",
   fullName: "John Doe",
-  role: "dev" as const,
+  role: Role.DEV,
   isActive: true,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-06-01T00:00:00.000Z",
@@ -34,7 +35,7 @@ describe("UserDetail", () => {
 
     it("shows the user's role as a chip", () => {
       render(<UserDetail user={activeUser} />);
-      expect(screen.getByText("dev")).toBeInTheDocument();
+      expect(screen.getByText(Role.DEV)).toBeInTheDocument();
     });
 
     it("shows the createdAt date", () => {

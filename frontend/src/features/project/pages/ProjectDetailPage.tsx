@@ -14,6 +14,7 @@ import ProjectDetail from "../components/ProjectDetail";
 import { useAuth } from "../../../providers/useAuth";
 import useDeleteProjectMutation from "../hooks/useDeleteProjectMutation";
 import DeleteButton from "../../../components/DeleteButton";
+import { Role } from "../../user/const/user";
 
 export default function ProjectDetailPage() {
   const { t } = useTranslation("project");
@@ -55,7 +56,7 @@ export default function ProjectDetailPage() {
         title={t("project")}
         subtitle={t("detail")}
         actions={
-          (user?.role === "admin" || user?.role === "manager") &&
+          (user?.role === Role.ADMIN || user?.role === Role.MANAGER) &&
           project.isSuccess ? (
             <Stack direction="row" spacing={1}>
               <IconButton
@@ -125,7 +126,7 @@ export default function ProjectDetailPage() {
         <>
           <ProjectDetail project={project.data} />
           {!project.data.isActive &&
-            (user?.role === "admin" || user?.role === "manager") && (
+            (user?.role === Role.ADMIN || user?.role === Role.MANAGER) && (
               <Stack direction="row" sx={{ justifyContent: "center" }}>
                 <DeleteButton
                   onDelete={() =>

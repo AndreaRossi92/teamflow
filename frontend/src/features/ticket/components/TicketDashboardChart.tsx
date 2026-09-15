@@ -22,6 +22,7 @@ import { TicketStatusBadge } from "./TicketStatusBadge";
 import { TicketPriorityBadge } from "./TicketPriorityBadge";
 import { useAuth } from "../../../providers/useAuth";
 import ActiveDot from "../../../components/ActiveDot";
+import { Role } from "../../user/const/user";
 
 const PRIORITY_ORDER: TicketPriority[] = ["high", "medium", "low"];
 const STATUS_ORDER: TicketStatus[] = ["open", "inProgress", "resolved"];
@@ -165,7 +166,8 @@ export default function TicketDashboardChart({
             <ToggleButton value="priority">{t("priority")}</ToggleButton>
           </ToggleButtonGroup>
         </Box>
-        {loggedUser?.role !== "dev" && (
+        {(loggedUser?.role === Role.ADMIN ||
+          loggedUser?.role === Role.MANAGER) && (
           <Typography sx={{ textAlign: "center" }}>
             {!selectedUser ? t("allTickets") : selectedUser.fullName}
           </Typography>
@@ -248,64 +250,65 @@ export default function TicketDashboardChart({
                   })}
         </Box>
       </Stack>
-      {loggedUser?.role !== "dev" && (
-        <Box
-          sx={{
-            flex: 1,
-            overflowY: "scroll",
-            flexWrap: "nowrap",
-            width: "100%",
-            height: "100%",
-            maxHeight: isMediumScreen ? 240 : 480,
-            maxWidth: 600,
-          }}
-        >
-          <List dense disablePadding>
-            {sortedUserList.map((user) => (
-              <ListItem key={user.id} disablePadding>
-                <ListItemButton
-                  onClick={() =>
-                    selectedUser?.id === user.id
-                      ? setSelectedUser(null)
-                      : setSelectedUser(user)
-                  }
-                  selected={selectedUser?.id === user.id}
-                >
-                  <ListItemText
-                    primary={
-                      <Stack
-                        direction="row"
-                        sx={{
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
+      {loggedUser?.role === Role.ADMIN ||
+        (loggedUser?.role === Role.MANAGER && (
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: "scroll",
+              flexWrap: "nowrap",
+              width: "100%",
+              height: "100%",
+              maxHeight: isMediumScreen ? 240 : 480,
+              maxWidth: 600,
+            }}
+          >
+            <List dense disablePadding>
+              {sortedUserList.map((user) => (
+                <ListItem key={user.id} disablePadding>
+                  <ListItemButton
+                    onClick={() =>
+                      selectedUser?.id === user.id
+                        ? setSelectedUser(null)
+                        : setSelectedUser(user)
+                    }
+                    selected={selectedUser?.id === user.id}
+                  >
+                    <ListItemText
+                      primary={
                         <Stack
                           direction="row"
-                          sx={{ alignItems: "center" }}
-                          spacing={1}
+                          sx={{
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
                         >
-                          <ActiveDot active={user.isActive} />
-                          <Typography variant="body2">
-                            {user.fullName}
-                          </Typography>
-                          {user.id === loggedUser?.id && (
-                            <Chip label={t("me")} size="small" />
-                          )}
+                          <Stack
+                            direction="row"
+                            sx={{ alignItems: "center" }}
+                            spacing={1}
+                          >
+                            <ActiveDot active={user.isActive} />
+                            <Typography variant="body2">
+                              {user.fullName}
+                            </Typography>
+                            {user.id === loggedUser?.id && (
+                              <Chip label={t("me")} size="small" />
+                            )}
+                          </Stack>
+                          <Chip
+                            label={userCount(user, { excludeClosed: true })}
+                            size="small"
+                          />
                         </Stack>
-                        <Chip
-                          label={userCount(user, { excludeClosed: true })}
-                          size="small"
-                        />
-                      </Stack>
-                    }
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      )}
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        ))}
     </Stack>
   );
 }

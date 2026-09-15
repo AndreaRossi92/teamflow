@@ -5,7 +5,6 @@ import {
   MenuItem,
   type SelectChangeEvent,
   Stack,
-  Tooltip,
   Chip,
   IconButton,
   Button,
@@ -96,6 +95,7 @@ export default function Header() {
             onClick={() => {
               navigate("/", { replace: true });
             }}
+            title={t("home")}
           >
             TeamFlow
           </Button>
@@ -140,22 +140,17 @@ export default function Header() {
           </Select>
           {isAuthenticated && (
             <IconButton size="small">
-              <Tooltip
+              <Avatar
                 title={`${user?.fullName} - ${t(user?.role ?? "", { ns: "user" })}`}
-              >
-                <Avatar
-                  sx={{
-                    bgcolor:
-                      theme.palette[ROLE_COLOR[user?.role ?? "dev"]].main,
-                    color:
-                      theme.palette[ROLE_COLOR[user?.role ?? "dev"]]
-                        .contrastText,
-                  }}
-                  onClick={(e) => {
-                    setAnchorEl(e.currentTarget);
-                  }}
-                >{`${user?.fullName[0]}${user?.fullName.split(" ")?.[1]?.[0] ?? ""}`}</Avatar>
-              </Tooltip>
+                sx={{
+                  bgcolor: theme.palette[ROLE_COLOR[user?.role ?? "dev"]].main,
+                  color:
+                    theme.palette[ROLE_COLOR[user?.role ?? "dev"]].contrastText,
+                }}
+                onClick={(e) => {
+                  setAnchorEl(e.currentTarget);
+                }}
+              >{`${user?.fullName[0]}${user?.fullName.split(" ")?.[1]?.[0] ?? ""}`}</Avatar>
             </IconButton>
           )}
           <Menu

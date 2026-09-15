@@ -30,6 +30,7 @@ export function ControlledPasswordField({
                 onClick={() => setShowPassword(!showPassword)}
                 edge="end"
                 tabIndex={-1}
+                title={showPassword ? t("hidePassword") : t("showPassword")}
                 aria-label={
                   showPassword ? t("hidePassword") : t("showPassword")
                 }

@@ -100,14 +100,12 @@ export default function Header() {
             TeamFlow
           </Button>
           {isDemoMode && (
-            <Tooltip title={t("demoMode")}>
-              <Chip
-                label={t("demo")}
-                variant="outlined"
-                size="small"
-                color="primary"
-              />
-            </Tooltip>
+            <Chip
+              label={t("demo")}
+              variant="outlined"
+              size="small"
+              color="primary"
+            />
           )}
         </Stack>
         <Stack direction="row" spacing={1}>

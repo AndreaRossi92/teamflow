@@ -46,7 +46,7 @@ services:
   - type: web
     runtime: static
     name: teamflow-frontend
-    buildCommand: corepack enable && corepack prepare yarn@4.x --activate && yarn install && yarn workspace frontend build
+    buildCommand: corepack enable && corepack prepare yarn@4.12.0 --activate && yarn install && yarn workspace frontend build
     staticPublishPath: frontend/dist
     buildFilter:
       paths:

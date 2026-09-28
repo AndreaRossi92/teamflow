@@ -46,7 +46,7 @@ services:
   - type: web
     runtime: static
     name: teamflow-frontend
-    buildCommand: corepack enable && corepack prepare yarn@4.12.0 --activate && yarn install --immutable && yarn workspace frontend build
+    buildCommand: corepack yarn install --immutable && corepack yarn workspace frontend build
     staticPublishPath: frontend/dist
     buildFilter:
       paths:
@@ -56,5 +56,7 @@ services:
     envVars:
       - key: SKIP_INSTALL_DEPS
         value: "true"
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
       - key: VITE_API_URL
         value: https://teamflow-backend.onrender.com

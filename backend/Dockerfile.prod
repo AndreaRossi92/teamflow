@@ -1,0 +1,57 @@
+# syntax=docker/dockerfile:1
+
+FROM node:24-alpine AS base
+RUN corepack enable
+WORKDIR /app
+
+
+# ---------------------------------------------------------------------------
+# Stage "deps": install all dependecies (dev too)
+# ---------------------------------------------------------------------------
+FROM base AS deps
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+RUN yarn install --immutable
+
+
+# ---------------------------------------------------------------------------
+# Stage "build": compile backend TypeScript -> JavaScript (dist/)
+# ---------------------------------------------------------------------------
+FROM deps AS build
+COPY backend/ ./backend/
+RUN yarn workspace backend build
+
+
+# ---------------------------------------------------------------------------
+# Stage "prod-deps": install backend production dependecies only
+# ---------------------------------------------------------------------------
+FROM base AS prod-deps
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+RUN yarn workspaces focus backend --production
+
+
+# ---------------------------------------------------------------------------
+# Stage "runtime": minimal production image
+# ---------------------------------------------------------------------------
+FROM node:24-alpine AS runtime
+RUN corepack enable
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Non-root user: avoid to execute the process as root
+RUN addgroup -S nodejs && adduser -S nestjs -G nodejs
+
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=prod-deps /app/backend/node_modules ./backend/node_modules
+COPY --from=prod-deps /app/backend/package.json ./backend/package.json
+COPY --from=build /app/backend/dist ./backend/dist
+
+USER nestjs
+
+EXPOSE 3000
+
+CMD ["node", "backend/dist/main"]

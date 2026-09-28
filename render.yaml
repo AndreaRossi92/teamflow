@@ -1,0 +1,57 @@
+databases:
+  - name: teamflow-db
+    plan: free
+    databaseName: teamflow
+    user: teamflow
+
+services:
+  - type: web
+    name: teamflow-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile.prod
+    dockerContext: .
+    plan: free
+    healthCheckPath: /app/healthcheck
+    buildFilter:
+      paths:
+        - backend/**
+        - package.json
+        - yarn.lock
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_HOST
+        fromDatabase:
+          name: teamflow-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: teamflow-db
+          property: port
+      - key: DB_USERNAME
+        fromDatabase:
+          name: teamflow-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: teamflow-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: teamflow-db
+          property: database
+      - key: JWT_SECRET
+        generateValue: true
+
+  - type: static
+    name: teamflow-frontend
+    buildCommand: yarn install && yarn workspace frontend build
+    staticPublishPath: frontend/dist
+    buildFilter:
+      paths:
+        - frontend/**
+        - package.json
+        - yarn.lock
+    envVars:
+      - key: VITE_API_URL
+        value: https://teamflow-backend.onrender.com

@@ -12,6 +12,7 @@ import { Project } from './projects/project.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { Ticket } from './tickets/ticket.entity';
 import { TicketsModule } from './tickets/tickets.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -55,5 +56,6 @@ import { TicketsModule } from './tickets/tickets.module';
     ProjectsModule,
     TicketsModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

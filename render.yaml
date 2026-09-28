@@ -43,7 +43,8 @@ services:
       - key: JWT_SECRET
         generateValue: true
 
-  - type: static
+  - type: web
+    runtime: static
     name: teamflow-frontend
     buildCommand: yarn install && yarn workspace frontend build
     staticPublishPath: frontend/dist

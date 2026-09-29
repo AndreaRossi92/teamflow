@@ -25,6 +25,7 @@
   "dependencies": {
     "@dataui/crud-request": "^5.3.4",
     "@dataui/crud-typeorm": "^5.3.4",
+    "@faker-js/faker": "^10.6.0",
     "@google/genai": "^2.13.0",
     "@nestjs/common": "^11.1.28",
     "@nestjs/config": "^4.0.4",
@@ -51,7 +52,6 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.6",
     "@eslint/js": "^10.0.1",
-    "@faker-js/faker": "^10.5.0",
     "@nestjs/cli": "^11.0.24",
     "@nestjs/schematics": "^11.1.0",
     "@nestjs/testing": "^11.1.28",

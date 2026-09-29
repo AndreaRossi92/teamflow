@@ -59,4 +59,4 @@ services:
       - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
         value: "0"
       - key: VITE_API_URL
-        value: https://teamflow-backend.onrender.com
+        value: https://teamflow-backend-gkno.onrender.com

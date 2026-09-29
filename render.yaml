@@ -42,6 +42,8 @@ services:
           property: database
       - key: JWT_SECRET
         generateValue: true
+      - key: CORS_ORIGIN
+        value: https://teamflow-frontend-7myj.onrender.com
 
   - type: web
     runtime: static

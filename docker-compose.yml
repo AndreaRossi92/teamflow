@@ -57,7 +57,8 @@ services:
       # Can be set to "dark", "light" or left empty.
       # If empty use the system theme
       VITE_THEME: ${VITE_THEME:-}
-      VITE_API_URL: http://backend:3000
+      VITE_PROXY_URL: http://backend:3000
+      VITE_AXIOS_BASE_URL: /api
       # Can be set to "true" to activate demo mode
       VITE_DEMO_MODE: ${VITE_DEMO_MODE:-false}
     depends_on:

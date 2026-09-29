@@ -58,5 +58,5 @@ services:
         value: "true"
       - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
         value: "0"
-      - key: VITE_API_URL
+      - key: VITE_AXIOS_BASE_URL
         value: https://teamflow-backend-gkno.onrender.com

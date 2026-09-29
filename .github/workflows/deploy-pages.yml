@@ -33,6 +33,7 @@ jobs:
         run: yarn workspace frontend build:frontend
         env:
           VITE_DEMO_MODE: "true"
+          VITE_BASE_PATH: "/teamflow/"
 
       - uses: actions/upload-pages-artifact@v5
         with:
